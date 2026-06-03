@@ -161,7 +161,7 @@ export const useChatStream = (initialActiveId = "new-chat") => {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-          body: formData, // Truyền trực tiếp hộp dữ liệu FormData chứa file thật đi
+          body: formData,
           signal: abortControllerRef.current.signal,
         },
       );
@@ -171,7 +171,6 @@ export const useChatStream = (initialActiveId = "new-chat") => {
       const reader = response.body.getReader();
       const decoder = new TextDecoder("utf-8");
 
-      // Tạo sẵn một khung tin nhắn Assistant rỗng ở cuối mảng để chuẩn bị hứng chữ
       const aiMsgId = Date.now() + 1;
       setMessages((prev) => [
         ...prev,
@@ -181,7 +180,6 @@ export const useChatStream = (initialActiveId = "new-chat") => {
 
       let accumulatedText = "";
 
-      // Vòng lặp đọc dữ liệu nhả về liên tục từ luồng mạng
       while (true) {
         const { value, done } = await reader.read();
         if (done) break;
@@ -192,16 +190,12 @@ export const useChatStream = (initialActiveId = "new-chat") => {
         for (const line of lines) {
           if (line.startsWith("data: ")) {
             const dataStr = line.replace("data: ", "").trim();
-
-            if (dataStr === "[DONE]") {
-              break;
-            }
+            if (dataStr === "[DONE]") break;
 
             try {
               const parsed = JSON.parse(dataStr);
               if (parsed.content) {
                 accumulatedText += parsed.content;
-
                 setMessages((prev) =>
                   prev.map((msg) =>
                     msg.id === aiMsgId
@@ -210,14 +204,12 @@ export const useChatStream = (initialActiveId = "new-chat") => {
                   ),
                 );
               }
-            } catch (e) {
-              // Bỏ qua các phân đoạn chunk trống
-            }
+            } catch (e) {}
           }
         }
       }
 
-      // STREAM KẾT THÚC THÀNH CÔNG: Gỡ cờ isStreaming để hiện meta info model và nút like/copy
+      // STREAM KẾT THÚC THÀNH CÔNG
       setMessages((prev) =>
         prev.map((msg) =>
           msg.id === aiMsgId
@@ -225,6 +217,14 @@ export const useChatStream = (initialActiveId = "new-chat") => {
             : msg,
         ),
       );
+
+      // TỐI ƯU SIDEBAR: Tự động đưa cuộc trò chuyện vừa tương tác lên đầu danh sách (Không gọi lại API trang 1)
+      setConversations((prev) => {
+        const target = prev.find((c) => c.id === currentId);
+        if (!target) return prev;
+        const filtered = prev.filter((c) => c.id !== currentId);
+        return [target, ...filtered];
+      });
     } catch (err) {
       if (err.name === "AbortError") {
         console.log("Người dùng chủ động nhấn dừng Stream.");
@@ -235,7 +235,6 @@ export const useChatStream = (initialActiveId = "new-chat") => {
       setIsStreaming(false);
       setIsWaitingSkeleton(false);
       abortControllerRef.current = null;
-      fetchConversations(1, false);
     }
   };
   // BKAV HaiHS : Custom Hook quản lý logic Chat Stream & Hội thoại - end

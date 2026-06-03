@@ -36,7 +36,7 @@ const MessageList = ({ messages, isWaitingSkeleton }) => {
         )
       )}
 
-      {/* 🌟 HIỆU ỨNG SKELETON AI SUY NGHĨ NHẤP NHÁY (GIỐNG CHATGPT CHUẨN DESIGN) */}
+      {/* HIỆU ỨNG SKELETON AI SUY NGHĨ NHẤP NHÁY (GIỐNG CHATGPT CHUẨN DESIGN) */}
       {isWaitingSkeleton && (
         <div className="flex gap-4 max-w-[80%] mr-auto animate-pulse">
           <div className="w-8 h-8 rounded-full bg-blue-500/10 flex justify-center items-center text-sm shrink-0">
