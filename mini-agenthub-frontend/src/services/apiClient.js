@@ -3,7 +3,7 @@ import axios from "axios";
 // BKAV HaiHS : Khởi tạo cấu hình cấu trúc Axios Instance dùng chung - start
 const apiClient = axios.create({
   // Tự động bốc URL Server từ file môi trường .env, nếu không có sẽ lấy mặc định là localhost:3000
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:3000/api",
+  baseURL: "http://localhost:3000/api",
   headers: {
     "Content-Type": "application/json",
   },
