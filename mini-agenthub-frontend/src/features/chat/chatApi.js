@@ -1,3 +1,4 @@
+// file này chứa các hàm gọi api liên quan đến Chat và hội thoại
 import apiClient from "../../services/apiClient";
 
 //BKAS HaiHS : Lấy danh sách hội thoại phân trang - start

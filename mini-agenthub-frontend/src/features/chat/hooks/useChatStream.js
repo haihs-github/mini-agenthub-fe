@@ -1,3 +1,5 @@
+// file này chứa custom Hook quản lý logic chat stream và hội thoại, giúp tách biệt rõ ràng phần logic nghiệp vụ với phần UI trình bày
+
 import { useState, useEffect, useRef, useCallback } from "react";
 import {
   getConversationsApi,
@@ -102,7 +104,7 @@ export const useChatStream = (initialActiveId = "new-chat") => {
     setIsWaitingSkeleton(true);
     setIsStreaming(true);
 
-    // KỊCH BẢN ĐẶC BIỆT: Nếu là "đoạn hội thoại mới", tiến hành kích hoạt tạo phòng ngầm dưới BE
+    // Nếu là "đoạn hội thoại mới", tiến hành kích hoạt tạo phòng ngầm dưới BE
     if (currentId === "new-chat") {
       try {
         const titleProposal =

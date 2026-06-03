@@ -18,8 +18,10 @@ const ChatInputArea = ({
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
 
+    // kiểm tra định dạng file chỉ nhập ảnh
     files.forEach((file) => {
       if (!file.type.startsWith("image/")) {
+        // custom toast đã tạo từ trước
         showToast("Hệ thống chỉ hỗ trợ đính kèm tệp tin hình ảnh!", "warning");
         return;
       }
@@ -44,10 +46,12 @@ const ChatInputArea = ({
     setAttachedImages((prev) => prev.filter((_, idx) => idx !== indexToRemove));
   };
 
+  // xử lý khi người dùng bấm gửi hoặc dừng
   const handleSubmit = (e) => {
     e.preventDefault();
+    // Nếu đang chạy, bấm nút này sẽ đóng stream
     if (isStreaming) {
-      onStopStream(); // Nếu đang chạy, bấm nút này sẽ đóng stream
+      onStopStream();
       return;
     }
     if (!prompt.trim()) return;
@@ -64,6 +68,7 @@ const ChatInputArea = ({
     }
   };
 
+  // return giao diện
   return (
     <div className="p-4 bg-[#0b0f19] border-t border-[#1e293b]/60 shrink-0">
       <form
