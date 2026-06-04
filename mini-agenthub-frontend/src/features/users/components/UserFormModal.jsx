@@ -4,7 +4,7 @@ import { useToast } from "../../../components/Toast";
 import { createUserApi, updateUserApi, getGroupsApi } from "../userApi";
 import ConfirmModal from "../../../components/ConfirmModal";
 
-// BKAV HaiHS: Component Modal da nang hop nhat chuc nang quan ly thanh vien
+// BKAV HaiHS: Component Modal da nang hop nhat chuc nang quan ly thanh vien - start
 const UserFormModal = ({
   isOpen,
   onClose,
@@ -423,5 +423,6 @@ const UserFormModal = ({
     </>
   );
 };
+// BKAV HaiHS: Component Modal da nang hop nhat chuc nang quan ly thanh vien - start
 
 export default UserFormModal;

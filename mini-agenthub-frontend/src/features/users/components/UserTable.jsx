@@ -1,23 +1,21 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { FiEye, FiEdit2, FiTrash2 } from "react-icons/fi";
 
-// BKAV HaiHS : Component Bảng hiển thị danh sách user - start
+// BKAV HaiHS: Linh kien bang hien thi nhan su don nhan cac trang thai chon tu Bo chi huy trung tam - start
 const UserTable = ({
   users,
   isLoading,
   onEditClick,
   onViewClick,
   onDeleteClick,
+  onBulkDeleteClick,
+  selectedIds,
+  setSelectedIds,
   canRead,
   canUpdate,
   canDelete,
 }) => {
-  const [selectedIds, setSelectedIds] = useState([]);
-
-  useEffect(() => {
-    setSelectedIds([]);
-  }, [users]);
-
+  // Xu ly hanh vi tich chon hoac go bo toan bo checkbox tren trang hien tai
   const handleSelectAllToggle = (e) => {
     if (e.target.checked) {
       const allCurrentIds = users.map((user) => user.id);
@@ -27,6 +25,7 @@ const UserTable = ({
     }
   };
 
+  // Xu ly hanh vi tich chon hoac go bo checkbox cua tung dong rieng le
   const handleSelectRowToggle = (userId) => {
     setSelectedIds((prev) =>
       prev.includes(userId)
@@ -40,20 +39,45 @@ const UserTable = ({
 
   return (
     <div className="w-full bg-[#161b26]/60 border border-[#232d42] rounded-2xl overflow-hidden shadow-2xl backdrop-blur-md">
-      {/* THANH ĐẾM SỐ LƯỢNG (Chỉ cho phép chọn nếu có quyền đọc danh sách) */}
+      {/* THANH TAC VU HANG LOAT: Tu dong thay doi cau truc flex de chua them bo doi nut bam hanh dong */}
       {canRead && (
-        <div className="px-6 py-4 bg-[#111622]/90 border-b border-[#232d42] flex items-center gap-3 text-xs font-semibold tracking-wider text-gray-400 select-none">
-          <input
-            type="checkbox"
-            checked={isAllSelectedOnPage}
-            onChange={handleSelectAllToggle}
-            className="w-4 h-4 rounded border-gray-700 bg-gray-900 text-blue-600 focus:ring-0 cursor-pointer"
-          />
-          <span
-            className={selectedIds.length > 0 ? "text-blue-400 font-bold" : ""}
-          >
-            {selectedIds.length} Users selected
-          </span>
+        <div className="px-6 py-4 bg-[#111622]/90 border-b border-[#232d42] flex items-center justify-between text-xs font-semibold tracking-wider text-gray-400 select-none">
+          <div className="flex items-center gap-3">
+            <input
+              type="checkbox"
+              checked={isAllSelectedOnPage}
+              onChange={handleSelectAllToggle}
+              className="w-4 h-4 rounded border-gray-700 bg-gray-900 text-blue-600 focus:ring-0 cursor-pointer"
+            />
+            <span
+              className={
+                selectedIds.length > 0 ? "text-blue-400 font-bold" : ""
+              }
+            >
+              {selectedIds.length} Users selected
+            </span>
+          </div>
+
+          {/* Kich hoat hien thi bo doi nut bấm nang cao neu tong so luong chon lon hon khong */}
+          {selectedIds.length > 0 && (
+            <div className="flex items-center gap-4 animate-fade-in">
+              <button
+                type="button"
+                className="bg-blue-600/10 border border-blue-500/20 text-blue-400 px-3 py-1.5 rounded-xl font-bold text-[10px] tracking-wider uppercase hover:bg-blue-600/20 transition-all cursor-pointer"
+              >
+                + Add to Group
+              </button>
+              {canDelete && (
+                <button
+                  type="button"
+                  onClick={onBulkDeleteClick}
+                  className="text-red-400 hover:text-red-500 font-bold text-[10px] tracking-wider uppercase cursor-pointer transition-all"
+                >
+                  Delete Selected
+                </button>
+              )}
+            </div>
+          )}
         </div>
       )}
 
@@ -64,7 +88,6 @@ const UserTable = ({
               <th className="py-4 px-6 w-12"></th>
               <th className="py-4 px-6">Name</th>
               <th className="py-4 px-6">Email</th>
-              {/* ẨN LUÔN CỘT ACTIONS NẾU CẢ 3 QUYỀN HÀNH ĐỘNG ĐỀU BẰNG FALSE */}
               {(canRead || canUpdate || canDelete) && (
                 <th className="py-4 px-6 text-right pr-8">Actions</th>
               )}
@@ -91,14 +114,13 @@ const UserTable = ({
                 </tr>
               ))
             ) : !canRead ? (
-              // YÊU CẦU ĐẶC BIỆT: Nếu vào được trang nhưng không có quyền USER_R để xem danh sách
               <tr>
                 <td
                   colSpan={4}
                   className="py-12 text-center text-amber-500/80 italic font-medium bg-[#111622]/20"
                 >
-                  Tài khoản của bạn không có quyền USER_R để đọc dữ liệu danh
-                  sách thành viên.
+                  Tai khoan cua ban khong co quyen USER_R de doc du lieu danh
+                  sach thanh vien.
                 </td>
               </tr>
             ) : users.length === 0 ? (
@@ -107,7 +129,7 @@ const UserTable = ({
                   colSpan={4}
                   className="py-12 text-center text-gray-500 italic"
                 >
-                  Không tìm thấy nhân sự nào.
+                  Khong tim thay nhan su nao.
                 </td>
               </tr>
             ) : (
@@ -144,34 +166,30 @@ const UserTable = ({
                       {user.email}
                     </td>
 
-                    {/* KHU VỰC ẨN HÀNH VI THEO QUYỀN HẠT NHÂN HÓA */}
                     {(canRead || canUpdate || canDelete) && (
                       <td className="py-4 px-6 text-right pr-8">
                         <div className="flex items-center justify-end gap-1.5">
-                          {/* ẨN ICON XEM CHI TIẾT NẾU THIẾU USER_R */}
                           {canRead && (
                             <button
-                              title="Xem chi tiết"
+                              title="Xem chi tiet"
                               onClick={() => onViewClick(user)}
                               className="p-2 rounded-xl text-gray-400 hover:text-white hover:bg-gray-800 transition-all cursor-pointer"
                             >
                               <FiEye size={15} />
                             </button>
                           )}
-                          {/* ẨN ICON CÂY BÚT CHÌ NẾU THIẾU USER_U */}
                           {canUpdate && (
                             <button
-                              title="Sửa thông tin"
+                              title="Sua thong tin"
                               onClick={() => onEditClick(user)}
                               className="p-2 rounded-xl text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 transition-all cursor-pointer"
                             >
                               <FiEdit2 size={14} />
                             </button>
                           )}
-                          {/* ẨN ICON THÙNG RÁC NẾU THIẾU USER_D */}
                           {canDelete && (
                             <button
-                              title="Xóa tài khoản"
+                              title="Xoa tai khoan"
                               onClick={() => onDeleteClick(user)}
                               className="p-2 rounded-xl text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition-all cursor-pointer"
                             >
@@ -191,6 +209,6 @@ const UserTable = ({
     </div>
   );
 };
-// BKAV HaiHS : Component Bảng hiển thị danh sách user - end
+// BKAV HaiHS: Linh kien bang hien thi nhan su don nhan cac trang thai chon tu Bo chi huy trung tam - end
 
 export default UserTable;

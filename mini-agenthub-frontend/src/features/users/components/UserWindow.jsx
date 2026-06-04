@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../../auth/AuthContext";
-import { getUsersApi, deleteUserApi } from "../userApi";
 import { useToast } from "../../../components/Toast";
+import { getUsersApi, deleteUserApi } from "../userApi";
 import UserHeader from "./UserHeader";
 import UserTable from "./UserTable";
 import UserPagination from "./UserPagination";
@@ -12,20 +12,17 @@ import { FiLock } from "react-icons/fi";
 // BKAV HaiHS : Component chính chứa đựng toàn bộ trang quản lý user, điều phối việc hiển thị header, bảng danh sách, phân trang và popup form - start
 const UserWindow = () => {
   const { permissions } = useAuth();
+  const { showToast } = useToast();
   const userPermissions = permissions || [];
 
-  // LỚP BẢO VỆ 1: Kiểm tra xem tài khoản có sở hữu ít nhất một quyền USER_ nào không
   const hasAnyUserPermission = userPermissions.some((p) =>
     p.startsWith("USER_"),
   );
-
-  // LỚP BẢO VỆ 2: Bóc tách bộ tứ cờ quyền hạn để phân phối xuống UI con
   const canCreate = userPermissions.includes("USER_C");
   const canRead = userPermissions.includes("USER_R");
   const canUpdate = userPermissions.includes("USER_U");
   const canDelete = userPermissions.includes("USER_D");
 
-  // Các State quản lý dữ liệu bảng
   const [users, setUsers] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -36,8 +33,14 @@ const UserWindow = () => {
   const [userToEdit, setUserToEdit] = useState(null);
   const [isViewMode, setIsViewMode] = useState(false);
 
+  const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState(null);
+
+  // Khai bao cac trang thai kiem soat hanh vi lua chon va xoa hang loat
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [isConfirmBulkDeleteOpen, setIsConfirmBulkDeleteOpen] = useState(false);
+
   const loadUsers = useCallback(async () => {
-    // Chỉ kích hoạt gọi API mạng nếu có quyền đọc USER_R, tránh bị Backend từ chối trả về 403
     if (!canRead) return;
     setIsLoading(true);
     try {
@@ -46,7 +49,7 @@ const UserWindow = () => {
       setTotalPages(res?.pagination?.totalPages || 1);
       setTotalItems(res?.pagination?.totalItems || 0);
     } catch (err) {
-      console.error("Lỗi hệ thống khi tải danh sách người dùng:", err);
+      console.error("Loi he thong khi tai danh sach nguoi dung:", err);
     } finally {
       setIsLoading(false);
     }
@@ -55,6 +58,11 @@ const UserWindow = () => {
   useEffect(() => {
     loadUsers();
   }, [loadUsers]);
+
+  // Tu dong xoa sach khay nho lua chon moi khi danh sach nguoi dung hoac trang thay doi
+  useEffect(() => {
+    setSelectedIds([]);
+  }, [users]);
 
   const handleOpenAddModal = () => {
     setUserToEdit(null);
@@ -74,7 +82,55 @@ const UserWindow = () => {
     setIsModalOpen(true);
   };
 
-  // NẾU KHÔNG CÓ BẤT KỲ QUYỀN USER NÀO -> Khóa cửa không cho vào trang
+  const handleOpenDeleteConfirm = (user) => {
+    if (!canDelete) {
+      showToast(
+        "Ban khong co quyen USER_D de thuc hien hanh dong xoa thanh vien nay!",
+        "warning",
+      );
+      return;
+    }
+    setUserToDelete(user);
+    setIsConfirmDeleteOpen(true);
+  };
+
+  const handleExecuteDelete = async () => {
+    if (!userToDelete) return;
+    try {
+      await deleteUserApi(userToDelete.id);
+      showToast(`Da truc xuat thanh vien khoi mang luoi!`, "success");
+      loadUsers();
+    } catch (err) {
+      const errorMsg =
+        err?.response?.data?.message || "Khong the xoa nguoi dung";
+      showToast(errorMsg, "error");
+    } finally {
+      setUserToDelete(null);
+    }
+  };
+
+  // Thuc thi lenh xoa song song toan bo cac tai khoan da tich chon qua dau API mang
+  const handleExecuteBulkDelete = async () => {
+    if (selectedIds.length === 0) return;
+    setIsLoading(true);
+    try {
+      await Promise.all(selectedIds.map((id) => deleteUserApi(id)));
+      showToast(
+        `Da xoa thanh cong ${selectedIds.length} thanh vien duoc chon khoi he thong!`,
+        "success",
+      );
+      setSelectedIds([]);
+      loadUsers();
+    } catch (err) {
+      showToast(
+        "Co loi xay ra trong qua trinh thuc thi xoa hang loat",
+        "error",
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   if (!hasAnyUserPermission) {
     return (
       <div className="flex-1 h-full flex flex-col justify-center items-center bg-[#0b0f19] text-center px-6 select-none animate-fade-in">
@@ -82,11 +138,11 @@ const UserWindow = () => {
           <FiLock size={28} />
         </div>
         <h3 className="text-xl font-bold text-white tracking-wide">
-          Truy cập bị từ chối
+          Truy cap bi tu choi
         </h3>
         <p className="text-sm text-gray-400 mt-2 max-w-sm leading-6">
-          Tài khoản của bạn không sở hữu bất kỳ quyền hạn nào thuộc phân khu
-          nhân sự để truy cập module này.
+          Tai khoan cua ban khong so huu bat ky quyen han nao thuoc phan khu
+          nhan su de truy cap module nay.
         </p>
       </div>
     );
@@ -95,22 +151,22 @@ const UserWindow = () => {
   return (
     <div className="flex-1 h-full overflow-y-auto bg-[#0b0f19] px-8 py-8 flex flex-col justify-between">
       <div className="w-full max-w-6xl mx-auto flex-1">
-        {/* Truyền cờ canCreate xuống Header để ẩn/hiện nút Add User */}
         <UserHeader onAddClick={handleOpenAddModal} canCreate={canCreate} />
 
-        {/* Truyền bộ ba cờ quyền xuống Table để ẩn/hiện các cột hành động tương ứng */}
         <UserTable
           users={users}
           isLoading={isLoading}
           onEditClick={handleOpenEditModal}
           onViewClick={handleOpenViewModal}
-          onDeleteClick={loadUsers} // Tạm thời nạp lại bảng khi trigger xóa từ bên ngoài nếu cần
+          onDeleteClick={handleOpenDeleteConfirm}
+          onBulkDeleteClick={() => setIsConfirmBulkDeleteOpen(true)}
+          selectedIds={selectedIds}
+          setSelectedIds={setSelectedIds}
           canRead={canRead}
           canUpdate={canUpdate}
           canDelete={canDelete}
         />
 
-        {/* Thanh điều hướng phân trang (Chỉ hiện nếu có quyền đọc danh sách) */}
         {canRead && (
           <UserPagination
             currentPage={currentPage}
@@ -127,6 +183,29 @@ const UserWindow = () => {
         userToEdit={userToEdit}
         isViewMode={isViewMode}
         onSuccess={loadUsers}
+      />
+
+      <ConfirmModal
+        isOpen={isConfirmDeleteOpen}
+        onClose={() => setIsConfirmDeleteOpen(false)}
+        onConfirm={handleExecuteDelete}
+        title="Canh bao xoa nhan su"
+        message={`Ban co chac chan muon xoa vinh vien tai khoan nay khoi co so du lieu?`}
+        confirmText="Dong y xoa"
+        cancelText="Giu lai"
+        type="danger"
+      />
+
+      {/* MODAL CUSTOM XAC NHAN XOA HANG LOAT NHIEU TAI KHOAN CUNG LUC */}
+      <ConfirmModal
+        isOpen={isConfirmBulkDeleteOpen}
+        onClose={() => setIsConfirmBulkDeleteOpen(false)}
+        onConfirm={handleExecuteBulkDelete}
+        title="Xac nhan xoa hang loat"
+        message={`Ban co chac chan muon xoa vinh vien ${selectedIds.length} thanh vien da chon khoi he thong? Hanh dong nay khong the hoan tac!`}
+        confirmText="Xoa toan bo"
+        cancelText="Huy bo"
+        type="danger"
       />
     </div>
   );
