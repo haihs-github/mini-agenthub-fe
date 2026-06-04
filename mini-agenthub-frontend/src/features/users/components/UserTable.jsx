@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { FiEye, FiEdit2, FiTrash2 } from "react-icons/fi";
 
 // BKAV HaiHS : Component Bảng hiển thị danh sách user - start
-const UserTable = ({ users, isLoading, onEditClick }) => {
+const UserTable = ({ users, isLoading, onEditClick, onViewClick }) => {
   // State lưu trữ danh sách ID các user được chọn
   const [selectedIds, setSelectedIds] = useState([]);
 
@@ -135,6 +135,7 @@ const UserTable = ({ users, isLoading, onEditClick }) => {
                       <div className="flex items-center justify-end gap-1.5">
                         <button
                           title="Xem chi tiết"
+                          onClick={() => onViewClick(user)}
                           className="p-2 rounded-xl text-gray-400 hover:text-white hover:bg-gray-800 transition-all cursor-pointer"
                         >
                           <FiEye size={15} />

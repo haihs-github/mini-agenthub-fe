@@ -5,7 +5,13 @@ import { createUserApi, updateUserApi, getGroupsApi } from "../userApi";
 import ConfirmModal from "../../../components/ConfirmModal"; // NẠP COMPONENT XÁC NHẬN MỚI
 
 // BKAV HaiHS : Component Popup form Thêm và sửa user - start
-const UserFormModal = ({ isOpen, onClose, userToEdit, onSuccess }) => {
+const UserFormModal = ({
+  isOpen,
+  onClose,
+  userToEdit,
+  isViewMode = false,
+  onSuccess,
+}) => {
   if (!isOpen) return null;
 
   const { showToast } = useToast();
@@ -24,13 +30,11 @@ const UserFormModal = ({ isOpen, onClose, userToEdit, onSuccess }) => {
   const [groupHasMore, setGroupHasMore] = useState(true);
   const [isLoadingGroups, setIsLoadingGroups] = useState(false);
 
-  // 🚀 STATE ĐIỀU KHIỂN MODAL XÁC NHẬN HỦY
   const [isConfirmCancelOpen, setIsConfirmCancelOpen] = useState(false);
-
   const dropdownRef = useRef(null);
 
   useEffect(() => {
-    if (isEditMode && userToEdit) {
+    if ((isEditMode || isViewMode) && userToEdit) {
       setFullName(userToEdit.fullname || "");
       setEmail(userToEdit.email || "");
       setSelectedGroups(userToEdit.groups || []);
@@ -39,9 +43,10 @@ const UserFormModal = ({ isOpen, onClose, userToEdit, onSuccess }) => {
       setEmail("");
       setSelectedGroups([]);
     }
-  }, [userToEdit, isEditMode, isOpen]);
+  }, [userToEdit, isEditMode, isViewMode, isOpen]);
 
   useEffect(() => {
+    if (isViewMode) return; // Chế độ xem không cần lắng nghe click ngoài của dropdown
     const handleOutsideClick = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
         setIsDropdownOpen(false);
@@ -49,7 +54,7 @@ const UserFormModal = ({ isOpen, onClose, userToEdit, onSuccess }) => {
     };
     document.addEventListener("mousedown", handleOutsideClick);
     return () => document.removeEventListener("mousedown", handleOutsideClick);
-  }, []);
+  }, [isViewMode]);
 
   const fetchGroups = async (page = 1, isLoadMore = false) => {
     if (isLoadingGroups || (!groupHasMore && isLoadMore)) return;
@@ -74,6 +79,7 @@ const UserFormModal = ({ isOpen, onClose, userToEdit, onSuccess }) => {
   };
 
   const toggleDropdown = () => {
+    if (isViewMode) return; // 🚀 KHÓA CLICK: Đang xem chi tiết thì không cho mở dropdown
     if (!isDropdownOpen && groups.length === 0) {
       setGroupHasMore(true);
       fetchGroups(1, false);
@@ -89,6 +95,7 @@ const UserFormModal = ({ isOpen, onClose, userToEdit, onSuccess }) => {
   };
 
   const handleSelectGroup = (group) => {
+    if (isViewMode) return;
     if (selectedGroups.some((g) => g.id === group.id)) {
       setSelectedGroups((prev) => prev.filter((g) => g.id !== group.id));
     } else {
@@ -101,15 +108,19 @@ const UserFormModal = ({ isOpen, onClose, userToEdit, onSuccess }) => {
 
   const removeGroupChip = (groupId, e) => {
     e.stopPropagation();
+    if (isViewMode) return; // Khóa gỡ chip ở chế độ xem
     setSelectedGroups((prev) => prev.filter((g) => g.id !== groupId));
   };
 
-  // 🚀 KÍCH HOẠT QUY TRÌNH KIỂM TRA ĐỂ MỞ MODAL XÁC NHẬN CUSTOM
   const handleCancelWithCheck = () => {
+    if (isViewMode) {
+      onClose(); // Xem xong bấm đóng luôn, không cần hỏi han xác nhận hoang mang
+      return;
+    }
     const hasData =
       fullName.trim() || email.trim() || selectedGroups.length > 0;
     if (hasData) {
-      setIsConfirmCancelOpen(true); // Bật popup custom thay cho window.confirm cũ kĩ
+      setIsConfirmCancelOpen(true);
     } else {
       onClose();
     }
@@ -117,7 +128,7 @@ const UserFormModal = ({ isOpen, onClose, userToEdit, onSuccess }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!email.trim() || isSubmitting) return;
+    if (isViewMode || !email.trim() || isSubmitting) return;
 
     setIsSubmitting(true);
     const payload = {
@@ -145,15 +156,21 @@ const UserFormModal = ({ isOpen, onClose, userToEdit, onSuccess }) => {
     }
   };
 
+  // Tính toán tiêu đề động tương ứng
+  const modalTitle = isViewMode
+    ? "User Details"
+    : isEditMode
+      ? "Update User"
+      : "Add New User";
+
   return (
     <>
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm select-none animate-fade-in">
-        {/* 🌟 ĐÃ SỬA: Bỏ class overflow-hidden ở thẻ div này để dropdown không bị bóp nghẹt cắt cụt */}
         <div className="w-full max-w-lg bg-[#161b26] border border-[#232d42] rounded-2xl shadow-2xl flex flex-col relative">
           {/* Đầu popup */}
           <div className="px-6 py-4 border-b border-[#232d42] flex justify-between items-center bg-[#111622]/50 rounded-t-2xl">
             <h3 className="text-md font-bold text-white tracking-wide">
-              {isEditMode ? "Update User" : "Add New User"}
+              {modalTitle}
             </h3>
             <button
               type="button"
@@ -173,10 +190,13 @@ const UserFormModal = ({ isOpen, onClose, userToEdit, onSuccess }) => {
               </label>
               <input
                 type="text"
+                disabled={isViewMode} // 🚀 KHÓA ĐIỀU KHIỂN KHI LÀ VIEW MODE
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                placeholder="Enter full name"
-                className="w-full bg-[#0b0f19] border border-[#232d42] focus:border-blue-500/50 text-sm text-gray-100 rounded-xl px-4 py-3 focus:outline-none transition-all placeholder-gray-600"
+                placeholder={
+                  isViewMode ? "Chưa cập nhật tên" : "Enter full name"
+                }
+                className="w-full bg-[#0b0f19] border border-[#232d42] focus:border-blue-500/50 text-sm text-gray-100 rounded-xl px-4 py-3 focus:outline-none transition-all placeholder-gray-600 disabled:opacity-70 disabled:cursor-not-allowed"
               />
             </div>
 
@@ -185,33 +205,43 @@ const UserFormModal = ({ isOpen, onClose, userToEdit, onSuccess }) => {
               <label className="text-[10px] font-bold tracking-widest text-gray-400 uppercase">
                 Email Address
               </label>
-              {/* 🚀 ĐÃ SỬA: Loại bỏ disabled={isEditMode}, cho phép sửa đổi email thoải mái theo mong muốn */}
               <input
                 type="email"
                 required
+                disabled={isViewMode} // 🚀 KHÓA ĐIỀU KHIỂN KHI LÀ VIEW MODE
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="name@company.com"
-                className="w-full bg-[#0b0f19] border border-[#232d42] focus:border-blue-500/50 text-sm text-gray-100 rounded-xl px-4 py-3 focus:outline-none transition-all placeholder-gray-600 font-mono"
+                className="w-full bg-[#0b0f19] border border-[#232d42] focus:border-blue-500/50 text-sm text-gray-100 rounded-xl px-4 py-3 focus:outline-none transition-all placeholder-gray-600 font-mono disabled:opacity-70 disabled:cursor-not-allowed"
               />
             </div>
 
-            {/* Trường 3: Dropdown Groups (Hiển thị dài 5 nhóm thoải mái) */}
+            {/* Trường 3: Dropdown Groups */}
             <div className="space-y-2 relative" ref={dropdownRef}>
               <label className="text-[10px] font-bold tracking-widest text-gray-400 uppercase">
-                {isEditMode
-                  ? "Groups (Multi-select)"
-                  : "Assign to Group (Optional)"}
+                {isViewMode
+                  ? "Belongs to Groups"
+                  : isEditMode
+                    ? "Groups (Multi-select)"
+                    : "Assign to Group (Optional)"}
               </label>
 
               <div
                 onClick={toggleDropdown}
-                className="w-full bg-[#0b0f19] border border-[#232d42] hover:border-gray-700 rounded-xl px-3 py-2.5 flex flex-wrap items-center justify-between gap-1.5 min-h-[46px] cursor-pointer transition-all"
+                className={`w-full bg-[#0b0f19] border border-[#232d42] rounded-xl px-3 py-2.5 flex flex-wrap items-center justify-between gap-1.5 min-h-[46px] transition-all ${
+                  isViewMode
+                    ? "cursor-not-allowed opacity-70"
+                    : "hover:border-gray-700 cursor-pointer"
+                }`}
               >
                 <div className="flex flex-wrap gap-1.5 items-center flex-1">
                   {selectedGroups.length === 0 ? (
                     <span className="text-sm text-gray-600 pl-1">
-                      {isEditMode ? "Add group..." : "Select a group"}
+                      {isViewMode
+                        ? "Không thuộc nhóm quyền nào"
+                        : isEditMode
+                          ? "Add group..."
+                          : "Select a group"}
                     </span>
                   ) : (
                     selectedGroups.map((g) => (
@@ -220,25 +250,30 @@ const UserFormModal = ({ isOpen, onClose, userToEdit, onSuccess }) => {
                         className="flex items-center gap-1.5 bg-blue-600/10 border border-blue-500/20 text-xs font-bold text-blue-400 px-2.5 py-1 rounded-lg animate-fade-in"
                       >
                         <span>{g.name}</span>
-                        <button
-                          type="button"
-                          onClick={(e) => removeGroupChip(g.id, e)}
-                          className="text-blue-400/60 hover:text-red-400 transition-colors"
-                        >
-                          <FiX size={12} />
-                        </button>
+                        {/* 🚀 CHỈ HIỆN NÚT XÓA CHIP NẾU KHÔNG PHẢI CHẾ ĐỘ XEM */}
+                        {!isViewMode && (
+                          <button
+                            type="button"
+                            onClick={(e) => removeGroupChip(g.id, e)}
+                            className="text-blue-400/60 hover:text-red-400 transition-colors cursor-pointer"
+                          >
+                            <FiX size={12} />
+                          </button>
+                        )}
                       </div>
                     ))
                   )}
                 </div>
-                <FiChevronDown
-                  size={16}
-                  className={`text-gray-500 transition-transform duration-200 ${isDropdownOpen ? "rotate-180 text-blue-500" : ""}`}
-                />
+                {/* 🚀 ẨN ICON MŨI TÊN CHEVRON KHI Ở CHẾ ĐỘ XEM CHI TIẾT */}
+                {!isViewMode && (
+                  <FiChevronDown
+                    size={16}
+                    className={`text-gray-500 transition-transform duration-200 ${isDropdownOpen ? "rotate-180 text-blue-500" : ""}`}
+                  />
+                )}
               </div>
 
-              {/* 🚀 ĐÃ NÂNG CẤP DÀI RA CHUẨN DESIGN: max-h-[220px] giúp chứa gọn 5 dòng mượt mà */}
-              {isDropdownOpen && (
+              {isDropdownOpen && !isViewMode && (
                 <div
                   onScroll={handleDropdownScroll}
                   className="absolute left-0 right-0 mt-1 max-h-[220px] overflow-y-auto bg-[#161b26] border border-[#232d42] rounded-xl shadow-2xl z-[55] divide-y divide-[#232d42]/60 animate-fade-in"
@@ -280,48 +315,63 @@ const UserFormModal = ({ isOpen, onClose, userToEdit, onSuccess }) => {
               )}
             </div>
 
-            {/* Chân thanh cố định nút hành động */}
-            <div className="absolute bottom-0 left-0 right-0 border-t border-[#232d42] flex justify-end items-center gap-3 bg-[#111622]/90 rounded-b-2xl px-6 py-4">
-              <button
-                type="button"
-                onClick={handleCancelWithCheck}
-                disabled={isSubmitting}
-                className="px-5 py-2.5 text-xs font-bold text-gray-400 hover:text-white border border-[#232d42] bg-[#161b26] hover:bg-gray-800 rounded-xl transition-all disabled:opacity-30 cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={isSubmitting || !email.trim()}
-                className="px-5 py-2.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all shadow-lg shadow-blue-600/10 disabled:bg-gray-800 disabled:text-gray-600 disabled:shadow-none cursor-pointer flex items-center gap-2 min-w-[120px] justify-center"
-              >
-                {isSubmitting ? (
-                  <>
-                    <FiLoader size={14} className="animate-spin" />
-                    <span>Processing...</span>
-                  </>
-                ) : (
-                  <>
-                    <span>{isEditMode ? "Update User" : "Create User"}</span>
-                    <span>{isEditMode ? "✓" : "→"}</span>
-                  </>
-                )}
-              </button>
+            {/* 🚀 THANH CHÂN TRANG ĐỘNG: Hoán đổi bộ nút theo chế độ */}
+            <div className="absolute bottom-0 left-0 right-0 border-t border-[#232d42] flex justify-end items-center bg-[#111622]/90 rounded-b-2xl px-6 py-4">
+              {isViewMode ? (
+                // KỊCH BẢN VIEW: Chỉ có duy nhất một nút Đóng bản rộng gọn gàng
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="px-6 py-2 text-xs font-bold text-white bg-[#161b26] border border-[#232d42] hover:bg-gray-800 rounded-xl transition-all cursor-pointer shadow-md"
+                >
+                  Đóng cửa sổ
+                </button>
+              ) : (
+                // KỊCH BẢN ADD / UPDATE: Giữ nguyên cặp đôi nút thao tác dữ liệu
+                <>
+                  <button
+                    type="button"
+                    onClick={handleCancelWithCheck}
+                    disabled={isSubmitting}
+                    className="px-5 py-2.5 text-xs font-bold text-gray-400 hover:text-white border border-[#232d42] bg-[#161b26] hover:bg-gray-800 rounded-xl transition-all disabled:opacity-30 cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSubmitting || !email.trim()}
+                    className="px-5 py-2.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all shadow-lg shadow-blue-600/10 disabled:bg-gray-800 disabled:text-gray-600 disabled:shadow-none cursor-pointer flex items-center gap-2 min-w-[120px] justify-center"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <FiLoader size={14} className="animate-spin" />
+                        <span>Processing...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>
+                          {isEditMode ? "Update User" : "Create User"}
+                        </span>
+                        <span>{isEditMode ? "✓" : "→"}</span>
+                      </>
+                    )}
+                  </button>
+                </>
+              )}
             </div>
           </form>
         </div>
       </div>
 
-      {/* 🚀 LẮP ĐẶT COMPONENT XÁC NHẬN CUSTOM KHI BẤM HUỶ FORM */}
       <ConfirmModal
         isOpen={isConfirmCancelOpen}
         onClose={() => setIsConfirmCancelOpen(false)}
-        onConfirm={onClose} // Người dùng đồng ý -> Đóng toàn bộ Form Modal lớn
+        onConfirm={onClose}
         title="Xác nhận hủy tác vụ"
         message="Hệ thống phát hiện bạn đang nhập dở dữ liệu. Bạn có chắc chắn muốn hủy bỏ tiến trình thêm/sửa thành viên này không?"
         confirmText="Đồng ý hủy"
         cancelText="Tiếp tục nhập"
-        type="warning" // Đổi màu vàng cảnh báo nhẹ nhàng thân thiện
+        type="warning"
       />
     </>
   );

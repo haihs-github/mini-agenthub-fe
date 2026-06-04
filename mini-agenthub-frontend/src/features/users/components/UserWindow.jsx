@@ -19,11 +19,11 @@ const UserWindow = () => {
   const [totalItems, setTotalItems] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
 
-  // 🚀 STATE ĐIỀU KHIỂN POPUP ADD / UPDATE USER
+  // State điều khiển Modal nâng cao
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [userToEdit, setUserToEdit] = useState(null); // Nếu rỗng là Add, nếu có Object là Update
+  const [userToEdit, setUserToEdit] = useState(null);
+  const [isViewMode, setIsViewMode] = useState(false); // 🚀 STATE CHỐT CHẶN CHẾ ĐỘ XEM CHI TIẾT
 
-  // Hàm gọi API tải dữ liệu (bọc useCallback để tránh loop re-render)
   const loadUsers = useCallback(async () => {
     if (!hasPermission) return;
     setIsLoading(true);
@@ -43,15 +43,24 @@ const UserWindow = () => {
     loadUsers();
   }, [loadUsers]);
 
-  // Hành động mở popup để Thêm mới người dùng
+  // Luồng 1: Mở chế độ ADD USER
   const handleOpenAddModal = () => {
-    setUserToEdit(null); // Gỡ dữ liệu cũ
+    setUserToEdit(null);
+    setIsViewMode(false); // Reset cờ view
     setIsModalOpen(true);
   };
 
-  // Hành động mở popup để Sửa người dùng cũ
+  // Luồng 2: Mở chế độ UPDATE USER
   const handleOpenEditModal = (user) => {
-    setUserToEdit(user); // Nạp đối tượng đích cần sửa vào state
+    setUserToEdit(user);
+    setIsViewMode(false); // Reset cờ view
+    setIsModalOpen(true);
+  };
+
+  // Luồng 3: Mở chế độ VIEW USER DETAILS
+  const handleOpenViewModal = (user) => {
+    setUserToEdit(user);
+    setIsViewMode(true); // 🚀 BẬT CỜ CHẾ ĐỘ XEM READ-ONLY
     setIsModalOpen(true);
   };
 
@@ -79,17 +88,15 @@ const UserWindow = () => {
   return (
     <div className="flex-1 h-full overflow-y-auto bg-[#0b0f19] px-8 py-8 flex flex-col justify-between">
       <div className="w-full max-w-6xl mx-auto flex-1">
-        {/* THANH ĐẦU TRANG: Đón nhận sự kiện Click Add User */}
         <UserHeader onAddClick={handleOpenAddModal} />
 
-        {/* BẢNG DANH SÁCH: Đón nhận sự kiện Click nút Sửa bút chì */}
         <UserTable
           users={users}
           isLoading={isLoading}
           onEditClick={handleOpenEditModal}
+          onViewClick={handleOpenViewModal} // 🚀 GẮN SỰ KIỆN XEM CHO BẢNG
         />
 
-        {/* THANH PHÂN TRANG */}
         <UserPagination
           currentPage={currentPage}
           totalPages={totalPages}
@@ -98,12 +105,13 @@ const UserWindow = () => {
         />
       </div>
 
-      {/* 🚀 BỘ ĐỊNH VỊ POPUP ĐỒNG BỘ: Tự động lắp ráp form cho cả 2 nghiệp vụ */}
+      {/* POPUP PHÂN PHỐI 3 CHẾ ĐỘ */}
       <UserFormModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         userToEdit={userToEdit}
-        onSuccess={loadUsers} // Ép nổ số làm tươi dữ liệu ngay khi API trả về thành công!
+        isViewMode={isViewMode} // 🚀 TRUYỀN CỜ VÀO ĐỂ FORM TỰ BIẾN ĐỔI UI
+        onSuccess={loadUsers}
       />
     </div>
   );
