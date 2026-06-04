@@ -21,6 +21,7 @@ const UserFormModal = ({
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [selectedGroups, setSelectedGroups] = useState([]);
+  const [permissions, setPermissions] = useState([]); // 🚀 MỚI: State lưu trữ mảng quyền hạn của user
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // State kiểm soát dropdown nhóm
@@ -38,15 +39,17 @@ const UserFormModal = ({
       setFullName(userToEdit.fullname || "");
       setEmail(userToEdit.email || "");
       setSelectedGroups(userToEdit.groups || []);
+      setPermissions(userToEdit.permissions || []); // 🚀 MỚI: Đọc mảng permissions từ object Backend trả về
     } else {
       setFullName("");
       setEmail("");
       setSelectedGroups([]);
+      setPermissions([]); // Reset mảng quyền
     }
   }, [userToEdit, isEditMode, isViewMode, isOpen]);
 
   useEffect(() => {
-    if (isViewMode) return; // Chế độ xem không cần lắng nghe click ngoài của dropdown
+    if (isViewMode) return;
     const handleOutsideClick = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
         setIsDropdownOpen(false);
@@ -79,7 +82,7 @@ const UserFormModal = ({
   };
 
   const toggleDropdown = () => {
-    if (isViewMode) return; // 🚀 KHÓA CLICK: Đang xem chi tiết thì không cho mở dropdown
+    if (isViewMode) return;
     if (!isDropdownOpen && groups.length === 0) {
       setGroupHasMore(true);
       fetchGroups(1, false);
@@ -108,13 +111,13 @@ const UserFormModal = ({
 
   const removeGroupChip = (groupId, e) => {
     e.stopPropagation();
-    if (isViewMode) return; // Khóa gỡ chip ở chế độ xem
+    if (isViewMode) return;
     setSelectedGroups((prev) => prev.filter((g) => g.id !== groupId));
   };
 
   const handleCancelWithCheck = () => {
     if (isViewMode) {
-      onClose(); // Xem xong bấm đóng luôn, không cần hỏi han xác nhận hoang mang
+      onClose();
       return;
     }
     const hasData =
@@ -156,7 +159,6 @@ const UserFormModal = ({
     }
   };
 
-  // Tính toán tiêu đề động tương ứng
   const modalTitle = isViewMode
     ? "User Details"
     : isEditMode
@@ -166,9 +168,9 @@ const UserFormModal = ({
   return (
     <>
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm select-none animate-fade-in">
-        <div className="w-full max-w-lg bg-[#161b26] border border-[#232d42] rounded-2xl shadow-2xl flex flex-col relative">
+        <div className="w-full max-w-lg bg-[#161b26] border border-[#232d42] rounded-2xl shadow-2xl flex flex-col relative max-h-[90vh]">
           {/* Đầu popup */}
-          <div className="px-6 py-4 border-b border-[#232d42] flex justify-between items-center bg-[#111622]/50 rounded-t-2xl">
+          <div className="px-6 py-4 border-b border-[#232d42] flex justify-between items-center bg-[#111622]/50 rounded-t-2xl shrink-0">
             <h3 className="text-md font-bold text-white tracking-wide">
               {modalTitle}
             </h3>
@@ -182,7 +184,10 @@ const UserFormModal = ({
           </div>
 
           {/* Thân popup */}
-          <form onSubmit={handleSubmit} className="p-6 space-y-5 flex-1 pb-24">
+          <form
+            onSubmit={handleSubmit}
+            className="p-6 space-y-5 flex-1 overflow-y-auto pb-24"
+          >
             {/* Trường 1: Full Name */}
             <div className="space-y-2">
               <label className="text-[10px] font-bold tracking-widest text-gray-400 uppercase">
@@ -190,7 +195,7 @@ const UserFormModal = ({
               </label>
               <input
                 type="text"
-                disabled={isViewMode} // 🚀 KHÓA ĐIỀU KHIỂN KHI LÀ VIEW MODE
+                disabled={isViewMode}
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 placeholder={
@@ -208,7 +213,7 @@ const UserFormModal = ({
               <input
                 type="email"
                 required
-                disabled={isViewMode} // 🚀 KHÓA ĐIỀU KHIỂN KHI LÀ VIEW MODE
+                disabled={isViewMode}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="name@company.com"
@@ -250,7 +255,6 @@ const UserFormModal = ({
                         className="flex items-center gap-1.5 bg-blue-600/10 border border-blue-500/20 text-xs font-bold text-blue-400 px-2.5 py-1 rounded-lg animate-fade-in"
                       >
                         <span>{g.name}</span>
-                        {/* 🚀 CHỈ HIỆN NÚT XÓA CHIP NẾU KHÔNG PHẢI CHẾ ĐỘ XEM */}
                         {!isViewMode && (
                           <button
                             type="button"
@@ -264,7 +268,6 @@ const UserFormModal = ({
                     ))
                   )}
                 </div>
-                {/* 🚀 ẨN ICON MŨI TÊN CHEVRON KHI Ở CHẾ ĐỘ XEM CHI TIẾT */}
                 {!isViewMode && (
                   <FiChevronDown
                     size={16}
@@ -315,10 +318,34 @@ const UserFormModal = ({
               )}
             </div>
 
-            {/* 🚀 THANH CHÂN TRANG ĐỘNG: Hoán đổi bộ nút theo chế độ */}
-            <div className="absolute bottom-0 left-0 right-0 border-t border-[#232d42] flex justify-end items-center bg-[#111622]/90 rounded-b-2xl px-6 py-4">
+            {/* 🚀 TRƯỜNG ĐƯỢC THÊM MỚI: Hệ thống quyền hạn hạt nhân (Chỉ xuất hiện ở chế độ Xem chi tiết) */}
+            {isViewMode && (
+              <div className="space-y-2 animate-fade-in">
+                <label className="text-[10px] font-bold tracking-widest text-gray-400 uppercase">
+                  Hệ thống quyền hạn (Permissions)
+                </label>
+                <div className="w-full bg-[#0b0f19] border border-[#232d42] rounded-xl px-3 py-3 flex flex-wrap gap-2 min-h-[46px] max-h-36 overflow-y-auto cursor-not-allowed opacity-80">
+                  {permissions.length === 0 ? (
+                    <span className="text-sm text-gray-600 pl-1 italic">
+                      Tài khoản này chưa sở hữu quyền hạn cá biệt nào
+                    </span>
+                  ) : (
+                    permissions.map((perm, idx) => (
+                      <div
+                        key={idx}
+                        className="bg-emerald-600/10 border border-emerald-500/20 text-[11px] font-mono font-bold text-emerald-400 px-2.5 py-1 rounded-lg shadow-sm"
+                      >
+                        {perm}
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Thanh chân trang cố định nút hành động */}
+            <div className="absolute bottom-0 left-0 right-0 border-t border-[#232d42] flex justify-end items-center bg-[#111622]/90 rounded-b-2xl px-6 py-4 shrink-0 z-10">
               {isViewMode ? (
-                // KỊCH BẢN VIEW: Chỉ có duy nhất một nút Đóng bản rộng gọn gàng
                 <button
                   type="button"
                   onClick={onClose}
@@ -327,7 +354,6 @@ const UserFormModal = ({
                   Đóng cửa sổ
                 </button>
               ) : (
-                // KỊCH BẢN ADD / UPDATE: Giữ nguyên cặp đôi nút thao tác dữ liệu
                 <>
                   <button
                     type="button"
