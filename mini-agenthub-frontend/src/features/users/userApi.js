@@ -27,3 +27,10 @@ export const getGroupsApi = async (page = 1, limit = 10) => {
   return response.data;
 };
 // BKAV HaiHS : Lấy danh sách nhóm - end
+
+// BKAV HaiHS : Xóa bỏ người dùng khỏi hệ thống theo ID - start
+export const deleteUserApi = async (id) => {
+  const response = await apiClient.delete(`/users/${id}`);
+  return response.data;
+};
+// BKAV HaiHS : Xóa bỏ người dùng khỏi hệ thống theo ID - end

@@ -2,7 +2,13 @@ import React, { useState, useEffect } from "react";
 import { FiEye, FiEdit2, FiTrash2 } from "react-icons/fi";
 
 // BKAV HaiHS : Component Bảng hiển thị danh sách user - start
-const UserTable = ({ users, isLoading, onEditClick, onViewClick }) => {
+const UserTable = ({
+  users,
+  isLoading,
+  onEditClick,
+  onViewClick,
+  onDeleteClick,
+}) => {
   // State lưu trữ danh sách ID các user được chọn
   const [selectedIds, setSelectedIds] = useState([]);
 
@@ -149,6 +155,7 @@ const UserTable = ({ users, isLoading, onEditClick, onViewClick }) => {
                         </button>
                         <button
                           title="Xóa tài khoản"
+                          onClick={() => onDeleteClick(user)}
                           className="p-2 rounded-xl text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition-all cursor-pointer"
                         >
                           <FiTrash2 size={14} />
