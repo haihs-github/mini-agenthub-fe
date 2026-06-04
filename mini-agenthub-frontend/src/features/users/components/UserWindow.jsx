@@ -7,6 +7,7 @@ import UserPagination from "./UserPagination";
 import UserFormModal from "./UserFormModal";
 import { FiLock } from "react-icons/fi";
 
+// BKAV HaiHS : Component chính chứa đựng toàn bộ trang quản lý user, điều phối việc hiển thị header, bảng danh sách, phân trang và popup form - start
 const UserWindow = () => {
   const { permissions } = useAuth();
   const hasPermission = permissions?.includes("USER_R");
@@ -107,5 +108,6 @@ const UserWindow = () => {
     </div>
   );
 };
+// BKAV HaiHS : Component chính chứa đựng toàn bộ trang quản lý user, điều phối việc hiển thị header, bảng danh sách, phân trang và popup form - end
 
 export default UserWindow;
