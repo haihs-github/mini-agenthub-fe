@@ -12,10 +12,18 @@ import { FiLock } from "react-icons/fi";
 // BKAV HaiHS : Component chính chứa đựng toàn bộ trang quản lý user, điều phối việc hiển thị header, bảng danh sách, phân trang và popup form - start
 const UserWindow = () => {
   const { permissions } = useAuth();
-  const { showToast } = useToast();
+  const userPermissions = permissions || [];
 
-  // Kiểm tra quyền đọc bảng
-  const hasPermissionR = permissions?.includes("USER_R");
+  // LỚP BẢO VỆ 1: Kiểm tra xem tài khoản có sở hữu ít nhất một quyền USER_ nào không
+  const hasAnyUserPermission = userPermissions.some((p) =>
+    p.startsWith("USER_"),
+  );
+
+  // LỚP BẢO VỆ 2: Bóc tách bộ tứ cờ quyền hạn để phân phối xuống UI con
+  const canCreate = userPermissions.includes("USER_C");
+  const canRead = userPermissions.includes("USER_R");
+  const canUpdate = userPermissions.includes("USER_U");
+  const canDelete = userPermissions.includes("USER_D");
 
   // Các State quản lý dữ liệu bảng
   const [users, setUsers] = useState([]);
@@ -24,18 +32,13 @@ const UserWindow = () => {
   const [totalItems, setTotalItems] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
 
-  // State điều khiển Modal Add/Edit/View
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [userToEdit, setUserToEdit] = useState(null);
   const [isViewMode, setIsViewMode] = useState(false);
 
-  // STATE ĐIỀU KHIỂN HÀNH VI XÓA USER
-  const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
-  const [userToDelete, setUserToDelete] = useState(null);
-
-  // Hàm tải dữ liệu bảng
   const loadUsers = useCallback(async () => {
-    if (!hasPermissionR) return;
+    // Chỉ kích hoạt gọi API mạng nếu có quyền đọc USER_R, tránh bị Backend từ chối trả về 403
+    if (!canRead) return;
     setIsLoading(true);
     try {
       const res = await getUsersApi(currentPage, 10);
@@ -47,7 +50,7 @@ const UserWindow = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [currentPage, hasPermissionR]);
+  }, [currentPage, canRead]);
 
   useEffect(() => {
     loadUsers();
@@ -71,64 +74,19 @@ const UserWindow = () => {
     setIsModalOpen(true);
   };
 
-  // TRẠM KIỂM SOÁT AN NINH QUYỀN XÓA (USER_D)
-  const handleOpenDeleteConfirm = (user) => {
-    const hasPermissionD = permissions?.includes("USER_D");
-
-    // Yêu cầu 1: Nếu không có quyền USER_D -> Bắn Toast cảnh báo giật mình ngay lập tức và chặn luồng!
-    if (!hasPermissionD) {
-      showToast(
-        "Bạn không có quyền USER_D để thực hiện hành động xóa thành viên này!",
-        "warning",
-      );
-      return;
-    }
-
-    // Nếu có đủ quyền hạn -> Lưu vết đối tượng và mở hộp thoại xác nhận xịn xò lên
-    setUserToDelete(user);
-    setIsConfirmDeleteOpen(true);
-  };
-
-  // LỆNH THỰC THI XÓA KHỎI ĐƯỜNG ỐNG DATABASE CỦA BE
-  const handleExecuteDelete = async () => {
-    if (!userToDelete) return;
-    try {
-      await deleteUserApi(userToDelete.id);
-
-      // Yêu cầu 2: Xóa xong nổ Toast thành công rực rỡ
-      showToast(
-        `Đã xóa thành viên [${userToDelete.fullname || userToDelete.email}] ra khỏi mạng lưới!`,
-        "success",
-      );
-
-      // Yêu cầu 3: Ép bảng cập nhật làm tươi số liệu ngay lập tức mà không cần F5
-      loadUsers();
-    } catch (err) {
-      const errorMsg =
-        err?.response?.data?.message ||
-        "Không thể xóa người dùng do lỗi kết nối hệ thống";
-      showToast(errorMsg, "error");
-    } finally {
-      setUserToDelete(null);
-    }
-  };
-
-  if (!hasPermissionR) {
+  // NẾU KHÔNG CÓ BẤT KỲ QUYỀN USER NÀO -> Khóa cửa không cho vào trang
+  if (!hasAnyUserPermission) {
     return (
       <div className="flex-1 h-full flex flex-col justify-center items-center bg-[#0b0f19] text-center px-6 select-none animate-fade-in">
-        <div className="w-16 h-16 rounded-2xl bg-red-500/10 border border-red-500/20 flex justify-center items-center text-red-500 shadow-lg mb-4 animate-bounce">
+        <div className="w-16 h-16 rounded-2xl bg-red-500/10 border border-red-500/20 flex justify-center items-center text-red-500 shadow-lg mb-4">
           <FiLock size={28} />
         </div>
         <h3 className="text-xl font-bold text-white tracking-wide">
           Truy cập bị từ chối
         </h3>
         <p className="text-sm text-gray-400 mt-2 max-w-sm leading-6">
-          Tài khoản của bạn chưa được cấp phép phân khu bảo mật này. Bạn phải có
-          quyền{" "}
-          <span className="font-mono text-red-400 bg-red-500/5 px-2 py-0.5 rounded border border-red-500/10 font-bold text-xs">
-            USER_R
-          </span>{" "}
-          để truy cập bảng quản lý nhân sự.
+          Tài khoản của bạn không sở hữu bất kỳ quyền hạn nào thuộc phân khu
+          nhân sự để truy cập module này.
         </p>
       </div>
     );
@@ -137,43 +95,38 @@ const UserWindow = () => {
   return (
     <div className="flex-1 h-full overflow-y-auto bg-[#0b0f19] px-8 py-8 flex flex-col justify-between">
       <div className="w-full max-w-6xl mx-auto flex-1">
-        <UserHeader onAddClick={handleOpenAddModal} />
+        {/* Truyền cờ canCreate xuống Header để ẩn/hiện nút Add User */}
+        <UserHeader onAddClick={handleOpenAddModal} canCreate={canCreate} />
 
+        {/* Truyền bộ ba cờ quyền xuống Table để ẩn/hiện các cột hành động tương ứng */}
         <UserTable
           users={users}
           isLoading={isLoading}
           onEditClick={handleOpenEditModal}
           onViewClick={handleOpenViewModal}
-          onDeleteClick={handleOpenDeleteConfirm} // BẮN SỰ KIỆN XÓA XUỐNG BẢNG
+          onDeleteClick={loadUsers} // Tạm thời nạp lại bảng khi trigger xóa từ bên ngoài nếu cần
+          canRead={canRead}
+          canUpdate={canUpdate}
+          canDelete={canDelete}
         />
 
-        <UserPagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          totalItems={totalItems}
-          onPageChange={(targetPage) => setCurrentPage(targetPage)}
-        />
+        {/* Thanh điều hướng phân trang (Chỉ hiện nếu có quyền đọc danh sách) */}
+        {canRead && (
+          <UserPagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            onPageChange={(targetPage) => setCurrentPage(targetPage)}
+          />
+        )}
       </div>
 
-      {/* POPUP THÊM / SỬA / XEM CHI TIẾT */}
       <UserFormModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         userToEdit={userToEdit}
         isViewMode={isViewMode}
         onSuccess={loadUsers}
-      />
-
-      {/* BỘ ĐỊNH VỊ POPUP XÁC NHẬN XÓA DÙNG CHUNG SIÊU TIỆN LỢI */}
-      <ConfirmModal
-        isOpen={isConfirmDeleteOpen}
-        onClose={() => setIsConfirmDeleteOpen(false)}
-        onConfirm={handleExecuteDelete} // Bấm đồng ý sẽ lao thẳng vào hàm gọi API xóa
-        title="Cảnh báo xóa nhân sự"
-        message={`Bạn có chắc chắn muốn xóa vĩnh viễn tài khoản [${userToDelete?.fullname || userToDelete?.email}] khỏi cơ sở dữ liệu hệ thống? Hành động này không thể hoàn tác!`}
-        confirmText="Đồng ý xóa"
-        cancelText="Giữ lại"
-        type="danger" // Hiện màu đỏ rực rỡ cảnh báo nguy hiểm tối cao
       />
     </div>
   );

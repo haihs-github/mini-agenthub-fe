@@ -2,7 +2,7 @@ import React from "react";
 import { FiFilter, FiUserPlus } from "react-icons/fi";
 
 // BKAV HaiHS : Component Chứa tiêu đề module, mô tả hệ thống mạng trí tuệ và cặp đôi nút "Bộ lọc", "Thêm người dùng" - start
-const UserHeader = ({ onAddClick }) => {
+const UserHeader = ({ onAddClick, canCreate }) => {
   return (
     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 select-none">
       <div>
@@ -21,13 +21,15 @@ const UserHeader = ({ onAddClick }) => {
           <FiFilter size={14} />
           <span>Bộ lọc</span>
         </button>
-        <button
-          onClick={onAddClick}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-xs font-bold px-4 py-2.5 rounded-xl text-white transition-all shadow-lg shadow-blue-600/10 cursor-pointer"
-        >
-          <FiUserPlus size={14} />
-          <span>Add User</span>
-        </button>
+        {canCreate && (
+          <button
+            onClick={onAddClick}
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-xs font-bold px-4 py-2.5 rounded-xl text-white transition-all shadow-lg shadow-blue-600/10 cursor-pointer"
+          >
+            <FiUserPlus size={14} />
+            <span>Add User</span>
+          </button>
+        )}
       </div>
     </div>
   );
