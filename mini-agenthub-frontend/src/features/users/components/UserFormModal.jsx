@@ -21,7 +21,7 @@ const UserFormModal = ({
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [selectedGroups, setSelectedGroups] = useState([]);
-  const [permissions, setPermissions] = useState([]); // 🚀 MỚI: State lưu trữ mảng quyền hạn của user
+  const [permissions, setPermissions] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // State kiểm soát dropdown nhóm
@@ -39,12 +39,12 @@ const UserFormModal = ({
       setFullName(userToEdit.fullname || "");
       setEmail(userToEdit.email || "");
       setSelectedGroups(userToEdit.groups || []);
-      setPermissions(userToEdit.permissions || []); // 🚀 MỚI: Đọc mảng permissions từ object Backend trả về
+      setPermissions(userToEdit.permissions || []);
     } else {
       setFullName("");
       setEmail("");
       setSelectedGroups([]);
-      setPermissions([]); // Reset mảng quyền
+      setPermissions([]);
     }
   }, [userToEdit, isEditMode, isViewMode, isOpen]);
 
@@ -167,11 +167,20 @@ const UserFormModal = ({
 
   return (
     <>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm select-none animate-fade-in">
-        <div className="w-full max-w-lg bg-[#161b26] border border-[#232d42] rounded-2xl shadow-2xl flex flex-col relative max-h-[90vh]">
+      {/* MẸO NHỎ: Gài đoạn style cục bộ để bo gọn dẹp thanh cuộn native của trình duyệt trên khay nhóm */}
+      <style>{`
+        .cyber-scrollbar::-webkit-scrollbar { width: 5px; }
+        .cyber-scrollbar::-webkit-scrollbar-track { background: #0b0f19; }
+        .cyber-scrollbar::-webkit-scrollbar-thumb { background: #2d3748; border-radius: 99px; }
+        .cyber-scrollbar::-webkit-scrollbar-thumb:hover { background: #3b82f6; }
+      `}</style>
+
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm select-none animate-fade-in">
+        {/* 🌟 ĐÃ SỬA CHÍNH: overflow-visible giúp các thành phần tự do bay ra ngoài biên ô popup */}
+        <div className="w-full max-w-lg bg-[#161b26] border border-[#232d42] rounded-2xl shadow-2xl flex flex-col relative overflow-visible">
           {/* Đầu popup */}
           <div className="px-6 py-4 border-b border-[#232d42] flex justify-between items-center bg-[#111622]/50 rounded-t-2xl shrink-0">
-            <h3 className="text-md font-bold text-white tracking-wide">
+            <h3 className="text-sm font-bold text-white tracking-wide">
               {modalTitle}
             </h3>
             <button
@@ -183,10 +192,10 @@ const UserFormModal = ({
             </button>
           </div>
 
-          {/* Thân popup */}
+          {/* Thân popup: Hủy bỏ hoàn toàn overflow-y-auto và vị trí ghim tuyệt đối để triệt hạ thanh cuộn kép */}
           <form
             onSubmit={handleSubmit}
-            className="p-6 space-y-5 flex-1 overflow-y-auto pb-24"
+            className="p-6 space-y-5 flex-1 overflow-visible"
           >
             {/* Trường 1: Full Name */}
             <div className="space-y-2">
@@ -222,7 +231,10 @@ const UserFormModal = ({
             </div>
 
             {/* Trường 3: Dropdown Groups */}
-            <div className="space-y-2 relative" ref={dropdownRef}>
+            <div
+              className="space-y-2 relative overflow-visible"
+              ref={dropdownRef}
+            >
               <label className="text-[10px] font-bold tracking-widest text-gray-400 uppercase">
                 {isViewMode
                   ? "Belongs to Groups"
@@ -252,7 +264,7 @@ const UserFormModal = ({
                     selectedGroups.map((g) => (
                       <div
                         key={g.id}
-                        className="flex items-center gap-1.5 bg-blue-600/10 border border-blue-500/20 text-xs font-bold text-blue-400 px-2.5 py-1 rounded-lg animate-fade-in"
+                        className="flex items-center gap-1.5 bg-blue-600/10 border border-blue-500/20 text-xs font-bold text-blue-400 px-2.5 py-1 rounded-lg"
                       >
                         <span>{g.name}</span>
                         {!isViewMode && (
@@ -276,10 +288,11 @@ const UserFormModal = ({
                 )}
               </div>
 
+              {/* 🌟 ĐÃ SỬA CHÍNH: z-[100] siêu cao kết hợp với shadow cực đậm giúp ô nhóm bay tràn ra ngoài mượt mà */}
               {isDropdownOpen && !isViewMode && (
                 <div
                   onScroll={handleDropdownScroll}
-                  className="absolute left-0 right-0 mt-1 max-h-[220px] overflow-y-auto bg-[#161b26] border border-[#232d42] rounded-xl shadow-2xl z-[55] divide-y divide-[#232d42]/60 animate-fade-in"
+                  className="cyber-scrollbar absolute left-0 right-0 mt-1.5 max-h-[210px] overflow-y-auto bg-[#1a202c] border border-[#2d3748] rounded-xl shadow-2xl z-[100] divide-y divide-[#2d3748]/60 animate-fade-in"
                 >
                   {groups.length === 0 && !isLoadingGroups ? (
                     <div className="p-4 text-xs text-gray-500 italic text-center">
@@ -318,13 +331,13 @@ const UserFormModal = ({
               )}
             </div>
 
-            {/* 🚀 TRƯỜNG ĐƯỢC THÊM MỚI: Hệ thống quyền hạn hạt nhân (Chỉ xuất hiện ở chế độ Xem chi tiết) */}
+            {/* Trường 4: Hệ thống quyền hạn hạt nhân (Chỉ hiện ở chế độ xem) */}
             {isViewMode && (
               <div className="space-y-2 animate-fade-in">
                 <label className="text-[10px] font-bold tracking-widest text-gray-400 uppercase">
                   Hệ thống quyền hạn (Permissions)
                 </label>
-                <div className="w-full bg-[#0b0f19] border border-[#232d42] rounded-xl px-3 py-3 flex flex-wrap gap-2 min-h-[46px] max-h-36 overflow-y-auto cursor-not-allowed opacity-80">
+                <div className="cyber-scrollbar w-full bg-[#0b0f19] border border-[#232d42] rounded-xl px-3 py-3 flex flex-wrap gap-2 min-h-[46px] max-h-36 overflow-y-auto cursor-not-allowed opacity-80">
                   {permissions.length === 0 ? (
                     <span className="text-sm text-gray-600 pl-1 italic">
                       Tài khoản này chưa sở hữu quyền hạn cá biệt nào
@@ -343,13 +356,13 @@ const UserFormModal = ({
               </div>
             )}
 
-            {/* Thanh chân trang cố định nút hành động */}
-            <div className="absolute bottom-0 left-0 right-0 border-t border-[#232d42] flex justify-end items-center bg-[#111622]/90 rounded-b-2xl px-6 py-4 shrink-0 z-10">
+            {/* 🌟 ĐÃ SỬA CHÍNH: Đưa chân trang về dạng luồng hiển thị tự nhiên (Block Flow), tạo không gian mở cho dropdown bay ngoài biên */}
+            <div className="pt-6 mt-8 border-t border-[#232d42] flex justify-end items-center gap-3 bg-[#161b26] relative z-10">
               {isViewMode ? (
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-6 py-2 text-xs font-bold text-white bg-[#161b26] border border-[#232d42] hover:bg-gray-800 rounded-xl transition-all cursor-pointer shadow-md"
+                  className="px-6 py-2 text-xs font-bold text-white bg-[#111622] border border-[#232d42] hover:bg-gray-800 rounded-xl transition-all cursor-pointer shadow-md"
                 >
                   Đóng cửa sổ
                 </button>
@@ -359,7 +372,7 @@ const UserFormModal = ({
                     type="button"
                     onClick={handleCancelWithCheck}
                     disabled={isSubmitting}
-                    className="px-5 py-2.5 text-xs font-bold text-gray-400 hover:text-white border border-[#232d42] bg-[#161b26] hover:bg-gray-800 rounded-xl transition-all disabled:opacity-30 cursor-pointer"
+                    className="px-5 py-2.5 text-xs font-bold text-gray-400 hover:text-white border border-[#232d42] bg-[#111622] hover:bg-gray-800 rounded-xl transition-all disabled:opacity-30 cursor-pointer"
                   >
                     Cancel
                   </button>
