@@ -4,14 +4,14 @@ import { getGroupsListApi } from "../groupApi";
 import GroupHeader from "./GroupHeader";
 import GroupTable from "./GroupTable";
 import GroupPagination from "./GroupPagination";
+import GroupFormModal from "./GroupFormModal";
 import { FiLock } from "react-icons/fi";
 
-// BKAV HaiHS: Component chính chứa đựng toàn bộ trang quản lý nhóm - start
+// BKAV HaiHS: Bo dieu phoi trung tam luu tru va tuong tac cua phan he nhom quyen he thong
 const GroupWindow = () => {
   const { permissions } = useAuth();
   const groupPermissions = permissions || [];
 
-  // Luong kiem tra quyen truy cap truyen vao cua tuong tac trang
   const hasAnyGroupPermission = groupPermissions.some((p) =>
     p.startsWith("GROUP_"),
   );
@@ -26,7 +26,10 @@ const GroupWindow = () => {
   const [totalItems, setTotalItems] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Tai toan bo thong tin phan trang group tu mien api mang ve trang thai luu tru
+  // Khai bao trang thai kiem soat hanh vi dong mo hop thoai khoi tao group moi
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+
+  // Tai toan bo thong tin danh sach nhom quyen phan trang tu he thong mang ve
   const loadGroups = useCallback(async () => {
     if (!canRead) return;
     setIsLoading(true);
@@ -46,7 +49,6 @@ const GroupWindow = () => {
     loadGroups();
   }, [loadGroups]);
 
-  // Chan cua giu an toan tuyet doi neu nguoi dung khong nam giữ ma quyen GROUP_ nao
   if (!hasAnyGroupPermission) {
     return (
       <div className="flex-1 h-full flex flex-col justify-center items-center bg-[#0b0f19] text-center px-6 select-none animate-fade-in">
@@ -67,7 +69,11 @@ const GroupWindow = () => {
   return (
     <div className="flex-1 h-full overflow-y-auto bg-[#0b0f19] px-8 py-8 flex flex-col justify-between">
       <div className="w-full max-w-6xl mx-auto flex-1">
-        <GroupHeader onCreateClick={() => {}} canCreate={canCreate} />
+        {/* Gan truc tiep hanh vi mo modal vao su kien click nut tao nhom moi tren thanh tieu de */}
+        <GroupHeader
+          onCreateClick={() => setIsCreateOpen(true)}
+          canCreate={canCreate}
+        />
 
         <GroupTable
           groups={groups}
@@ -90,9 +96,15 @@ const GroupWindow = () => {
           />
         )}
       </div>
+
+      {/* Khai bao linh kien form modal nhan dien su kien thuc thi tai lai thong tin khi tao thanh cong */}
+      <GroupFormModal
+        isOpen={isCreateOpen}
+        onClose={() => setIsCreateOpen(false)}
+        onSuccess={loadGroups}
+      />
     </div>
   );
 };
-// BKAV HaiHS: Component chính chứa đựng toàn bộ trang quản lý nhóm - end
 
 export default GroupWindow;
