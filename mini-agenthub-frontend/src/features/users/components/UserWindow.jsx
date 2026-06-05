@@ -7,6 +7,7 @@ import UserTable from "./UserTable";
 import UserPagination from "./UserPagination";
 import UserFormModal from "./UserFormModal";
 import ConfirmModal from "../../../components/ConfirmModal";
+import BulkAddToGroupModal from "./BulkAddToGroupModal";
 import { FiLock } from "react-icons/fi";
 
 // BKAV HaiHS : Component chính chứa đựng toàn bộ trang quản lý user, điều phối việc hiển thị header, bảng danh sách, phân trang và popup form - start
@@ -22,6 +23,7 @@ const UserWindow = () => {
   const canRead = userPermissions.includes("USER_R");
   const canUpdate = userPermissions.includes("USER_U");
   const canDelete = userPermissions.includes("USER_D");
+  const canAddToGroup = userPermissions.includes("GROUP_ADD_USER"); // Doc ma quyen gop thanh vien vao nhom
 
   const [users, setUsers] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -36,9 +38,9 @@ const UserWindow = () => {
   const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
 
-  // Khai bao cac trang thai kiem soat hanh vi lua chon va xoa hang loat
   const [selectedIds, setSelectedIds] = useState([]);
   const [isConfirmBulkDeleteOpen, setIsConfirmBulkDeleteOpen] = useState(false);
+  const [isBulkGroupOpen, setIsBulkGroupOpen] = useState(false); // Trang thai dong mo cua popup gop nhom hang loat
 
   const loadUsers = useCallback(async () => {
     if (!canRead) return;
@@ -59,7 +61,6 @@ const UserWindow = () => {
     loadUsers();
   }, [loadUsers]);
 
-  // Tu dong xoa sach khay nho lua chon moi khi danh sach nguoi dung hoac trang thay doi
   useEffect(() => {
     setSelectedIds([]);
   }, [users]);
@@ -109,7 +110,6 @@ const UserWindow = () => {
     }
   };
 
-  // Thuc thi lenh xoa song song toan bo cac tai khoan da tich chon qua dau API mang
   const handleExecuteBulkDelete = async () => {
     if (selectedIds.length === 0) return;
     setIsLoading(true);
@@ -129,6 +129,29 @@ const UserWindow = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Kiem tra nghiem ngat ma quyen GROUP_ADD_USER khi nguoi dung nhan vao nut gop nhom hang loat
+  const handleOpenBulkGroupModal = () => {
+    if (!canAddToGroup) {
+      showToast(
+        "Taikhoan cua ban khong co quyen GROUP_ADD_USER de gop thanh vien vao nhom!",
+        "warning",
+      );
+      return;
+    }
+    setIsBulkGroupOpen(true);
+  };
+
+  // Lay thong tin day du cua nhung user duoc chon tu khay ID phuc vu hien thi chips trong modal
+  const getSelectedUsersData = () => {
+    return users.filter((u) => selectedIds.includes(u.id));
+  };
+
+  // Clear sach khay chon nguoi dung khi gop nhom phia trong thanh cong ruc ro
+  const handleBulkGroupSuccess = () => {
+    setSelectedIds([]);
+    loadUsers();
   };
 
   if (!hasAnyUserPermission) {
@@ -160,6 +183,7 @@ const UserWindow = () => {
           onViewClick={handleOpenViewModal}
           onDeleteClick={handleOpenDeleteConfirm}
           onBulkDeleteClick={() => setIsConfirmBulkDeleteOpen(true)}
+          onBulkGroupClick={handleOpenBulkGroupModal} // Gan ham hanh dong kiem tra quyen vao bang bieu con
           selectedIds={selectedIds}
           setSelectedIds={setSelectedIds}
           canRead={canRead}
@@ -185,6 +209,14 @@ const UserWindow = () => {
         onSuccess={loadUsers}
       />
 
+      {/* Linh kien hop thoai gop nhom hang loat va dong bo hoa danh sach chip */}
+      <BulkAddToGroupModal
+        isOpen={isBulkGroupOpen}
+        onClose={() => setIsBulkGroupOpen(false)}
+        selectedUsers={getSelectedUsersData()}
+        onSuccess={handleBulkGroupSuccess}
+      />
+
       <ConfirmModal
         isOpen={isConfirmDeleteOpen}
         onClose={() => setIsConfirmDeleteOpen(false)}
@@ -196,7 +228,6 @@ const UserWindow = () => {
         type="danger"
       />
 
-      {/* MODAL CUSTOM XAC NHAN XOA HANG LOAT NHIEU TAI KHOAN CUNG LUC */}
       <ConfirmModal
         isOpen={isConfirmBulkDeleteOpen}
         onClose={() => setIsConfirmBulkDeleteOpen(false)}

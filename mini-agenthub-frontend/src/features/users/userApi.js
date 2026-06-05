@@ -34,3 +34,12 @@ export const deleteUserApi = async (id) => {
   return response.data;
 };
 // BKAV HaiHS : Xóa bỏ người dùng khỏi hệ thống theo ID - end
+
+// BKAV HaiHS : Gui yeu cau bo sung hang loat nguoi dung vao mot nhom chi dinh - start
+export const bulkAddUsersToGroupApi = async (groupId, userIds) => {
+  const response = await apiClient.post(`/groups/${groupId}/users`, {
+    userIds,
+  });
+  return response.data;
+};
+// BKAV HaiHS : Gui yeu cau bo sung hang loat nguoi dung vao mot nhom chi dinh - end

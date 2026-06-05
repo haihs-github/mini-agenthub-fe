@@ -14,6 +14,7 @@ const UserTable = ({
   canRead,
   canUpdate,
   canDelete,
+  onBulkGroupClick,
 }) => {
   // Xu ly hanh vi tich chon hoac go bo toan bo checkbox tren trang hien tai
   const handleSelectAllToggle = (e) => {
@@ -63,6 +64,7 @@ const UserTable = ({
             <div className="flex items-center gap-4 animate-fade-in">
               <button
                 type="button"
+                onClick={onBulkGroupClick}
                 className="bg-blue-600/10 border border-blue-500/20 text-blue-400 px-3 py-1.5 rounded-xl font-bold text-[10px] tracking-wider uppercase hover:bg-blue-600/20 transition-all cursor-pointer"
               >
                 + Add to Group
