@@ -1,7 +1,7 @@
 import React from "react";
 import { FiEye, FiEdit2, FiTrash2 } from "react-icons/fi";
 
-// BKAV HaiHS: Linh kien bang hien thi nhan su don nhan cac trang thai chon tu Bo chi huy trung tam - start
+// BKAV HaiHS: Component bang hien thi nhan su don nhan cac trang thai chon tu Bo chi huy trung tam - start
 const UserTable = ({
   users,
   isLoading,
@@ -211,6 +211,6 @@ const UserTable = ({
     </div>
   );
 };
-// BKAV HaiHS: Linh kien bang hien thi nhan su don nhan cac trang thai chon tu Bo chi huy trung tam - end
+// BKAV HaiHS: Component bang hien thi nhan su don nhan cac trang thai chon tu Bo chi huy trung tam - end
 
 export default UserTable;
