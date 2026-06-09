@@ -1,6 +1,6 @@
 import React from "react";
 import { FiMessageSquare, FiUsers, FiShield, FiSettings } from "react-icons/fi";
-import { useAuth } from "../../../auth/AuthContext";
+import { useAuth } from "../../features/auth/AuthContext";
 
 // BKAV HaiHS: Component NavigationLinks trong sidebar, hiển thị các liên kết điều hướng đến các phần khác nhau của dashboard dựa trên quyền của người dùng - start
 const NavigationLinks = ({ currentView, onViewChange }) => {

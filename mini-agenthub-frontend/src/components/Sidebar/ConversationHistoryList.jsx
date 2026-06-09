@@ -4,8 +4,8 @@ import { FiPlus, FiAlertTriangle, FiLoader } from "react-icons/fi";
 import {
   updateConversationTitleApi,
   deleteConversationApi,
-} from "../../chatApi";
-import { useToast } from "../../../../components/Toast";
+} from "../../features/chat/chatApi";
+import { useToast } from "../Toast";
 
 // BKAV HaiHS : Component danh sách lịch sử hội thoại trong sidebar - start
 const ConversationHistoryList = ({

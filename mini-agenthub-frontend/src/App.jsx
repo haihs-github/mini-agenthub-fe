@@ -13,7 +13,7 @@ import LoginForm from "./features/auth/components/LoginForm";
 import UserWindow from "./features/users/components/UserWindow";
 // BKAV HaiHS: Import phan he quan ly nhom quyen vao he thong
 import GroupWindow from "./features/groups/components/GroupWindow";
-import Sidebar from "./features/chat/components/Sidebar/SidebarIndex.jsx";
+import Sidebar from "./components/Sidebar/SidebarIndex.jsx";
 import ChatWindow from "./features/chat/components/ChatWindow.jsx";
 import { useChatStream } from "./features/chat/hooks/useChatStream.js";
 

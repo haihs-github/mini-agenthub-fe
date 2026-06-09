@@ -1,5 +1,5 @@
 import React from "react";
-import { useAuth } from "../../../auth/AuthContext";
+import { useAuth } from "../../features/auth/AuthContext";
 import { FiLogOut } from "react-icons/fi";
 
 // BKAV HaiHS : Component widget hiển thị thông tin người dùng và nút đăng xuất ở cuối sidebar - start
