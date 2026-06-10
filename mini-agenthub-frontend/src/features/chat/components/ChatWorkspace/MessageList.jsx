@@ -3,7 +3,7 @@ import { FiLoader } from "react-icons/fi";
 import UserMessageItem from "./UserMessageItem";
 import AIMessageItem from "./AIMessageItem";
 
-// BKAV HaiHS : Component danh sách tin nhắn hỗ trợ phân trang cuộn ngược và đồng bộ ảnh khi refresh trang
+// BKAV HaiHS : Component danh sách tin nhắn hỗ trợ phân trang cuộn ngược và đồng bộ ảnh khi refresh trang - start
 const MessageList = ({
   activeConversationId,
   messages,
@@ -169,5 +169,6 @@ const MessageList = ({
     </div>
   );
 };
+// BKAV HaiHS : Component danh sách tin nhắn hỗ trợ phân trang cuộn ngược và đồng bộ ảnh khi refresh trang - end
 
 export default MessageList;

@@ -11,30 +11,33 @@ import { ToastProvider } from "./components/Toast";
 import AppLayout from "./components/layout/AppLayout";
 import LoginForm from "./features/auth/components/LoginForm";
 import UserWindow from "./features/users/components/UserWindow";
-// BKAV HaiHS: Import phan he quan ly nhom quyen vao he thong
 import GroupWindow from "./features/groups/components/GroupWindow";
 import Sidebar from "./components/Sidebar/SidebarIndex.jsx";
 import ChatWindow from "./features/chat/components/ChatWindow.jsx";
 import { useChatStream } from "./features/chat/hooks/useChatStream.js";
+import SettingsWindow from "./features/settings/components/SettingsWindow.jsx";
 
 function MainAppContent() {
   const chatProps = useChatStream("new-chat");
   const navigate = useNavigate();
   const location = useLocation();
 
-  // BKAV HaiHS: Thiet lap trang thai active cho menu dua tren duong dan hien tai cua trinh duyet
+  // BKAV HaiHS: Cập nhật điều kiện lọc nhận diện trạng thái active cho cả phân hệ cài đặt settings
   const currentView =
     location.pathname === "/dashboard/users"
       ? "users"
       : location.pathname === "/dashboard/groups"
         ? "groups"
-        : "chat";
+        : location.pathname === "/dashboard/settings"
+          ? "settings"
+          : "chat";
 
-  // BKAV HaiHS: Thuc hien be huong url phu hop khi nguoi dung click vao cac muc tren sidebar
+  // BKAV HaiHS: Thực hiện bẻ hướng url phù hợp khi người dùng click vào các mục trên sidebar
   const handleViewChange = (targetView) => {
     if (targetView === "chat") navigate("/dashboard");
     if (targetView === "users") navigate("/dashboard/users");
     if (targetView === "groups") navigate("/dashboard/groups");
+    if (targetView === "settings") navigate("/dashboard/settings");
   };
 
   return (
@@ -70,8 +73,12 @@ function MainAppContent() {
           }
         />
         <Route path="/dashboard/users" element={<UserWindow />} />
-        {/* BKAV HaiHS: Dau noi va mo khoa tuyen duong cho phan he quan ly nhom quyen */}
         <Route path="/dashboard/groups" element={<GroupWindow />} />
+
+        {/* BKAV HaiHS: Khai báo đường dẫn Route riêng biệt dành cho giao diện cấu hình cài đặt tài khoản */}
+        <Route path="/dashboard/settings" element={<SettingsWindow />} />
+
+        {/* BKAV HaiHS: Chuyển tuyến đường nhảy phòng hờ wildcard xuống vị trí cuối cùng trong danh sách */}
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </AppLayout>

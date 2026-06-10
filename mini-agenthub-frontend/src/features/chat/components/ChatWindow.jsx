@@ -3,7 +3,7 @@ import ChatHeader from "./ChatWorkspace/ChatHeader";
 import MessageList from "./ChatWorkspace/MessageList";
 import ChatInputArea from "./ChatWorkspace/ChatInputArea";
 
-// BKAV HaiHS : Component chính của workspace chat, kết hợp header, danh sách tin nhắn và khu vực nhập liệu
+// BKAV HaiHS : Component chính của workspace chat, kết hợp header, danh sách tin nhắn và khu vực nhập liệu - start
 const ChatWindow = ({
   activeConversationId, // Tiếp nhận mã định danh phòng chat hiện tại để phục vụ luồng cuộn phân trang
   messages,
@@ -53,5 +53,6 @@ const ChatWindow = ({
     </div>
   );
 };
+// BKAV HaiHS : Component chính của workspace chat, kết hợp header, danh sách tin nhắn và khu vực nhập liệu - end
 
 export default ChatWindow;
