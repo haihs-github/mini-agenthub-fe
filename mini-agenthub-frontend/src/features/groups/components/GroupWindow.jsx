@@ -6,11 +6,11 @@ import GroupHeader from "./GroupHeader";
 import GroupTable from "./GroupTable";
 import GroupPagination from "./GroupPagination";
 import GroupFormModal from "./GroupFormModal";
-import GroupMembersModal from "./GroupMembersModal"; // Nạp linh kiện quản lý thành viên mới làm vào vùng lõi
+import GroupMembersModal from "./GroupMembersModal";
 import ConfirmModal from "../../../components/ConfirmModal";
 import { FiLock } from "react-icons/fi";
 
-// BKAV HaiHS: Bộ điều phối trung tâm lưu trữ và tương tác của phân hệ nhóm quyền hệ thống
+// BKAV HaiHS: Component đại diện toàn bộ trang quản lý quyền - start
 const GroupWindow = () => {
   const { permissions } = useAuth();
   const { showToast } = useToast();
@@ -33,10 +33,12 @@ const GroupWindow = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [groupToEdit, setGroupToEdit] = useState(null);
 
+  // BKAV HaiHS: Khai báo biến trạng thái điều phối chế độ xem chi tiết không cho sửa
+  const [isViewMode, setIsViewMode] = useState(false);
+
   const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
   const [groupToDelete, setGroupToDelete] = useState(null);
 
-  // Khai báo các trạng thái kiểm soát hành vi mở khay quản lý thành viên nội bộ nhóm
   const [isMembersOpen, setIsMembersOpen] = useState(false);
   const [selectedGroupForMembers, setSelectedGroupForMembers] = useState(null);
 
@@ -59,17 +61,34 @@ const GroupWindow = () => {
     loadGroups();
   }, [loadGroups]);
 
+  // Khởi động mở biểu mẫu ở trạng thái tạo mới hoàn toàn
   const handleOpenCreateModal = () => {
     setGroupToEdit(null);
+    setIsViewMode(false);
     setIsModalOpen(true);
   };
 
+  // Khởi động mở biểu mẫu ở trạng thái chỉnh sửa thông tin nhóm quyền
   const handleOpenEditModal = (group) => {
     setGroupToEdit(group);
+    setIsViewMode(false);
     setIsModalOpen(true);
   };
 
-  // Kích hoạt mở hộp thoại quản lý thành viên nhóm khi click icon đầu người nếu đạt mã quyền GROUP_U
+  // BKAV HaiHS: Hàm mở modal ở trạng thái xem chi tiết đóng băng dữ liệu nếu đạt quyền GROUP_R
+  const handleOpenViewModal = (group) => {
+    if (!canRead) {
+      showToast(
+        "Bạn không có quyền GROUP_R để xem chi tiết nhóm quyền này",
+        "warning",
+      );
+      return;
+    }
+    setGroupToEdit(group);
+    setIsViewMode(true);
+    setIsModalOpen(true);
+  };
+
   const handleOpenMembersModal = (group) => {
     if (!canUpdate) {
       showToast(
@@ -144,8 +163,8 @@ const GroupWindow = () => {
         <GroupTable
           groups={groups}
           isLoading={isLoading}
-          onViewClick={() => {}}
-          onMembersClick={handleOpenMembersModal} // Đấu nối sự kiện click nút hình người vào bảng tổng
+          onViewClick={handleOpenViewModal} // Đấu nối sự kiện click nút chữ i tròn xem chi tiết
+          onMembersClick={handleOpenMembersModal}
           onEditClick={handleOpenEditModal}
           onDeleteClick={handleOpenDeleteConfirm}
           canRead={canRead}
@@ -163,14 +182,15 @@ const GroupWindow = () => {
         )}
       </div>
 
+      {/* Truyền cờ điều hướng isViewMode thông suốt vào cấu trúc biểu mẫu */}
       <GroupFormModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         groupToEdit={groupToEdit}
+        isViewMode={isViewMode}
         onSuccess={loadGroups}
       />
 
-      {/* Nhúng linh kiện hộp thoại quản lý thành viên đồng bộ luồng làm tươi lưới khi có biến động số lượng */}
       <GroupMembersModal
         isOpen={isMembersOpen}
         onClose={() => setIsMembersOpen(false)}
@@ -192,5 +212,6 @@ const GroupWindow = () => {
     </div>
   );
 };
+// BKAV HaiHS: Component đại diện toàn bộ trang quản lý quyền - end
 
 export default GroupWindow;

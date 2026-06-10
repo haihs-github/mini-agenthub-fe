@@ -4,14 +4,20 @@ import { useToast } from "../../../components/Toast";
 import { createGroupApi, updateGroupApi, searchUsersApi } from "../groupApi";
 import ConfirmModal from "../../../components/ConfirmModal";
 
-// BKAV HaiHS: Component form tạo mới và chỉnh sủa nhóm - start
-const GroupFormModal = ({ isOpen, onClose, groupToEdit, onSuccess }) => {
+// BKAV HaiHS: Component Tạo mới, Sửa đổi và Xem chi tiết nhóm quyền - start
+const GroupFormModal = ({
+  isOpen,
+  onClose,
+  groupToEdit,
+  isViewMode = false,
+  onSuccess,
+}) => {
   if (!isOpen) return null;
 
   const { showToast } = useToast();
   const isEditMode = !!groupToEdit;
 
-  // Khai bao cac trang thai giu thong tin co ban cua form ma tran phan quyen
+  // Khai báo các trạng thái giữ thông tin cơ bản của form ma trận phân quyền
   const [name, setName] = useState("");
   const [selectedPermissions, setSelectedPermissions] = useState([]);
   const [members, setMembers] = useState([]);
@@ -19,7 +25,7 @@ const GroupFormModal = ({ isOpen, onClose, groupToEdit, onSuccess }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isConfirmCancelOpen, setIsConfirmCancelOpen] = useState(false);
 
-  // Khai bao cac trang thai phuc vu luong tim kiem nhan su phan trang vo han
+  // Khai báo các trạng thái phục vụ luồng tìm kiếm nhân sự phân trang vô hạn
   const [searchKeyword, setSearchKeyword] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [searchPage, setSearchPage] = useState(1);
@@ -30,7 +36,7 @@ const GroupFormModal = ({ isOpen, onClose, groupToEdit, onSuccess }) => {
   const searchRef = useRef(null);
   const searchTimeoutRef = useRef(null);
 
-  // Mang anh xa ma quyen ma tran cho phan he tai khoan nguoi dung
+  // Mảng ánh xạ mã quyền ma trận cho phân hệ tài khoản người dùng
   const userMatrix = [
     { id: "USER_C", action: "Create", desc: "New Resources" },
     { id: "USER_R", action: "Read", desc: "Resource Data" },
@@ -38,7 +44,7 @@ const GroupFormModal = ({ isOpen, onClose, groupToEdit, onSuccess }) => {
     { id: "USER_D", action: "Delete", desc: "Remove Assets" },
   ];
 
-  // Mang anh xa ma quyen ma tran cho phan he nhom quyen he thong
+  // Mảng ánh xạ mã quyền ma trận cho phân hệ nhóm quyền hệ thống
   const groupMatrix = [
     { id: "GROUP_C", action: "Create", desc: "New Groups / Resources" },
     { id: "GROUP_R", action: "Read", desc: "Group Configuration Data" },
@@ -56,9 +62,9 @@ const GroupFormModal = ({ isOpen, onClose, groupToEdit, onSuccess }) => {
     },
   ];
 
-  // Dong bo du lieu cu len bieu mau form neu dang chay o che do cap nhat thong tin
+  // Đồng bộ dữ liệu cũ lên biểu mẫu form nếu đang chạy ở chế độ cập nhật hoặc xem chi tiết
   useEffect(() => {
-    if (isEditMode && groupToEdit) {
+    if ((isEditMode || isViewMode) && groupToEdit) {
       setName(groupToEdit.name || "");
       setSelectedPermissions(groupToEdit.permissions || []);
       setMembers(groupToEdit.users || groupToEdit.members || []);
@@ -70,10 +76,11 @@ const GroupFormModal = ({ isOpen, onClose, groupToEdit, onSuccess }) => {
     setActiveTab("user");
     setSearchKeyword("");
     setSearchResults([]);
-  }, [groupToEdit, isEditMode, isOpen]);
+  }, [groupToEdit, isEditMode, isViewMode, isOpen]);
 
-  // Tu dong khep lai menu tha xuong khi nguoi dung click chuot ra vung ngoai
+  // Tự động khép lại menu thả xuống khi người dùng click chuột ra vùng ngoài
   useEffect(() => {
+    if (isViewMode) return;
     const handleOutsideClick = (e) => {
       if (searchRef.current && !searchRef.current.contains(e.target)) {
         setIsDropdownOpen(false);
@@ -81,12 +88,12 @@ const GroupFormModal = ({ isOpen, onClose, groupToEdit, onSuccess }) => {
     };
     document.addEventListener("mousedown", handleOutsideClick);
     return () => document.removeEventListener("mousedown", handleOutsideClick);
-  }, []);
+  }, [isViewMode]);
 
-  // Thuc hien truy van luong du lieu tim kiem nhan su tu mien api may chu
+  // Thực hiện truy vấn luồng dữ liệu tìm kiếm nhân sự từ miền api máy chủ
   const executeSearch = useCallback(
     async (keyword, pageNum = 1, isLoadMore = false) => {
-      if (!keyword.trim()) {
+      if (!keyword.trim() || isViewMode) {
         setSearchResults([]);
         setIsDropdownOpen(false);
         return;
@@ -112,11 +119,12 @@ const GroupFormModal = ({ isOpen, onClose, groupToEdit, onSuccess }) => {
         setIsSearching(false);
       }
     },
-    [],
+    [isViewMode],
   );
 
-  // Tre debounce tu dong bat bat cuoc goi api khi dung gop chu 500ms
+  // Trễ debounce tự động bật cuộc gọi api khi dừng gõ chữ 500ms
   useEffect(() => {
+    if (isViewMode) return;
     if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
     if (!searchKeyword.trim()) {
       setSearchResults([]);
@@ -129,9 +137,9 @@ const GroupFormModal = ({ isOpen, onClose, groupToEdit, onSuccess }) => {
     }, 500);
 
     return () => clearTimeout(searchTimeoutRef.current);
-  }, [searchKeyword, executeSearch]);
+  }, [searchKeyword, executeSearch, isViewMode]);
 
-  // Cuon xuong day de tai thong tin trang nhan su tiep theo trong dropdown
+  // Cuộn xuống đáy để tải thông tin trang nhân sự tiếp theo trong dropdown
   const handleSearchScroll = (e) => {
     const { scrollTop, clientHeight, scrollHeight } = e.currentTarget;
     if (
@@ -143,8 +151,9 @@ const GroupFormModal = ({ isOpen, onClose, groupToEdit, onSuccess }) => {
     }
   };
 
-  // Dua thong tin nguoi dung vao mang thanh vien va lam sach thanh tim kiem
+  // Đưa thông tin người dùng vào mảng thành viên và làm sạch thanh tìm kiếm
   const handleSelectUser = (user) => {
+    if (isViewMode) return;
     if (members.some((m) => m.id === user.id)) {
       showToast(
         "Nhân sự này đã tồn tại trong danh sách thành viên nhóm",
@@ -161,13 +170,15 @@ const GroupFormModal = ({ isOpen, onClose, groupToEdit, onSuccess }) => {
     setIsDropdownOpen(false);
   };
 
-  // Go bo mot chip tag thanh vien ra khoi bo khung luu tru
+  // Gỡ bỏ một chip tag thành viên ra khỏi bộ khung lưu trữ
   const handleRemoveMember = (userId) => {
+    if (isViewMode) return;
     setMembers((prev) => prev.filter((m) => m.id !== userId));
   };
 
-  // Tich chon hoac hủy tich ma quyen ma tran ma khong gay anh huong tab doi dien
+  // Tích chọn hoặc hủy tích mã quyền ma trận mà không gây ảnh hưởng tab đối diện
   const handleTogglePermission = (permId) => {
+    if (isViewMode) return;
     setSelectedPermissions((prev) =>
       prev.includes(permId)
         ? prev.filter((p) => p !== permId)
@@ -175,8 +186,12 @@ const GroupFormModal = ({ isOpen, onClose, groupToEdit, onSuccess }) => {
     );
   };
 
-  // Kiem tra du lieu nhap do de canh bao xac nhan khi click nut huy hoac close
+  // Kiểm tra dữ liệu nhập dở để cảnh báo xác nhận khi click nút hủy hoặc đóng popup
   const handleCancelWithCheck = () => {
+    if (isViewMode) {
+      onClose();
+      return;
+    }
     const hasData =
       name.trim() || selectedPermissions.length > 0 || members.length > 0;
     if (hasData) {
@@ -186,10 +201,10 @@ const GroupFormModal = ({ isOpen, onClose, groupToEdit, onSuccess }) => {
     }
   };
 
-  // Gui payload dact trung len he thong kem co che khong xoa form neu trung ten nhom
+  // Gửi payload đặc trưng lên hệ thống kiểm soát an ninh đầu API
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!name.trim() || isSubmitting) return;
+    if (isViewMode || !name.trim() || isSubmitting) return;
 
     setIsSubmitting(true);
     const payload = {
@@ -222,10 +237,18 @@ const GroupFormModal = ({ isOpen, onClose, groupToEdit, onSuccess }) => {
   };
 
   const currentMatrix = activeTab === "user" ? userMatrix : groupMatrix;
-  const modalTitle = isEditMode ? "Update Group" : "Create New Group";
-  const modalSubtitle = isEditMode
-    ? "Modify identity and access control for this group."
-    : "Define identity and access control for your new workspace.";
+
+  // BKAV HaiHS: Tính toán động tiêu đề và mô tả phụ dựa vào trạng thái truyền vào của cờ isViewMode
+  const modalTitle = isViewMode
+    ? "Group Details"
+    : isEditMode
+      ? "Update Group Details"
+      : "Create New Group";
+  const modalSubtitle = isViewMode
+    ? "View configuration and integrated permissions matrix for this group."
+    : isEditMode
+      ? "Modify identity and access control for this group."
+      : "Define identity and access control for your new workspace.";
 
   return (
     <>
@@ -238,7 +261,7 @@ const GroupFormModal = ({ isOpen, onClose, groupToEdit, onSuccess }) => {
 
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm select-none animate-fade-in">
         <div className="w-full max-w-xl bg-[#161b26] border border-[#232d42] rounded-2xl shadow-2xl flex flex-col relative overflow-visible">
-          {/* Dau popup tieu de va mo ta chi tiet */}
+          {/* Đầu popup tiêu đề và mô tả chi tiết */}
           <div className="px-6 py-5 border-b border-[#232d42] flex justify-between items-start bg-[#111622]/30 rounded-t-2xl relative">
             <div className="space-y-1">
               <h3 className="text-md font-bold text-white tracking-wide">
@@ -261,7 +284,7 @@ const GroupFormModal = ({ isOpen, onClose, groupToEdit, onSuccess }) => {
             onSubmit={handleSubmit}
             className="p-6 space-y-6 flex-1 overflow-visible"
           >
-            {/* KHỐI 1: IDENTITY - Thiet ke hang ngang dong phang Grid an khop 100% anh mau */}
+            {/* KHỐI 1: IDENTITY */}
             <div className="space-y-2.5">
               <label className="text-[10px] font-mono font-bold tracking-widest text-blue-400/90 uppercase">
                 Identity
@@ -274,14 +297,14 @@ const GroupFormModal = ({ isOpen, onClose, groupToEdit, onSuccess }) => {
                   <input
                     type="text"
                     required
+                    disabled={isViewMode}
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="e.g. Quantum Research Team"
-                    className="w-full bg-[#0b0f19] border border-[#232d42] focus:border-blue-500/40 text-sm text-gray-100 rounded-xl px-4 py-2.5 focus:outline-none transition-all placeholder-gray-600"
+                    className="w-full bg-[#0b0f19] border border-[#232d42] focus:border-blue-500/40 text-sm text-gray-100 rounded-xl px-4 py-2.5 focus:outline-none transition-all placeholder-gray-600 disabled:opacity-60 disabled:cursor-not-allowed"
                   />
                 </div>
 
-                {/* Bo chon Entity Type dang ken nén lien khoi dung chuan anh 1 */}
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-gray-400">
                     Entity Type
@@ -306,7 +329,7 @@ const GroupFormModal = ({ isOpen, onClose, groupToEdit, onSuccess }) => {
               </div>
             </div>
 
-            {/* KHỐI 2: PERMISSIONS MATRIX - Khung ma tran bang hang doc phẳng dung chuan */}
+            {/* KHỐI 2: PERMISSIONS MATRIX */}
             <div className="space-y-2.5">
               <div className="flex justify-between items-center select-none">
                 <label className="text-[10px] font-mono font-bold tracking-widest text-blue-400/90 uppercase">
@@ -341,11 +364,13 @@ const GroupFormModal = ({ isOpen, onClose, groupToEdit, onSuccess }) => {
                             {row.desc}
                           </td>
                           <td className="py-3.5 px-4 text-center">
+                            {/* Khóa khả năng tương tác của ô tích nếu ở chế độ xem thông tin */}
                             <input
                               type="checkbox"
+                              disabled={isViewMode}
                               checked={isGranted}
                               onChange={() => handleTogglePermission(row.id)}
-                              className="w-4 h-4 rounded border-gray-700 bg-gray-900 text-blue-600 focus:ring-0 cursor-pointer mx-auto"
+                              className="w-4 h-4 rounded border-gray-700 bg-gray-900 text-blue-600 focus:ring-0 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed mx-auto"
                             />
                           </td>
                         </tr>
@@ -356,7 +381,7 @@ const GroupFormModal = ({ isOpen, onClose, groupToEdit, onSuccess }) => {
               </div>
             </div>
 
-            {/* KHỐI 3: INITIAL MEMBERS - Chi render phan khung chon va chips neu o che do tao moi */}
+            {/* KHỐI 3: INITIAL MEMBERS */}
             {!isEditMode && (
               <div
                 className="space-y-2.5 relative overflow-visible"
@@ -365,27 +390,31 @@ const GroupFormModal = ({ isOpen, onClose, groupToEdit, onSuccess }) => {
                 <label className="text-[10px] font-mono font-bold tracking-widest text-blue-400/90 uppercase">
                   Initial Members
                 </label>
-                <div className="w-full relative">
-                  <input
-                    type="text"
-                    value={searchKeyword}
-                    onChange={(e) => setSearchKeyword(e.target.value)}
-                    placeholder="Search by name or email..."
-                    className="w-full bg-[#0b0f19] border border-[#232d42] focus:border-blue-500/40 text-sm text-gray-100 rounded-xl pl-11 pr-10 py-3 focus:outline-none transition-all placeholder-gray-600"
-                  />
-                  <FiSearch
-                    size={16}
-                    className="absolute left-4 top-3.5 text-gray-500"
-                  />
-                  {isSearching && (
-                    <FiLoader
-                      size={15}
-                      className="absolute right-4 top-3.5 text-blue-500 animate-spin"
-                    />
-                  )}
-                </div>
 
-                {isDropdownOpen && searchResults.length > 0 && (
+                {/* Ẩn hoàn toàn thanh tìm kiếm nhân sự mới nếu đang ở kịch bản Xem chi tiết */}
+                {!isViewMode && (
+                  <div className="w-full relative">
+                    <input
+                      type="text"
+                      value={searchKeyword}
+                      onChange={(e) => setSearchKeyword(e.target.value)}
+                      placeholder="Search by name or email..."
+                      className="w-full bg-[#0b0f19] border border-[#232d42] focus:border-blue-500/40 text-sm text-gray-100 rounded-xl pl-11 pr-10 py-3 focus:outline-none transition-all placeholder-gray-600"
+                    />
+                    <FiSearch
+                      size={16}
+                      className="absolute left-4 top-3.5 text-gray-500"
+                    />
+                    {isSearching && (
+                      <FiLoader
+                        size={15}
+                        className="absolute right-4 top-3.5 text-blue-500 animate-spin"
+                      />
+                    )}
+                  </div>
+                )}
+
+                {isDropdownOpen && searchResults.length > 0 && !isViewMode && (
                   <div
                     onScroll={handleSearchScroll}
                     className="cyber-scrollbar absolute left-0 right-0 mt-1.5 max-h-[180px] overflow-y-auto bg-[#1a202c] border border-[#232d42] rounded-xl shadow-2xl z-[100] divide-y divide-[#232d42]/60 animate-fade-in"
@@ -404,70 +433,90 @@ const GroupFormModal = ({ isOpen, onClose, groupToEdit, onSuccess }) => {
                         </span>
                       </div>
                     ))}
-                    {isSearching && (
-                      <div className="py-2 flex justify-center items-center text-blue-500 bg-[#0b0f19]/10">
-                        <FiLoader size={12} className="animate-spin" />
-                      </div>
-                    )}
                   </div>
                 )}
 
                 <div className="flex flex-wrap gap-2 pt-1">
-                  {members.map((member) => {
-                    const displayChipName =
-                      member.fullname || member.email?.split("@")[0] || "User";
-                    const avatarCode = displayChipName
-                      .substring(0, 2)
-                      .toUpperCase();
-                    return (
-                      <div
-                        key={member.id}
-                        className="flex items-center gap-2 bg-[#1c2333] border border-[#232d42] text-xs font-semibold text-gray-300 px-2.5 py-1.5 rounded-xl animate-fade-in"
-                      >
-                        <div className="w-4 h-4 rounded-full bg-blue-500/20 text-blue-400 font-bold text-[9px] flex items-center justify-center shrink-0">
-                          {avatarCode}
-                        </div>
-                        <span className="capitalize">{displayChipName}</span>
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveMember(member.id)}
-                          className="text-gray-500 hover:text-red-400 transition-colors cursor-pointer ml-1"
+                  {members.length === 0 ? (
+                    <span className="text-xs text-gray-600 pl-1 italic">
+                      Nhóm quyền này hiện chưa cấu hình thành viên nào
+                    </span>
+                  ) : (
+                    members.map((member) => {
+                      const displayChipName =
+                        member.fullname ||
+                        member.email?.split("@")[0] ||
+                        "User";
+                      const avatarCode = displayChipName
+                        .substring(0, 2)
+                        .toUpperCase();
+                      return (
+                        <div
+                          key={member.id}
+                          className="flex items-center gap-2 bg-[#1c2333] border border-[#2d3952] text-xs font-semibold text-gray-300 px-2.5 py-1.5 rounded-xl animate-fade-in"
                         >
-                          <FiX size={12} />
-                        </button>
-                      </div>
-                    );
-                  })}
+                          <div className="w-4 h-4 rounded-full bg-blue-500/20 text-blue-400 font-bold text-[9px] flex items-center justify-center shrink-0">
+                            {avatarCode}
+                          </div>
+                          <span className="capitalize">{displayChipName}</span>
+
+                          {/* Ẩn hoàn toàn nút xóa dấu X trên kén chip thành viên nếu ở chế độ Xem chi tiết */}
+                          {!isViewMode && (
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveMember(member.id)}
+                              className="text-gray-500 hover:text-red-400 transition-colors cursor-pointer ml-1"
+                            >
+                              <FiX size={12} />
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })
+                  )}
                 </div>
               </div>
             )}
 
-            {/* KHỐI CHÂN TRANG: Nut cam ket hanh dong dang vien nhộng Periwinkle sang trong */}
+            {/* KHỐI CHÂN TRANG */}
             <div className="pt-5 mt-6 border-t border-[#232d42] flex justify-end items-center gap-4 bg-[#161b26]">
-              <button
-                type="button"
-                onClick={handleCancelWithCheck}
-                disabled={isSubmitting}
-                className="text-gray-400 hover:text-white text-xs font-bold px-4 py-2.5 transition-all disabled:opacity-30 cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={isSubmitting || !name.trim()}
-                className="px-6 py-2.5 text-xs font-bold text-[#0f172a] bg-[#93c5fd] hover:bg-[#7dd3fc] rounded-full transition-all shadow-xl shadow-blue-500/5 disabled:bg-gray-800 disabled:text-gray-600 cursor-pointer flex items-center gap-2 justify-center"
-              >
-                {isSubmitting ? (
-                  <>
-                    <FiLoader size={14} className="animate-spin" />
-                    <span>Processing...</span>
-                  </>
-                ) : (
-                  <span>
-                    {isEditMode ? "Update Group" : "Initialize Group"}
-                  </span>
-                )}
-              </button>
+              {/* BKAV HaiHS: Kết xuất nút đóng duy nhất nếu ở chế độ xem thông tin cấu hình thuần túy */}
+              {isViewMode ? (
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="px-6 py-2.5 text-xs font-bold text-white bg-[#1e2533] border border-[#232d42] hover:bg-gray-800 rounded-full transition-all cursor-pointer shadow-md"
+                >
+                  Close Details
+                </button>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    onClick={handleCancelWithCheck}
+                    disabled={isSubmitting}
+                    className="text-gray-400 hover:text-white text-xs font-bold px-4 py-2.5 transition-all disabled:opacity-30 cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSubmitting || !name.trim()}
+                    className="px-6 py-2.5 text-xs font-bold text-[#0f172a] bg-[#93c5fd] hover:bg-[#7dd3fc] rounded-full transition-all shadow-xl shadow-blue-500/5 disabled:bg-gray-800 disabled:text-gray-600 cursor-pointer flex items-center gap-2 justify-center"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <FiLoader size={14} className="animate-spin" />
+                        <span>Processing...</span>
+                      </>
+                    ) : (
+                      <span>
+                        {isEditMode ? "Update Group" : "Initialize Group"}
+                      </span>
+                    )}
+                  </button>
+                </>
+              )}
             </div>
           </form>
         </div>
@@ -486,6 +535,6 @@ const GroupFormModal = ({ isOpen, onClose, groupToEdit, onSuccess }) => {
     </>
   );
 };
-// BKAV HaiHS: Component form tạo mới và chỉnh sủa nhóm - end
+// BKAV HaiHS: Component Tạo mới, Sửa đổi và Xem chi tiết nhóm quyền - end
 
 export default GroupFormModal;
