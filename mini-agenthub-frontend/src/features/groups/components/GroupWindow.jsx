@@ -7,7 +7,7 @@ import GroupPagination from "./GroupPagination";
 import GroupFormModal from "./GroupFormModal";
 import { FiLock } from "react-icons/fi";
 
-// BKAV HaiHS: Bo dieu phoi trung tam luu tru va tuong tac cua phan he nhom quyen he thong
+// BKAV HaiHS: Component chính quản lý cả trang group - start
 const GroupWindow = () => {
   const { permissions } = useAuth();
   const groupPermissions = permissions || [];
@@ -26,10 +26,10 @@ const GroupWindow = () => {
   const [totalItems, setTotalItems] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Khai bao trang thai kiem soat hanh vi dong mo hop thoai khoi tao group moi
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  // Khai bao cac state dieu phoi luong hanh vi tao moi hoac cap nhat thong tin nhom quyen
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [groupToEdit, setGroupToEdit] = useState(null);
 
-  // Tai toan bo thong tin danh sach nhom quyen phan trang tu he thong mang ve
   const loadGroups = useCallback(async () => {
     if (!canRead) return;
     setIsLoading(true);
@@ -48,6 +48,18 @@ const GroupWindow = () => {
   useEffect(() => {
     loadGroups();
   }, [loadGroups]);
+
+  // Kich hoat mo bieu mau trang thai tao moi nhom trong tran phẳng du lieu
+  const handleOpenCreateModal = () => {
+    setGroupToEdit(null);
+    setIsModalOpen(true);
+  };
+
+  // Kich hoat mo bieu mau trang thai cap nhat nap doi tuong nhom gán tu o banh rang
+  const handleOpenEditModal = (group) => {
+    setGroupToEdit(group);
+    setIsModalOpen(true);
+  };
 
   if (!hasAnyGroupPermission) {
     return (
@@ -69,9 +81,8 @@ const GroupWindow = () => {
   return (
     <div className="flex-1 h-full overflow-y-auto bg-[#0b0f19] px-8 py-8 flex flex-col justify-between">
       <div className="w-full max-w-6xl mx-auto flex-1">
-        {/* Gan truc tiep hanh vi mo modal vao su kien click nut tao nhom moi tren thanh tieu de */}
         <GroupHeader
-          onCreateClick={() => setIsCreateOpen(true)}
+          onCreateClick={handleOpenCreateModal}
           canCreate={canCreate}
         />
 
@@ -80,7 +91,7 @@ const GroupWindow = () => {
           isLoading={isLoading}
           onViewClick={() => {}}
           onMembersClick={() => {}}
-          onEditClick={() => {}}
+          onEditClick={handleOpenEditModal}
           onDeleteClick={() => {}}
           canRead={canRead}
           canUpdate={canUpdate}
@@ -97,14 +108,16 @@ const GroupWindow = () => {
         )}
       </div>
 
-      {/* Khai bao linh kien form modal nhan dien su kien thuc thi tai lai thong tin khi tao thanh cong */}
+      {/* Khoi component modal da nang don nhan dong thoi trang thai tao moi hoac chinh sua */}
       <GroupFormModal
-        isOpen={isCreateOpen}
-        onClose={() => setIsCreateOpen(false)}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        groupToEdit={groupToEdit}
         onSuccess={loadGroups}
       />
     </div>
   );
 };
+// BKAV HaiHS: Component chính quản lý cả trang group - end
 
 export default GroupWindow;

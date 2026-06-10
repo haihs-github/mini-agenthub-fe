@@ -4,7 +4,7 @@ import { useToast } from "../../../components/Toast";
 import { createGroupApi, updateGroupApi, searchUsersApi } from "../groupApi";
 import ConfirmModal from "../../../components/ConfirmModal";
 
-// BKAV HaiHS: componment tao va sua quyen nhom - start
+// BKAV HaiHS: Component form tạo mới và chỉnh sủa nhóm - start
 const GroupFormModal = ({ isOpen, onClose, groupToEdit, onSuccess }) => {
   if (!isOpen) return null;
 
@@ -93,7 +93,7 @@ const GroupFormModal = ({ isOpen, onClose, groupToEdit, onSuccess }) => {
       }
       setIsSearching(true);
       try {
-        const res = await searchUsersApi(keyword, pageNum, 5);
+        const res = await searchUsersApi(keyword, pageNum, 10);
         const fetchedUsers = res?.data || [];
         const pagination = res?.pagination || {};
 
@@ -222,14 +222,13 @@ const GroupFormModal = ({ isOpen, onClose, groupToEdit, onSuccess }) => {
   };
 
   const currentMatrix = activeTab === "user" ? userMatrix : groupMatrix;
-  const modalTitle = isEditMode ? "Update Group Details" : "Create New Group";
+  const modalTitle = isEditMode ? "Update Group" : "Create New Group";
   const modalSubtitle = isEditMode
-    ? "Modify identity and access control for this workspace."
+    ? "Modify identity and access control for this group."
     : "Define identity and access control for your new workspace.";
 
   return (
     <>
-      {/* BKAV HaiHS: Bo xung style noi bo thiet ke thanh cuon sieu mong cho phan o nhap cua modal */}
       <style>{`
         .cyber-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
         .cyber-scrollbar::-webkit-scrollbar-track { background: #0b0f19; }
@@ -357,91 +356,91 @@ const GroupFormModal = ({ isOpen, onClose, groupToEdit, onSuccess }) => {
               </div>
             </div>
 
-            {/* KHỐI 3: INITIAL MEMBERS - Khay o tim kiem tinh gon va chip tag bo tri ngay phia duoi */}
-            <div
-              className="space-y-2.5 relative overflow-visible"
-              ref={searchRef}
-            >
-              <label className="text-[10px] font-mono font-bold tracking-widest text-blue-400/90 uppercase">
-                Initial Members
-              </label>
-              <div className="w-full relative">
-                <input
-                  type="text"
-                  value={searchKeyword}
-                  onChange={(e) => setSearchKeyword(e.target.value)}
-                  placeholder="Search by name or email..."
-                  className="w-full bg-[#0b0f19] border border-[#232d42] focus:border-blue-500/40 text-sm text-gray-100 rounded-xl pl-11 pr-10 py-3 focus:outline-none transition-all placeholder-gray-600"
-                />
-                <FiSearch
-                  size={16}
-                  className="absolute left-4 top-3.5 text-gray-500"
-                />
-                {isSearching && (
-                  <FiLoader
-                    size={15}
-                    className="absolute right-4 top-3.5 text-blue-500 animate-spin"
+            {/* KHỐI 3: INITIAL MEMBERS - Chi render phan khung chon va chips neu o che do tao moi */}
+            {!isEditMode && (
+              <div
+                className="space-y-2.5 relative overflow-visible"
+                ref={searchRef}
+              >
+                <label className="text-[10px] font-mono font-bold tracking-widest text-blue-400/90 uppercase">
+                  Initial Members
+                </label>
+                <div className="w-full relative">
+                  <input
+                    type="text"
+                    value={searchKeyword}
+                    onChange={(e) => setSearchKeyword(e.target.value)}
+                    placeholder="Search by name or email..."
+                    className="w-full bg-[#0b0f19] border border-[#232d42] focus:border-blue-500/40 text-sm text-gray-100 rounded-xl pl-11 pr-10 py-3 focus:outline-none transition-all placeholder-gray-600"
                   />
-                )}
-              </div>
-
-              {/* Menu dropdown do ket qua quet tim kiem phan trang tu api */}
-              {isDropdownOpen && searchResults.length > 0 && (
-                <div
-                  onScroll={handleSearchScroll}
-                  className="cyber-scrollbar absolute left-0 right-0 mt-1.5 max-h-[180px] overflow-y-auto bg-[#1a202c] border border-[#232d42] rounded-xl shadow-2xl z-[100] divide-y divide-[#232d42]/60 animate-fade-in"
-                >
-                  {searchResults.map((user) => (
-                    <div
-                      key={user.id}
-                      onClick={() => handleSelectUser(user)}
-                      className="px-4 py-2.5 text-xs cursor-pointer flex flex-col gap-0.5 text-gray-300 hover:bg-gray-800 transition-colors"
-                    >
-                      <span className="font-bold text-white text-sm capitalize">
-                        {user.fullname || "Unknown"}
-                      </span>
-                      <span className="text-gray-500 font-mono">
-                        {user.email}
-                      </span>
-                    </div>
-                  ))}
+                  <FiSearch
+                    size={16}
+                    className="absolute left-4 top-3.5 text-gray-500"
+                  />
                   {isSearching && (
-                    <div className="py-2 flex justify-center items-center text-blue-500 bg-[#0b0f19]/10">
-                      <FiLoader size={12} className="animate-spin" />
-                    </div>
+                    <FiLoader
+                      size={15}
+                      className="absolute right-4 top-3.5 text-blue-500 animate-spin"
+                    />
                   )}
                 </div>
-              )}
 
-              {/* Vi tri do kien chip tag thanh vien kem hinh avatar thu nho bo tri thoang dat phia duoi o search */}
-              <div className="flex flex-wrap gap-2 pt-1">
-                {members.map((member) => {
-                  const displayChipName =
-                    member.fullname || member.email?.split("@")[0] || "User";
-                  const avatarCode = displayChipName
-                    .substring(0, 2)
-                    .toUpperCase();
-                  return (
-                    <div
-                      key={member.id}
-                      className="flex items-center gap-2 bg-[#1c2333] border border-[#2d3952] text-xs font-semibold text-gray-300 px-2.5 py-1.5 rounded-xl animate-fade-in"
-                    >
-                      <div className="w-4 h-4 rounded-full bg-blue-500/20 text-blue-400 font-bold text-[9px] flex items-center justify-center shrink-0">
-                        {avatarCode}
-                      </div>
-                      <span className="capitalize">{displayChipName}</span>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveMember(member.id)}
-                        className="text-gray-500 hover:text-red-400 transition-colors cursor-pointer ml-1"
+                {isDropdownOpen && searchResults.length > 0 && (
+                  <div
+                    onScroll={handleSearchScroll}
+                    className="cyber-scrollbar absolute left-0 right-0 mt-1.5 max-h-[180px] overflow-y-auto bg-[#1a202c] border border-[#232d42] rounded-xl shadow-2xl z-[100] divide-y divide-[#232d42]/60 animate-fade-in"
+                  >
+                    {searchResults.map((user) => (
+                      <div
+                        key={user.id}
+                        onClick={() => handleSelectUser(user)}
+                        className="px-4 py-2.5 text-xs cursor-pointer flex flex-col gap-0.5 text-gray-300 hover:bg-gray-800 transition-colors"
                       >
-                        <FiX size={12} />
-                      </button>
-                    </div>
-                  );
-                })}
+                        <span className="font-bold text-white text-sm capitalize">
+                          {user.fullname || "Unknown"}
+                        </span>
+                        <span className="text-gray-500 font-mono">
+                          {user.email}
+                        </span>
+                      </div>
+                    ))}
+                    {isSearching && (
+                      <div className="py-2 flex justify-center items-center text-blue-500 bg-[#0b0f19]/10">
+                        <FiLoader size={12} className="animate-spin" />
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                <div className="flex flex-wrap gap-2 pt-1">
+                  {members.map((member) => {
+                    const displayChipName =
+                      member.fullname || member.email?.split("@")[0] || "User";
+                    const avatarCode = displayChipName
+                      .substring(0, 2)
+                      .toUpperCase();
+                    return (
+                      <div
+                        key={member.id}
+                        className="flex items-center gap-2 bg-[#1c2333] border border-[#232d42] text-xs font-semibold text-gray-300 px-2.5 py-1.5 rounded-xl animate-fade-in"
+                      >
+                        <div className="w-4 h-4 rounded-full bg-blue-500/20 text-blue-400 font-bold text-[9px] flex items-center justify-center shrink-0">
+                          {avatarCode}
+                        </div>
+                        <span className="capitalize">{displayChipName}</span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveMember(member.id)}
+                          className="text-gray-500 hover:text-red-400 transition-colors cursor-pointer ml-1"
+                        >
+                          <FiX size={12} />
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* KHỐI CHÂN TRANG: Nut cam ket hanh dong dang vien nhộng Periwinkle sang trong */}
             <div className="pt-5 mt-6 border-t border-[#232d42] flex justify-end items-center gap-4 bg-[#161b26]">
@@ -487,6 +486,6 @@ const GroupFormModal = ({ isOpen, onClose, groupToEdit, onSuccess }) => {
     </>
   );
 };
-// BKAV HaiHS: componment tao va sua quyen nhom - end
+// BKAV HaiHS: Component form tạo mới và chỉnh sủa nhóm - end
 
 export default GroupFormModal;
