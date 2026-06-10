@@ -1,15 +1,18 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../../auth/AuthContext";
-import { getGroupsListApi } from "../groupApi";
+import { useToast } from "../../../components/Toast";
+import { getGroupsListApi, deleteGroupApi } from "../groupApi";
 import GroupHeader from "./GroupHeader";
 import GroupTable from "./GroupTable";
 import GroupPagination from "./GroupPagination";
 import GroupFormModal from "./GroupFormModal";
+import ConfirmModal from "../../../components/ConfirmModal";
 import { FiLock } from "react-icons/fi";
 
 // BKAV HaiHS: Component chính quản lý cả trang group - start
 const GroupWindow = () => {
   const { permissions } = useAuth();
+  const { showToast } = useToast();
   const groupPermissions = permissions || [];
 
   const hasAnyGroupPermission = groupPermissions.some((p) =>
@@ -26,9 +29,12 @@ const GroupWindow = () => {
   const [totalItems, setTotalItems] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Khai bao cac state dieu phoi luong hanh vi tao moi hoac cap nhat thong tin nhom quyen
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [groupToEdit, setGroupToEdit] = useState(null);
+
+  // Khai báo các trạng thái kiểm soát hành vi mở popup xác nhận xóa nhóm quyền
+  const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
+  const [groupToDelete, setGroupToDelete] = useState(null);
 
   const loadGroups = useCallback(async () => {
     if (!canRead) return;
@@ -39,7 +45,7 @@ const GroupWindow = () => {
       setTotalPages(res?.pagination?.totalPages || 1);
       setTotalItems(res?.pagination?.totalItems || 0);
     } catch (err) {
-      console.error("Loi he thong khi tai danh sach nhom quyen:", err);
+      console.error("Lỗi hệ thống khi tải danh sách nhóm quyền:", err);
     } finally {
       setIsLoading(false);
     }
@@ -49,16 +55,50 @@ const GroupWindow = () => {
     loadGroups();
   }, [loadGroups]);
 
-  // Kich hoat mo bieu mau trang thai tao moi nhom trong tran phẳng du lieu
   const handleOpenCreateModal = () => {
     setGroupToEdit(null);
     setIsModalOpen(true);
   };
 
-  // Kich hoat mo bieu mau trang thai cap nhat nap doi tuong nhom gán tu o banh rang
   const handleOpenEditModal = (group) => {
     setGroupToEdit(group);
     setIsModalOpen(true);
+  };
+
+  // Mở khóa popup xác nhận và lưu vết thông tin nhóm cần xóa nếu có quyền GROUP_D
+  const handleOpenDeleteConfirm = (group) => {
+    if (!canDelete) {
+      showToast(
+        "Bạn không có quyền GROUP_D để thực hiện hành động xóa nhóm này",
+        "warning",
+      );
+      return;
+    }
+    setGroupToDelete(group);
+    setIsConfirmDeleteOpen(true);
+  };
+
+  // Thực thi gọi API xóa vĩnh viễn nhóm kèm hiệu ứng xoay loading và thông báo toast
+  const handleExecuteDelete = async () => {
+    if (!groupToDelete) return;
+    setIsLoading(true);
+    try {
+      await deleteGroupApi(groupToDelete.id);
+      showToast(
+        `Đã xóa vĩnh viễn nhóm quyền [${groupToDelete.name}] khỏi hệ thống`,
+        "success",
+      );
+      setIsConfirmDeleteOpen(false);
+      loadGroups();
+    } catch (err) {
+      const errorMsg =
+        err?.response?.data?.message ||
+        "Không thể xóa nhóm do lỗi kết nối hệ thống";
+      showToast(errorMsg, "error");
+    } finally {
+      setIsLoading(false);
+      setGroupToDelete(null);
+    }
   };
 
   if (!hasAnyGroupPermission) {
@@ -92,7 +132,7 @@ const GroupWindow = () => {
           onViewClick={() => {}}
           onMembersClick={() => {}}
           onEditClick={handleOpenEditModal}
-          onDeleteClick={() => {}}
+          onDeleteClick={handleOpenDeleteConfirm}
           canRead={canRead}
           canUpdate={canUpdate}
           canDelete={canDelete}
@@ -108,12 +148,23 @@ const GroupWindow = () => {
         )}
       </div>
 
-      {/* Khoi component modal da nang don nhan dong thoi trang thai tao moi hoac chinh sua */}
       <GroupFormModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         groupToEdit={groupToEdit}
         onSuccess={loadGroups}
+      />
+
+      {/* Cấu hình hộp thoại confirm nguy hiểm để xác nhận hành vi xóa nhóm vĩnh viễn */}
+      <ConfirmModal
+        isOpen={isConfirmDeleteOpen}
+        onClose={() => setIsConfirmDeleteOpen(false)}
+        onConfirm={handleExecuteDelete}
+        title="Cảnh báo xóa nhóm quyền"
+        message={`Bạn có chắc chắn muốn xóa vĩnh viễn nhóm [${groupToDelete?.name}] không? Hành động này sẽ tước bỏ quyền của toàn bộ thành viên trong nhóm và không thể hoàn tác!`}
+        confirmText="Đồng ý xóa"
+        cancelText="Giữ lại"
+        type="danger"
       />
     </div>
   );

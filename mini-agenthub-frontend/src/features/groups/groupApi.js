@@ -29,3 +29,10 @@ export const searchUsersApi = async (keyword, page = 1, limit = 10) => {
   return response.data;
 };
 // BKAV HaiHS: API quet tim kiem nhan su phan trang theo tu khoa de gan vao nhom - end
+
+// BKAV HaiHS: Thực hiện gửi yêu cầu xóa vĩnh viễn một nhóm quyền khỏi cơ sở dữ liệu
+export const deleteGroupApi = async (groupId) => {
+  const response = await apiClient.delete(`/groups/${groupId}`);
+  return response.data;
+};
+// BKAV HaiHS: Thực hiện gửi yêu cầu xóa vĩnh viễn một nhóm quyền khỏi cơ sở dữ liệu - end
