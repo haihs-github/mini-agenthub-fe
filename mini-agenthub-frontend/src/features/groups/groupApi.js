@@ -36,3 +36,19 @@ export const deleteGroupApi = async (groupId) => {
   return response.data;
 };
 // BKAV HaiHS: Thực hiện gửi yêu cầu xóa vĩnh viễn một nhóm quyền khỏi cơ sở dữ liệu - end
+
+// BKAV HaiHS: Gọi API lấy thông tin chi tiết một nhóm bao gồm danh sách toàn bộ thành viên hiện tại - start
+export const getGroupDetailsApi = async (groupId) => {
+  const response = await apiClient.get(`/groups/${groupId}`);
+  return response.data;
+};
+// BKAV HaiHS: Gọi API lấy thông tin chi tiết một nhóm bao gồm danh sách toàn bộ thành viên hiện tại - start
+
+// BKAV HaiHS: api delete thành viên ra khỏi nhóm quyền - start
+export const removeUserFromGroupApi = async (groupId, userId) => {
+  const response = await apiClient.delete(`/groups/${groupId}/users`, {
+    data: { userIds: [userId] },
+  });
+  return response.data;
+};
+// BKAV HaiHS: api delete thành viên ra khỏi nhóm quyền - end

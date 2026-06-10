@@ -6,10 +6,11 @@ import GroupHeader from "./GroupHeader";
 import GroupTable from "./GroupTable";
 import GroupPagination from "./GroupPagination";
 import GroupFormModal from "./GroupFormModal";
+import GroupMembersModal from "./GroupMembersModal"; // Nạp linh kiện quản lý thành viên mới làm vào vùng lõi
 import ConfirmModal from "../../../components/ConfirmModal";
 import { FiLock } from "react-icons/fi";
 
-// BKAV HaiHS: Component chính quản lý cả trang group - start
+// BKAV HaiHS: Bộ điều phối trung tâm lưu trữ và tương tác của phân hệ nhóm quyền hệ thống
 const GroupWindow = () => {
   const { permissions } = useAuth();
   const { showToast } = useToast();
@@ -32,9 +33,12 @@ const GroupWindow = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [groupToEdit, setGroupToEdit] = useState(null);
 
-  // Khai báo các trạng thái kiểm soát hành vi mở popup xác nhận xóa nhóm quyền
   const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
   const [groupToDelete, setGroupToDelete] = useState(null);
+
+  // Khai báo các trạng thái kiểm soát hành vi mở khay quản lý thành viên nội bộ nhóm
+  const [isMembersOpen, setIsMembersOpen] = useState(false);
+  const [selectedGroupForMembers, setSelectedGroupForMembers] = useState(null);
 
   const loadGroups = useCallback(async () => {
     if (!canRead) return;
@@ -65,7 +69,19 @@ const GroupWindow = () => {
     setIsModalOpen(true);
   };
 
-  // Mở khóa popup xác nhận và lưu vết thông tin nhóm cần xóa nếu có quyền GROUP_D
+  // Kích hoạt mở hộp thoại quản lý thành viên nhóm khi click icon đầu người nếu đạt mã quyền GROUP_U
+  const handleOpenMembersModal = (group) => {
+    if (!canUpdate) {
+      showToast(
+        "Bạn không có quyền GROUP_U để quản trị thành viên của nhóm này",
+        "warning",
+      );
+      return;
+    }
+    setSelectedGroupForMembers(group);
+    setIsMembersOpen(true);
+  };
+
   const handleOpenDeleteConfirm = (group) => {
     if (!canDelete) {
       showToast(
@@ -78,7 +94,6 @@ const GroupWindow = () => {
     setIsConfirmDeleteOpen(true);
   };
 
-  // Thực thi gọi API xóa vĩnh viễn nhóm kèm hiệu ứng xoay loading và thông báo toast
   const handleExecuteDelete = async () => {
     if (!groupToDelete) return;
     setIsLoading(true);
@@ -130,7 +145,7 @@ const GroupWindow = () => {
           groups={groups}
           isLoading={isLoading}
           onViewClick={() => {}}
-          onMembersClick={() => {}}
+          onMembersClick={handleOpenMembersModal} // Đấu nối sự kiện click nút hình người vào bảng tổng
           onEditClick={handleOpenEditModal}
           onDeleteClick={handleOpenDeleteConfirm}
           canRead={canRead}
@@ -155,7 +170,15 @@ const GroupWindow = () => {
         onSuccess={loadGroups}
       />
 
-      {/* Cấu hình hộp thoại confirm nguy hiểm để xác nhận hành vi xóa nhóm vĩnh viễn */}
+      {/* Nhúng linh kiện hộp thoại quản lý thành viên đồng bộ luồng làm tươi lưới khi có biến động số lượng */}
+      <GroupMembersModal
+        isOpen={isMembersOpen}
+        onClose={() => setIsMembersOpen(false)}
+        groupId={selectedGroupForMembers?.id}
+        groupName={selectedGroupForMembers?.name}
+        onRefreshTotal={loadGroups}
+      />
+
       <ConfirmModal
         isOpen={isConfirmDeleteOpen}
         onClose={() => setIsConfirmDeleteOpen(false)}
@@ -169,6 +192,5 @@ const GroupWindow = () => {
     </div>
   );
 };
-// BKAV HaiHS: Component chính quản lý cả trang group - end
 
 export default GroupWindow;
