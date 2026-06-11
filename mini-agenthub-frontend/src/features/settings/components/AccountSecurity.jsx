@@ -10,11 +10,12 @@ import { useAuth } from "../../auth/AuthContext";
 // BKAV HaiHS: Component bảo mật tài khoản - start
 const AccountSecurity = ({ setConversations }) => {
   const { showToast } = useToast();
-  const { login } = useAuth(); // Bốc hàm cập nhật auth từ context để phục vụ luồng xóa trạng thái
+  const { login } = useAuth();
 
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [isClearModalOpen, setIsClearModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isSignOutModalOpen, setIsSignOutModalOpen] = useState(false); // Trạng thái kiểm soát modal xác nhận đăng xuất
 
   const [isClearing, setIsClearing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -38,7 +39,7 @@ const AccountSecurity = ({ setConversations }) => {
     }
   };
 
-  // Thực hiện gọi API xóa vĩnh viễn tài khoản và kích hoạt cơ chế dọn dẹp cookie bộ nhớ để thoát về login
+  // Thực hiện gọi API xóa vĩnh viễn tài khoản và giải phóng bộ nhớ cookie
   const handleExecuteDeleteAccount = async () => {
     setIsDeleting(true);
     try {
@@ -47,16 +48,8 @@ const AccountSecurity = ({ setConversations }) => {
         "Tài khoản của bạn đã được xóa vĩnh viễn khỏi hệ thống!",
         "success",
       );
-
-      // Tiến hành xóa bỏ mã token lưu trữ tại thiết bị người dùng
       localStorage.removeItem("token");
-
-      // Xóa trắng dữ liệu state trong AuthContext để AppContentSwitcher lập tức trả về màn hình LoginForm
-      if (login) {
-        login(null);
-      }
-
-      // Bẫy nạp lại trang tuyệt đối để dọn sạch toàn bộ các bộ nhớ đệm cache cũ chạy ngầm
+      if (login) login(null);
       window.location.href = "/";
     } catch (err) {
       showToast(
@@ -68,6 +61,16 @@ const AccountSecurity = ({ setConversations }) => {
       setIsDeleting(false);
       setIsDeleteModalOpen(false);
     }
+  };
+
+  // BKAV HaiHS: Xử lý đăng xuất tài khoản, xóa sạch token cục bộ để khóa đường truyền bảo mật
+  const handleExecuteSignOut = () => {
+    localStorage.removeItem("token"); // Xóa bỏ mã token xác thực khỏi bộ nhớ thiết bị
+    if (login) {
+      login(null); // Làm rỗng trạng thái user đăng nhập tại AuthContext để đá ra khay LoginForm
+    }
+    window.location.href = "/"; // Điều hướng trình duyệt quay về trang chủ gốc an toàn
+    setIsSignOutModalOpen(false);
   };
 
   return (
@@ -130,7 +133,7 @@ const AccountSecurity = ({ setConversations }) => {
           </button>
         </div>
 
-        {/* ROW 3: DELETE ACCOUNT (Gài sự kiện mở modal bẫy cảnh báo tối cao) */}
+        {/* ROW 3: DELETE ACCOUNT */}
         <div className="flex items-center justify-between py-4 first:pt-1 last:pb-1 group">
           <div className="flex items-center gap-4 flex-1 min-w-0 pr-4">
             <div className="w-10 h-10 rounded-xl bg-[#0b0f19] border border-[#232d42] flex items-center justify-center text-red-400 shrink-0 shadow-inner">
@@ -157,7 +160,7 @@ const AccountSecurity = ({ setConversations }) => {
           </button>
         </div>
 
-        {/* ROW 4: SIGN OUT */}
+        {/* ROW 4: SIGN OUT (Mở hộp thoại bẫy xác nhận khi bấm Sign Out) */}
         <div className="flex items-center justify-between py-4 first:pt-1 last:pb-1 group">
           <div className="flex items-center gap-4 flex-1 min-w-0 pr-4">
             <div className="w-10 h-10 rounded-xl bg-[#0b0f19] border border-[#232d42] flex items-center justify-center text-gray-400 shrink-0 shadow-inner">
@@ -170,8 +173,10 @@ const AccountSecurity = ({ setConversations }) => {
               </p>
             </div>
           </div>
+          {/* BKAV HaiHS: Gán onClick mở modal chốt xác nhận đăng xuất */}
           <button
             type="button"
+            onClick={() => setIsSignOutModalOpen(true)}
             className="px-4 py-1.5 bg-[#1a202c] border border-[#232d42] text-gray-400 hover:text-white text-[11px] font-bold rounded-full transition-all shrink-0 shadow-md cursor-pointer"
           >
             Sign Out
@@ -195,7 +200,6 @@ const AccountSecurity = ({ setConversations }) => {
         type="danger"
       />
 
-      {/* BKAV HaiHS: Hộp thoại cảnh báo phòng vệ tối cao cấp độ nguy hiểm nguy kịch trước khi hủy tài khoản */}
       <ConfirmModal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
@@ -205,6 +209,18 @@ const AccountSecurity = ({ setConversations }) => {
         confirmText="Tôi chắc chắn, xóa tài khoản"
         cancelText="Hủy bỏ quay lại"
         type="danger"
+      />
+
+      {/* BKAV HaiHS: Hộp thoại chốt chặn an toàn hỏi ý kiến người dùng trước khi hủy phiên làm việc */}
+      <ConfirmModal
+        isOpen={isSignOutModalOpen}
+        onClose={() => setIsSignOutModalOpen(false)}
+        onConfirm={handleExecuteSignOut}
+        title="Xác nhận đăng xuất tài khoản"
+        message="Bạn có chắc chắn muốn kết thúc phiên làm việc hiện tại và đăng xuất khỏi hệ thống quản trị Agent Hub không?"
+        confirmText="Đồng ý đăng xuất"
+        cancelText="Quay lại"
+        type="warning"
       />
     </div>
   );
