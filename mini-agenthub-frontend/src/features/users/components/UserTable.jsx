@@ -39,33 +39,35 @@ const UserTable = ({
     users.length > 0 && selectedIds.length === users.length;
 
   return (
-    <div className="w-full bg-[#161b26]/60 border border-[#232d42] rounded-2xl overflow-hidden shadow-2xl backdrop-blur-md">
-      {/* THANH TAC VU HANG LOAT: Tu dong thay doi cau truc flex de chua them bo doi nut bam hanh dong */}
+    /* BKAV HaiHS: Cập nhật màu nền và viền Card theo đa giao diện */
+    <div className="w-full bg-white dark:bg-[#161b26]/60 border border-gray-200 dark:border-[#232d42] rounded-2xl overflow-hidden shadow-xl dark:shadow-2xl backdrop-blur-md transition-colors duration-300">
+      {/* THANH TAC VU HANG LOAT */}
       {canRead && (
-        <div className="px-6 py-4 bg-[#111622]/90 border-b border-[#232d42] flex items-center justify-between text-xs font-semibold tracking-wider text-gray-400 select-none">
+        <div className="px-6 py-4 bg-gray-50 dark:bg-[#111622]/90 border-b border-gray-200 dark:border-[#232d42] flex items-center justify-between text-xs font-semibold tracking-wider text-gray-500 dark:text-gray-400 select-none transition-colors duration-300">
           <div className="flex items-center gap-3">
             <input
               type="checkbox"
               checked={isAllSelectedOnPage}
               onChange={handleSelectAllToggle}
-              className="w-4 h-4 rounded border-gray-700 bg-gray-900 text-blue-600 focus:ring-0 cursor-pointer"
+              className="w-4 h-4 rounded border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-blue-600 focus:ring-0 cursor-pointer"
             />
             <span
               className={
-                selectedIds.length > 0 ? "text-blue-400 font-bold" : ""
+                selectedIds.length > 0
+                  ? "text-blue-600 dark:text-blue-400 font-bold"
+                  : ""
               }
             >
               {selectedIds.length} Users selected
             </span>
           </div>
 
-          {/* Kich hoat hien thi bo doi nut bấm nang cao neu tong so luong chon lon hon khong */}
           {selectedIds.length > 0 && (
             <div className="flex items-center gap-4 animate-fade-in">
               <button
                 type="button"
                 onClick={onBulkGroupClick}
-                className="bg-blue-600/10 border border-blue-500/20 text-blue-400 px-3 py-1.5 rounded-xl font-bold text-[10px] tracking-wider uppercase hover:bg-blue-600/20 transition-all cursor-pointer"
+                className="bg-blue-50 dark:bg-blue-600/10 border border-blue-200 dark:border-blue-500/20 text-blue-600 dark:text-blue-400 px-3 py-1.5 rounded-xl font-bold text-[10px] tracking-wider uppercase hover:bg-blue-100 dark:hover:bg-blue-600/20 transition-all cursor-pointer"
               >
                 + Add to Group
               </button>
@@ -73,7 +75,7 @@ const UserTable = ({
                 <button
                   type="button"
                   onClick={onBulkDeleteClick}
-                  className="text-red-400 hover:text-red-500 font-bold text-[10px] tracking-wider uppercase cursor-pointer transition-all"
+                  className="text-red-600 dark:text-red-400 hover:text-red-700 font-bold text-[10px] tracking-wider uppercase cursor-pointer transition-all"
                 >
                   Delete Selected
                 </button>
@@ -86,7 +88,7 @@ const UserTable = ({
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="border-b border-[#232d42] text-[11px] font-bold tracking-widest text-gray-500 uppercase select-none">
+            <tr className="border-b border-gray-200 dark:border-[#232d42] text-[11px] font-bold tracking-widest text-gray-500 uppercase select-none transition-colors duration-300">
               <th className="py-4 px-6 w-12"></th>
               <th className="py-4 px-6">Name</th>
               <th className="py-4 px-6">Email</th>
@@ -96,22 +98,22 @@ const UserTable = ({
             </tr>
           </thead>
 
-          <tbody className="divide-y divide-[#232d42]/40 text-sm text-gray-300">
+          <tbody className="divide-y divide-gray-200 dark:divide-[#232d42]/40 text-sm text-gray-900 dark:text-gray-300 transition-colors duration-300">
             {isLoading ? (
               Array.from({ length: 5 }).map((_, idx) => (
                 <tr key={idx} className="animate-pulse">
                   <td className="py-5 px-6">
-                    <div className="h-4 w-4 bg-gray-800 rounded"></div>
+                    <div className="h-4 w-4 bg-gray-200 dark:bg-gray-800 rounded"></div>
                   </td>
                   <td className="py-5 px-6 flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-gray-800"></div>
-                    <div className="h-4 bg-gray-800 rounded w-28"></div>
+                    <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-800"></div>
+                    <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded w-28"></div>
                   </td>
                   <td className="py-5 px-6">
-                    <div className="h-4 bg-gray-800 rounded w-44"></div>
+                    <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded w-44"></div>
                   </td>
                   <td className="py-5 px-6 text-right pr-8">
-                    <div className="h-4 bg-gray-800 rounded w-16 ml-auto"></div>
+                    <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded w-16 ml-auto"></div>
                   </td>
                 </tr>
               ))
@@ -119,7 +121,7 @@ const UserTable = ({
               <tr>
                 <td
                   colSpan={4}
-                  className="py-12 text-center text-amber-500/80 italic font-medium bg-[#111622]/20"
+                  className="py-12 text-center text-amber-600 dark:text-amber-500/80 italic font-medium bg-amber-50 dark:bg-[#111622]/20"
                 >
                   Tai khoan cua ban khong co quyen USER_R de doc du lieu danh
                   sach thanh vien.
@@ -146,7 +148,7 @@ const UserTable = ({
                 return (
                   <tr
                     key={user.id}
-                    className={`transition-colors group ${isRowChecked ? "bg-blue-500/5" : "hover:bg-[#1e2533]/40"}`}
+                    className={`transition-colors group ${isRowChecked ? "bg-blue-50 dark:bg-blue-500/5" : "hover:bg-gray-100 dark:hover:bg-[#1e2533]/40"}`}
                   >
                     <td className="py-4 px-6">
                       {canRead && (
@@ -154,17 +156,17 @@ const UserTable = ({
                           type="checkbox"
                           checked={isRowChecked}
                           onChange={() => handleSelectRowToggle(user.id)}
-                          className="w-4 h-4 rounded border-gray-700 bg-gray-900 text-blue-600 focus:ring-0 cursor-pointer"
+                          className="w-4 h-4 rounded border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-blue-600 focus:ring-0 cursor-pointer"
                         />
                       )}
                     </td>
-                    <td className="py-4 px-6 font-semibold text-white flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-600/20 to-indigo-600/20 border border-blue-500/20 flex justify-center items-center text-xs font-bold text-blue-400">
+                    <td className="py-4 px-6 font-semibold text-gray-900 dark:text-white flex items-center gap-3 transition-colors">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-gray-200 to-gray-300 dark:from-blue-600/20 dark:to-indigo-600/20 border border-gray-200 dark:border-blue-500/20 flex justify-center items-center text-xs font-bold text-blue-600 dark:text-blue-400">
                         {avatarCode}
                       </div>
                       <span className="capitalize">{nameDisplay}</span>
                     </td>
-                    <td className="py-4 px-6 text-gray-400 font-mono text-xs">
+                    <td className="py-4 px-6 text-gray-500 font-mono text-xs transition-colors">
                       {user.email}
                     </td>
 
@@ -175,7 +177,7 @@ const UserTable = ({
                             <button
                               title="Xem chi tiet"
                               onClick={() => onViewClick(user)}
-                              className="p-2 rounded-xl text-gray-400 hover:text-white hover:bg-gray-800 transition-all cursor-pointer"
+                              className="p-2 rounded-xl text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200 dark:hover:bg-gray-800 transition-all cursor-pointer"
                             >
                               <FiEye size={15} />
                             </button>
@@ -184,7 +186,7 @@ const UserTable = ({
                             <button
                               title="Sua thong tin"
                               onClick={() => onEditClick(user)}
-                              className="p-2 rounded-xl text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 transition-all cursor-pointer"
+                              className="p-2 rounded-xl text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-200 dark:hover:bg-blue-500/10 transition-all cursor-pointer"
                             >
                               <FiEdit2 size={14} />
                             </button>
@@ -193,7 +195,7 @@ const UserTable = ({
                             <button
                               title="Xoa tai khoan"
                               onClick={() => onDeleteClick(user)}
-                              className="p-2 rounded-xl text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition-all cursor-pointer"
+                              className="p-2 rounded-xl text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-gray-200 dark:hover:bg-red-500/10 transition-all cursor-pointer"
                             >
                               <FiTrash2 size={14} />
                             </button>

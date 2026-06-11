@@ -70,18 +70,20 @@ const ChatInputArea = ({
 
   // return giao diện
   return (
-    <div className="p-4 bg-[#0b0f19] border-t border-[#1e293b]/60 shrink-0">
+    /* BKAV HaiHS: Điều chỉnh màu nền container tổng vùng nhập liệu */
+    <div className="p-4 bg-gray-50 dark:bg-[#0b0f19] border-t border-gray-200 dark:border-[#1e293b]/60 shrink-0 transition-colors duration-300">
       <form
         onSubmit={handleSubmit}
-        className="max-w-4xl mx-auto relative bg-[#161b26] border border-[#232d42] rounded-2xl focus-within:border-blue-500/50 transition-all shadow-2xl overflow-hidden px-4 py-3"
+        /* BKAV HaiHS: Sửa màu nền Card nhập liệu và viền theo đa giao diện */
+        className="max-w-4xl mx-auto relative bg-white border border-gray-200 dark:bg-[#161b26] dark:border-[#232d42] rounded-2xl focus-within:border-blue-500/50 transition-all shadow-2xl overflow-hidden px-4 py-3"
       >
         {/* 1. KHAY HIỂN THỊ XEM TRƯỚC ẢNH ĐÍNH KÈM (CHẬN TRÊN DÒNG PROMPT) */}
         {attachedImages.length > 0 && (
-          <div className="flex flex-wrap gap-2.5 pb-3 border-b border-[#232d42]/60 mb-2 animate-fade-in">
+          <div className="flex flex-wrap gap-2.5 pb-3 border-b border-gray-100 dark:border-[#232d42]/60 mb-2 animate-fade-in transition-colors">
             {attachedImages.map((imgObj, idx) => (
               <div
                 key={idx}
-                className="relative w-14 h-14 rounded-xl overflow-hidden border border-[#2d3748] group shadow-inner"
+                className="relative w-14 h-14 rounded-xl overflow-hidden border border-gray-200 dark:border-[#2d3748] group shadow-inner"
               >
                 <img
                   src={imgObj.preview}
@@ -91,7 +93,7 @@ const ChatInputArea = ({
                 <button
                   type="button"
                   onClick={() => removeImage(idx)}
-                  className="absolute top-0.5 right-0.5 bg-black/70 rounded-full p-0.5 text-gray-400 hover:text-white transition-colors cursor-pointer"
+                  className="absolute top-0.5 right-0.5 bg-black/70 rounded-full p-0.5 text-gray-300 hover:text-white transition-colors cursor-pointer"
                 >
                   <FiX size={10} />
                 </button>
@@ -106,7 +108,7 @@ const ChatInputArea = ({
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="p-2 rounded-xl text-gray-400 hover:text-gray-200 hover:bg-[#1e293b] transition-all cursor-pointer mb-0.5"
+            className="p-2 rounded-xl text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-[#1e293b] transition-all cursor-pointer mb-0.5"
             title="Đính kèm hình ảnh"
           >
             <FiPaperclip size={18} />
@@ -126,7 +128,7 @@ const ChatInputArea = ({
             onChange={(e) => setPrompt(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Nhập nội dung câu hỏi tại đây..."
-            className="flex-1 bg-transparent border-0 focus:outline-none resize-none text-sm text-gray-100 max-h-36 placeholder-gray-600 leading-6"
+            className="flex-1 bg-transparent border-0 focus:outline-none resize-none text-sm text-gray-900 dark:text-gray-100 max-h-36 placeholder-gray-400 dark:placeholder-gray-600 leading-6 transition-colors"
             style={{ height: "auto" }}
           />
 
@@ -137,7 +139,7 @@ const ChatInputArea = ({
             className={`p-2.5 rounded-full transition-all flex justify-center items-center cursor-pointer shadow-lg ${
               isStreaming
                 ? "bg-red-600 hover:bg-red-700 text-white animate-pulse"
-                : "bg-blue-600 hover:bg-blue-700 text-white disabled:bg-[#0f131f] disabled:text-gray-700 disabled:shadow-none"
+                : "bg-blue-600 hover:bg-blue-700 text-white disabled:bg-gray-200 dark:disabled:bg-[#0f131f] disabled:text-gray-400 dark:disabled:text-gray-700 disabled:shadow-none"
             }`}
           >
             {isStreaming ? (
@@ -148,7 +150,8 @@ const ChatInputArea = ({
           </button>
         </div>
       </form>
-      <div className="text-center text-[10px] text-gray-600 tracking-wide mt-2">
+      {/* BKAV HaiHS: Sửa màu chữ cảnh báo cuối trang */}
+      <div className="text-center text-[10px] text-gray-500 dark:text-gray-600 tracking-wide mt-2 transition-colors">
         Hệ thống trí tuệ nhân tạo có thể đưa ra câu trả lời chưa chính xác, vui
         lòng kiểm tra lại nguồn dữ liệu.
       </div>

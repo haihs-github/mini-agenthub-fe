@@ -60,15 +60,19 @@ const NavigationLinks = ({ currentView, onViewChange }) => {
             onClick={() => onViewChange(item.id)}
             className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-semibold tracking-wide transition-all duration-150 cursor-pointer ${
               isActive
-                ? "bg-[#161b26] text-white border border-[#232d42] shadow-lg shadow-black/10"
-                : "text-gray-400 hover:text-gray-200 hover:bg-[#161b26]/40 border border-transparent"
+                ? "bg-gray-100 text-gray-900 border border-gray-200 shadow-sm dark:bg-[#161b26] dark:text-white dark:border-[#232d42] dark:shadow-lg dark:shadow-black/10"
+                : "text-gray-500 hover:text-gray-900 hover:bg-gray-100/60 border border-transparent dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-[#161b26]/40"
             }`}
           >
             {/* Giu co dinh vung chua de ngan chan hien tuong dich chuyen sub-pixel cua SVG */}
             <span className="w-5 h-5 flex items-center justify-center shrink-0">
               <IconComponent
                 size={18}
-                className={isActive ? "text-blue-500" : "text-gray-500"}
+                className={
+                  isActive
+                    ? "text-blue-600 dark:text-blue-500"
+                    : "text-gray-400 dark:text-gray-500"
+                }
               />
             </span>
             <span>{item.label}</span>

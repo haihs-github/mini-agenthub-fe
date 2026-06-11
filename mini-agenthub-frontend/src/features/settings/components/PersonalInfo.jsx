@@ -17,7 +17,6 @@ const PersonalInfo = () => {
   const [isEditingAddress, setIsEditingAddress] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Khai báo các trạng thái quản lý hộp thoại xác nhận
   const [confirmModal, setConfirmModal] = useState({
     isOpen: false,
     type: "",
@@ -31,13 +30,11 @@ const PersonalInfo = () => {
     }
   }, [user]);
 
-  // Kiểm tra biểu thức chính quy số điện thoại phải chứa đúng 10 ký tự số thuần túy
   const validatePhoneNumber = (num) => {
     const regex = /^[0-9]{10}$/;
     return regex.test(num);
   };
 
-  // Kích hoạt bẫy xác nhận trước khi lưu thông tin thay đổi
   const handleOpenSaveConfirm = (type, value) => {
     if (type === "phone" && !validatePhoneNumber(value)) {
       showToast(
@@ -49,7 +46,6 @@ const PersonalInfo = () => {
     setConfirmModal({ isOpen: true, type: `save_${type}`, targetValue: value });
   };
 
-  // Kích hoạt bẫy xác nhận trước khi hủy bỏ tiến trình nhập liệu dở dang
   const handleOpenCancelConfirm = (type) => {
     const isDataChanged =
       type === "phone"
@@ -66,7 +62,6 @@ const PersonalInfo = () => {
     }
   };
 
-  // Thực thi gọi API cập nhật dữ liệu cấu trúc lên máy chủ hệ thống
   const executeUpdateProfile = async (targetType, value) => {
     setIsSubmitting(true);
     const payload = {
@@ -78,7 +73,6 @@ const PersonalInfo = () => {
       const res = await updateProfileApi(payload);
       showToast("Cập nhật thông tin hồ sơ tài khoản thành công!", "success");
 
-      // Đồng bộ lại trạng thái User Context cục bộ sau khi lưu thành công
       if (login && res?.data) {
         login(res.data);
       }
@@ -92,7 +86,6 @@ const PersonalInfo = () => {
           "Không thể cập nhật hồ sơ do lỗi kết nối hệ thống",
         "error",
       );
-      // Trả lại giá trị cũ nếu API bị lỗi thất bại
       if (targetType === "phone") setPhone(user?.phone || "");
       else setAddress(user?.address || "");
     } finally {
@@ -119,20 +112,20 @@ const PersonalInfo = () => {
 
   return (
     <div className="space-y-4 animate-fade-in">
-      <div className="flex items-center gap-2 text-white font-bold text-sm select-none">
+      <div className="flex items-center gap-2 text-gray-900 dark:text-white font-bold text-sm select-none transition-colors duration-300">
         <span className="text-gray-400 text-lg">👤</span>
         <h4>Personal Information</h4>
       </div>
 
-      <div className="bg-[#161b26] border border-[#232d42] rounded-2xl p-5 divide-y divide-[#232d42]/60 shadow-xl">
+      <div className="bg-white dark:bg-[#161b26] border border-gray-200 dark:border-[#232d42] rounded-2xl p-5 divide-y divide-gray-100 dark:divide-[#232d42]/60 shadow-xl transition-colors duration-300">
         {/* ROW 1: PHONE NUMBER */}
         <div className="flex items-center justify-between py-4 first:pt-1 last:pb-1 group">
           <div className="flex items-center gap-4 flex-1 min-w-0 pr-4">
-            <div className="w-10 h-10 rounded-xl bg-[#0b0f19] border border-[#232d42] flex items-center justify-center text-blue-400 shrink-0 shadow-inner">
+            <div className="w-10 h-10 rounded-xl bg-gray-50 dark:bg-[#0b0f19] border border-gray-200 dark:border-[#232d42] flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0 shadow-inner transition-colors duration-300">
               <FiPhone size={16} />
             </div>
             <div className="flex-1 min-w-0 space-y-1">
-              <p className="text-[10px] font-mono font-bold text-gray-500 uppercase tracking-widest">
+              <p className="text-[10px] font-mono font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest transition-colors">
                 Phone Number
               </p>
               {isEditingPhone ? (
@@ -141,12 +134,12 @@ const PersonalInfo = () => {
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   disabled={isSubmitting}
-                  className="w-full max-w-sm bg-[#0b0f19] border border-blue-500/40 text-xs text-gray-100 rounded-lg px-3 py-1.5 focus:outline-none font-mono"
+                  className="w-full max-w-sm bg-gray-50 dark:bg-[#0b0f19] border border-blue-500/40 text-xs text-gray-900 dark:text-gray-100 rounded-lg px-3 py-1.5 focus:outline-none font-mono transition-colors"
                   placeholder="e.g. 0912345678"
                   autoFocus
                 />
               ) : (
-                <p className="text-xs font-semibold text-gray-200 font-mono tracking-wide truncate">
+                <p className="text-xs font-semibold text-gray-900 dark:text-gray-200 font-mono tracking-wide truncate transition-colors">
                   {phone || "Not configured yet"}
                 </p>
               )}
@@ -160,7 +153,7 @@ const PersonalInfo = () => {
                   type="button"
                   onClick={() => handleOpenCancelConfirm("phone")}
                   disabled={isSubmitting}
-                  className="p-2 text-gray-500 hover:text-red-400 rounded-lg hover:bg-gray-800 transition-all cursor-pointer"
+                  className="p-2 text-gray-500 hover:text-red-500 dark:hover:text-red-400 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all cursor-pointer"
                 >
                   <FiX size={14} />
                 </button>
@@ -182,7 +175,7 @@ const PersonalInfo = () => {
               <button
                 type="button"
                 onClick={() => setIsEditingPhone(true)}
-                className="px-4 py-1.5 bg-[#1e2533] border border-[#232d42] hover:bg-gray-800 text-[11px] font-bold text-blue-400 rounded-full transition-all cursor-pointer shadow-md"
+                className="px-4 py-1.5 bg-white dark:bg-[#1e2533] border border-gray-200 dark:border-[#232d42] hover:bg-gray-100 dark:hover:bg-gray-800 text-[11px] font-bold text-blue-600 dark:text-blue-400 rounded-full transition-all cursor-pointer shadow-md"
               >
                 Update
               </button>
@@ -193,11 +186,11 @@ const PersonalInfo = () => {
         {/* ROW 2: ADDRESS */}
         <div className="flex items-center justify-between py-4 first:pt-1 last:pb-1 group">
           <div className="flex items-center gap-4 flex-1 min-w-0 pr-4">
-            <div className="w-10 h-10 rounded-xl bg-[#0b0f19] border border-[#232d42] flex items-center justify-center text-blue-400 shrink-0 shadow-inner">
+            <div className="w-10 h-10 rounded-xl bg-gray-50 dark:bg-[#0b0f19] border border-gray-200 dark:border-[#232d42] flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0 shadow-inner transition-colors duration-300">
               <FiMapPin size={16} />
             </div>
             <div className="flex-1 min-w-0 space-y-1">
-              <p className="text-[10px] font-mono font-bold text-gray-500 uppercase tracking-widest">
+              <p className="text-[10px] font-mono font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest transition-colors">
                 Address
               </p>
               {isEditingAddress ? (
@@ -206,12 +199,12 @@ const PersonalInfo = () => {
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
                   disabled={isSubmitting}
-                  className="w-full max-w-xl bg-[#0b0f19] border border-blue-500/40 text-xs text-gray-100 rounded-lg px-3 py-1.5 focus:outline-none"
+                  className="w-full max-w-xl bg-gray-50 dark:bg-[#0b0f19] border border-blue-500/40 text-xs text-gray-900 dark:text-gray-100 rounded-lg px-3 py-1.5 focus:outline-none transition-colors"
                   placeholder="e.g. Hà Đông, Hà Nội"
                   autoFocus
                 />
               ) : (
-                <p className="text-xs font-semibold text-gray-200 truncate">
+                <p className="text-xs font-semibold text-gray-900 dark:text-gray-200 truncate transition-colors">
                   {address || "Not configured yet"}
                 </p>
               )}
@@ -225,7 +218,7 @@ const PersonalInfo = () => {
                   type="button"
                   onClick={() => handleOpenCancelConfirm("address")}
                   disabled={isSubmitting}
-                  className="p-2 text-gray-500 hover:text-red-400 rounded-lg hover:bg-gray-800 transition-all cursor-pointer"
+                  className="p-2 text-gray-500 hover:text-red-500 dark:hover:text-red-400 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all cursor-pointer"
                 >
                   <FiX size={14} />
                 </button>
@@ -247,7 +240,7 @@ const PersonalInfo = () => {
               <button
                 type="button"
                 onClick={() => setIsEditingAddress(true)}
-                className="px-4 py-1.5 bg-[#1e2533] border border-[#232d42] hover:bg-gray-800 text-[11px] font-bold text-blue-400 rounded-full transition-all cursor-pointer shadow-md"
+                className="px-4 py-1.5 bg-white dark:bg-[#1e2533] border border-gray-200 dark:border-[#232d42] hover:bg-gray-100 dark:hover:bg-gray-800 text-[11px] font-bold text-blue-600 dark:text-blue-400 rounded-full transition-all cursor-pointer shadow-md"
               >
                 Update
               </button>
@@ -256,7 +249,6 @@ const PersonalInfo = () => {
         </div>
       </div>
 
-      {/* Hộp thoại bẫy xác nhận hành vi */}
       <ConfirmModal
         isOpen={confirmModal.isOpen}
         onClose={() =>

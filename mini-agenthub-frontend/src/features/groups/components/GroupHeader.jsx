@@ -6,10 +6,12 @@ const GroupHeader = ({ onCreateClick, canCreate }) => {
   return (
     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 select-none">
       <div>
-        <h2 className="text-4xl font-bold tracking-tight text-white">
+        {/* BKAV HaiHS: Đổi màu chữ tiêu đề theo theme */}
+        <h2 className="text-4xl font-bold tracking-tight text-gray-900 dark:text-white transition-colors duration-300">
           Group Management
         </h2>
-        <p className="text-sm text-gray-400 mt-2 max-w-2xl leading-relaxed">
+        {/* BKAV HaiHS: Đổi màu mô tả phụ */}
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 max-w-2xl leading-relaxed transition-colors duration-300">
           Monitor and coordinate high-performance intelligence teams. View
           active groups, manage permissions, and inspect nested member
           hierarchies.

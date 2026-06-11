@@ -11,8 +11,10 @@ export const ThemeProvider = ({ children }) => {
     // Thực hiện thêm hoặc xóa class "dark" ở thẻ html để kích hoạt biến Tailwind
     if (theme === "dark") {
       root.classList.add("dark");
+      root.style.colorScheme = "dark"; // BKAV HaiHS: Đồng bộ scrollbar và element hệ thống sang giao diện tối
     } else {
       root.classList.remove("dark");
+      root.style.colorScheme = "light"; // BKAV HaiHS: Đồng bộ scrollbar và element hệ thống sang giao diện sáng
     }
     localStorage.setItem("theme", theme);
   }, [theme]);

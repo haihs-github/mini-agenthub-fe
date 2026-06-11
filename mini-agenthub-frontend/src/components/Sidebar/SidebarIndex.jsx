@@ -17,10 +17,12 @@ const SidebarIndex = ({
   onViewChange,
 }) => {
   return (
-    <div className="w-full h-full flex flex-col overflow-hidden bg-[#0b0f19]">
+    /* BKAV HaiHS: Cập nhật màu nền tổng của Sidebar - Sáng: bg-white / Tối: bg-[#0b0f19] */
+    <div className="w-full h-full flex flex-col overflow-hidden bg-white dark:bg-[#0b0f19] transition-colors duration-300">
       {/* Khong gian logo thuong hieu dau trang */}
       <div className="px-6 py-5 shrink-0 select-none">
-        <h1 className="text-xl font-bold tracking-wider text-white">
+        {/* BKAV HaiHS: Đổi màu chữ Logo Agent Hub theo theme */}
+        <h1 className="text-xl font-bold tracking-wider text-gray-900 dark:text-white transition-colors duration-300">
           Agent Hub
         </h1>
       </div>
@@ -44,7 +46,8 @@ const SidebarIndex = ({
             page={page}
           />
         ) : (
-          <div className="flex-1 p-6 text-xs text-gray-600 italic text-center select-none pt-16">
+          /* BKAV HaiHS: Điều chỉnh độ tương phản chữ trạng thái khi ở nền sáng */
+          <div className="flex-1 p-6 text-xs text-gray-400 dark:text-gray-600 italic text-center select-none pt-16 transition-colors duration-300">
             Hệ thống quản trị nhân sự...
           </div>
         )}

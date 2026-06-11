@@ -19,13 +19,11 @@ const BulkAddToGroupModal = ({ isOpen, onClose, selectedUsers, onSuccess }) => {
 
   const dropdownRef = useRef(null);
 
-  // Reset cac truong chon cu moi khi hop thoai duoc kich hoat mo ra
   useEffect(() => {
     setSelectedGroup(null);
     setIsDropdownOpen(false);
   }, [isOpen]);
 
-  // Dong hop chon tha xuong neu nguoi dung click chuot ra khu vuc trong phia ngoai
   useEffect(() => {
     const handleOutsideClick = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
@@ -36,7 +34,6 @@ const BulkAddToGroupModal = ({ isOpen, onClose, selectedUsers, onSuccess }) => {
     return () => document.removeEventListener("mousedown", handleOutsideClick);
   }, []);
 
-  // Goi mang tai danh sach cac nhom quyen kem theo ky thuat phan trang cuon vo han
   const fetchGroups = async (page = 1, isLoadMore = false) => {
     if (isLoadingGroups || (!groupHasMore && isLoadMore)) return;
     setIsLoadingGroups(true);
@@ -59,7 +56,6 @@ const BulkAddToGroupModal = ({ isOpen, onClose, selectedUsers, onSuccess }) => {
     }
   };
 
-  // Kich hoat nap trang dau tien khi bam mo o dropdown lan dau
   const toggleDropdown = () => {
     if (!isDropdownOpen && groups.length === 0) {
       setGroupHasMore(true);
@@ -68,7 +64,6 @@ const BulkAddToGroupModal = ({ isOpen, onClose, selectedUsers, onSuccess }) => {
     setIsDropdownOpen(!isDropdownOpen);
   };
 
-  // Tu dong goi trang moi khi thanh cuon dat muc gioi han gan cuoi trang
   const handleDropdownScroll = (e) => {
     const { scrollTop, clientHeight, scrollHeight } = e.currentTarget;
     if (scrollHeight - scrollTop <= clientHeight + 10) {
@@ -76,7 +71,6 @@ const BulkAddToGroupModal = ({ isOpen, onClose, selectedUsers, onSuccess }) => {
     }
   };
 
-  // Thuc thi dong goi mien du lieu va day len he thong API
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!selectedGroup || isSubmitting) return;
@@ -105,66 +99,65 @@ const BulkAddToGroupModal = ({ isOpen, onClose, selectedUsers, onSuccess }) => {
     <>
       <style>{`
         .cyber-scrollbar::-webkit-scrollbar { width: 5px; }
-        .cyber-scrollbar::-webkit-scrollbar-track { background: #0b0f19; }
-        .cyber-scrollbar::-webkit-scrollbar-thumb { background: #2d3748; border-radius: 99px; }
+        .cyber-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .cyber-scrollbar::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 99px; }
+        .dark .cyber-scrollbar::-webkit-scrollbar-thumb { background: #2d3748; }
         .cyber-scrollbar::-webkit-scrollbar-thumb:hover { background: #3b82f6; }
       `}</style>
 
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm select-none animate-fade-in">
-        <div className="w-full max-w-lg bg-[#161b26] border border-[#232d42] rounded-2xl shadow-2xl flex flex-col relative overflow-visible">
-          {/* Header cua khoi hop thoai */}
-          <div className="px-6 py-4 border-b border-[#232d42] flex justify-between items-center bg-[#111622]/50 rounded-t-2xl shrink-0">
-            <h3 className="text-sm font-bold text-white tracking-wide">
+        {/* BKAV HaiHS: Cập nhật màu nền và viền Card Modal - Sáng: bg-white / Tối: bg-[#161b26] */}
+        <div className="w-full max-w-lg bg-white dark:bg-[#161b26] border border-gray-200 dark:border-[#232d42] rounded-2xl shadow-2xl flex flex-col relative overflow-visible transition-colors duration-300">
+          <div className="px-6 py-4 border-b border-gray-200 dark:border-[#232d42] flex justify-between items-center bg-gray-50 dark:bg-[#111622]/50 rounded-t-2xl shrink-0 transition-colors duration-300">
+            <h3 className="text-sm font-bold text-gray-900 dark:text-white tracking-wide transition-colors">
               Add Users to Group
             </h3>
             <button
               type="button"
               onClick={onClose}
-              className="text-gray-500 hover:text-white p-1 rounded-lg hover:bg-gray-800 transition-all cursor-pointer"
+              className="text-gray-400 hover:text-gray-900 dark:text-gray-500 dark:hover:text-white p-1 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-800 transition-all cursor-pointer"
             >
               <FiX size={18} />
             </button>
           </div>
 
-          {/* Khong gian form chua cac thong tin rut gon */}
           <form
             onSubmit={handleSubmit}
             className="p-6 space-y-5 flex-1 overflow-visible"
           >
-            {/* Truong hien thi danh sach nguoi dung dang chip hoan toan khoa tuong tac */}
+            {/* Truong hien thi danh sach nguoi dung */}
             <div className="space-y-2">
-              <label className="text-[10px] font-bold tracking-widest text-gray-400 uppercase">
+              <label className="text-[10px] font-bold tracking-widest text-gray-500 dark:text-gray-400 uppercase transition-colors">
                 Selected Users ({selectedUsers.length})
               </label>
-              <div className="cyber-scrollbar w-full bg-[#0b0f19] border border-[#232d42] rounded-xl px-3 py-3 flex flex-wrap gap-2 min-h-[46px] max-h-32 overflow-y-auto cursor-not-allowed opacity-80">
+              <div className="cyber-scrollbar w-full bg-gray-50 dark:bg-[#0b0f19] border border-gray-200 dark:border-[#232d42] rounded-xl px-3 py-3 flex flex-wrap gap-2 min-h-[46px] max-h-32 overflow-y-auto cursor-not-allowed opacity-80 transition-colors">
                 {selectedUsers.map((user) => {
-                  const displayChipName = `${user.fullname} (${user.email})`;
                   return (
                     <div
                       key={user.id}
-                      className="bg-blue-600/10 border border-blue-500/20 text-xs font-bold text-blue-400 px-2.5 py-1 rounded-lg"
+                      className="bg-blue-50 dark:bg-blue-600/10 border border-blue-200 dark:border-blue-500/20 text-xs font-bold text-blue-600 dark:text-blue-400 px-2.5 py-1 rounded-lg transition-colors"
                     >
-                      {displayChipName}
+                      {`${user.fullname} (${user.email})`}
                     </div>
                   );
                 })}
               </div>
             </div>
 
-            {/* Truong hop nhan dien va lua chon mot nhom quyen duy nhat */}
+            {/* Truong lua chon nhom quyen */}
             <div
               className="space-y-2 relative overflow-visible"
               ref={dropdownRef}
             >
-              <label className="text-[10px] font-bold tracking-widest text-gray-400 uppercase">
+              <label className="text-[10px] font-bold tracking-widest text-gray-500 dark:text-gray-400 uppercase transition-colors">
                 Select Target Group
               </label>
               <div
                 onClick={toggleDropdown}
-                className="w-full bg-[#0b0f19] border border-[#232d42] hover:border-gray-700 rounded-xl px-3 py-2.5 flex items-center justify-between min-h-[46px] cursor-pointer transition-all"
+                className="w-full bg-gray-50 dark:bg-[#0b0f19] border border-gray-200 dark:border-[#232d42] hover:border-gray-400 dark:hover:border-gray-700 rounded-xl px-3 py-2.5 flex items-center justify-between min-h-[46px] cursor-pointer transition-all"
               >
                 <span
-                  className={`text-sm ${selectedGroup ? "text-white font-semibold" : "text-gray-600 pl-1"}`}
+                  className={`text-sm ${selectedGroup ? "text-gray-900 dark:text-white font-semibold" : "text-gray-400 pl-1"}`}
                 >
                   {selectedGroup ? selectedGroup.name : "Select a group"}
                 </span>
@@ -176,23 +169,23 @@ const BulkAddToGroupModal = ({ isOpen, onClose, selectedUsers, onSuccess }) => {
                         e.stopPropagation();
                         setSelectedGroup(null);
                       }}
-                      className="text-gray-500 hover:text-red-400 transition-colors"
+                      className="text-gray-400 hover:text-red-500 transition-colors"
                     >
                       <FiX size={14} />
                     </button>
                   )}
                   <FiChevronDown
                     size={16}
-                    className={`text-gray-500 transition-transform duration-200 ${isDropdownOpen ? "rotate-180 text-blue-500" : ""}`}
+                    className={`text-gray-400 transition-transform duration-200 ${isDropdownOpen ? "rotate-180 text-blue-500" : ""}`}
                   />
                 </div>
               </div>
 
-              {/* Menu tha xuong do danh sach cac nhom dang co ho tro tran vien tu do */}
+              {/* Menu tha xuong */}
               {isDropdownOpen && (
                 <div
                   onScroll={handleDropdownScroll}
-                  className="cyber-scrollbar absolute left-0 right-0 mt-1.5 max-h-[210px] overflow-y-auto bg-[#1a202c] border border-[#232d42] rounded-xl shadow-2xl z-[100] divide-y divide-[#232d42]/60 animate-fade-in"
+                  className="cyber-scrollbar absolute left-0 right-0 mt-1.5 max-h-[210px] overflow-y-auto bg-white dark:bg-[#1a202c] border border-gray-200 dark:border-[#232d42] rounded-xl shadow-2xl z-[100] divide-y divide-gray-100 dark:divide-[#232d42]/60 animate-fade-in transition-colors"
                 >
                   {groups.length === 0 && !isLoadingGroups ? (
                     <div className="p-4 text-xs text-gray-500 italic text-center">
@@ -208,7 +201,7 @@ const BulkAddToGroupModal = ({ isOpen, onClose, selectedUsers, onSuccess }) => {
                             setSelectedGroup(group);
                             setIsDropdownOpen(false);
                           }}
-                          className={`px-4 py-2.5 text-sm cursor-pointer flex items-center justify-between transition-colors ${isSelected ? "bg-blue-600/10 text-blue-400 font-bold" : "text-gray-300 hover:bg-gray-800"}`}
+                          className={`px-4 py-2.5 text-sm cursor-pointer flex items-center justify-between transition-colors ${isSelected ? "bg-blue-50 dark:bg-blue-600/10 text-blue-600 dark:text-blue-400 font-bold" : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"}`}
                         >
                           <span>{group.name}</span>
                           {isSelected && (
@@ -219,7 +212,7 @@ const BulkAddToGroupModal = ({ isOpen, onClose, selectedUsers, onSuccess }) => {
                     })
                   )}
                   {isLoadingGroups && (
-                    <div className="py-2.5 flex justify-center items-center text-blue-500 bg-[#0b0f19]/20">
+                    <div className="py-2.5 flex justify-center items-center text-blue-500 bg-gray-50/50 dark:bg-[#0b0f19]/20">
                       <FiLoader size={14} className="animate-spin" />
                     </div>
                   )}
@@ -227,24 +220,24 @@ const BulkAddToGroupModal = ({ isOpen, onClose, selectedUsers, onSuccess }) => {
               )}
             </div>
 
-            {/* Thanh nut bam chan trang giong kieu dang thiet ke block flow san co */}
-            <div className="pt-6 mt-8 border-t border-[#232d42] flex justify-end items-center gap-3 bg-[#161b26] relative z-10">
+            {/* Thanh nut bam chan trang */}
+            <div className="pt-6 mt-8 border-t border-gray-200 dark:border-[#232d42] flex justify-end items-center gap-3 bg-white dark:bg-[#161b26] relative z-10 transition-colors">
               <button
                 type="button"
                 onClick={onClose}
                 disabled={isSubmitting}
-                className="px-5 py-2.5 text-xs font-bold text-gray-400 hover:text-white border border-[#232d42] bg-[#111622] hover:bg-gray-800 rounded-xl transition-all disabled:opacity-30 cursor-pointer"
+                className="px-5 py-2.5 text-xs font-bold text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border border-gray-200 dark:border-[#232d42] bg-gray-50 dark:bg-[#111622] hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all disabled:opacity-30 cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting || !selectedGroup}
-                className="px-5 py-2.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all shadow-lg shadow-blue-600/10 disabled:bg-gray-800 disabled:text-gray-600 disabled:shadow-none cursor-pointer flex items-center gap-2 min-w-[130px] justify-center"
+                className="px-5 py-2.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all shadow-lg shadow-blue-600/10 disabled:bg-gray-300 dark:disabled:bg-gray-800 disabled:text-gray-500 cursor-pointer flex items-center gap-2 min-w-[130px] justify-center"
               >
                 {isSubmitting ? (
                   <>
-                    <FiLoader size={14} className="animate-spin" />
+                    <FiLoader size={14} className="animate-spin" />{" "}
                     <span>Processing...</span>
                   </>
                 ) : (

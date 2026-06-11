@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { FiLoader } from "react-icons/fi";
 import UserMessageItem from "./UserMessageItem";
 import AIMessageItem from "./AIMessageItem";
@@ -62,15 +62,17 @@ const MessageList = ({
   };
 
   return (
+    /* BKAV HaiHS: Đồng bộ màu nền khu vực hội thoại - Sáng: bg-gray-50 / Tối: bg-[#0b0f19] */
     <div
       ref={scrollContainerRef}
       onScroll={handleScroll}
-      className="flex-1 overflow-y-auto px-6 py-4 space-y-6 bg-[#0b0f19] cyber-scrollbar"
+      className="flex-1 overflow-y-auto px-6 py-4 space-y-6 bg-gray-50 dark:bg-[#0b0f19] cyber-scrollbar transition-colors duration-300"
     >
       <style>{`
         .cyber-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
-        .cyber-scrollbar::-webkit-scrollbar-track { background: #0b0f19; }
-        .cyber-scrollbar::-webkit-scrollbar-thumb { background: #232d42; border-radius: 99px; }
+        .cyber-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .cyber-scrollbar::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 99px; }
+        .dark .cyber-scrollbar::-webkit-scrollbar-thumb { background: #232d42; }
         .cyber-scrollbar::-webkit-scrollbar-thumb:hover { background: #3b82f6; }
       `}</style>
 
@@ -83,12 +85,13 @@ const MessageList = ({
 
       {messages.length === 0 && !isWaitingSkeleton ? (
         /* GIAO DIỆN MÀN HÌNH CHÀO MỪNG TRỐNG (WELCOME SCREEN) */
+        /* BKAV HaiHS: Đổi màu chữ màn hình chào mừng theo theme */
         <div className="h-full flex flex-col justify-center items-center text-center opacity-40 select-none animate-fade-in">
           <span className="text-6xl mb-4">🧠</span>
-          <h3 className="text-lg font-bold text-white tracking-wide">
+          <h3 className="text-lg font-bold text-gray-900 dark:text-white tracking-wide transition-colors duration-300">
             Mini Agent Hub Workspace
           </h3>
-          <p className="text-xs text-gray-400 mt-1 max-w-xs leading-5">
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 max-w-xs leading-5 transition-colors duration-300">
             Hãy chọn một mô hình AI và gửi câu hỏi đầu tiên để bắt đầu cuộc trò
             chuyện đột phá bứt phá.
           </p>
@@ -137,9 +140,10 @@ const MessageList = ({
                     className={`grid grid-cols-1 gap-2 max-w-[70%] mt-2 ${isUser ? "mr-0" : "ml-12"}`}
                   >
                     {imageUrls.map((url, idx) => (
+                      /* BKAV HaiHS: Sửa viền và nền block ảnh bổ trợ theo đa giao diện */
                       <div
                         key={idx}
-                        className="relative rounded-xl overflow-hidden border border-[#232d42] bg-[#0b0f19] shadow-2xl max-w-xs sm:max-w-sm"
+                        className="relative rounded-xl overflow-hidden border border-gray-200 dark:border-[#232d42] bg-white dark:bg-[#0b0f19] shadow-2xl max-w-xs sm:max-w-sm transition-colors duration-300"
                       >
                         <img
                           src={url}
@@ -159,10 +163,12 @@ const MessageList = ({
       {/* HIỆU ỨNG SKELETON AI SUY NGHĨ NHẤP NHÁY (GIỐNG CHATGPT CHUẨN DESIGN) */}
       {isWaitingSkeleton && (
         <div className="flex gap-4 max-w-[80%] mr-auto animate-pulse">
-          <div className="w-8 h-8 rounded-full bg-blue-500/10 flex justify-center items-center text-sm shrink-0"></div>
+          {/* BKAV HaiHS: Đồng bộ nền vòng tròn avatar skeleton */}
+          <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-500/10 flex justify-center items-center text-sm shrink-0 transition-colors duration-300"></div>
+          {/* BKAV HaiHS: Cập nhật màu nền và viền các đường line bar skeleton */}
           <div className="flex flex-col gap-2.5 flex-1 pt-1">
-            <div className="h-3.5 bg-[#161b26] border border-[#232d42] rounded-md w-[90%]"></div>
-            <div className="h-3.5 bg-[#161b26] border border-[#232d42] rounded-md w-[65%]"></div>
+            <div className="h-3.5 bg-gray-200 border border-gray-300 dark:bg-[#161b26] dark:border-[#232d42] rounded-md w-[90%] transition-colors duration-300"></div>
+            <div className="h-3.5 bg-gray-200 border border-gray-300 dark:bg-[#161b26] dark:border-[#232d42] rounded-md w-[65%] transition-colors duration-300"></div>
           </div>
         </div>
       )}

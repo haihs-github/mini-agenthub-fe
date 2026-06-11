@@ -63,8 +63,9 @@ export const ToastProvider = ({ children }) => {
       {children}
 
       {/* GIAO DIỆN TOAST DÙNG CHUNG (Hỗ trợ hiệu ứng trượt mượt mà với Tailwind v4) */}
+      {/* BKAV HaiHS: Điều chỉnh màu nền và màu chữ của khay chứa thông báo trượt theo đa giao diện */}
       <div
-        className={`fixed top-6 right-6 z-[9999] flex items-center gap-3 bg-[#1c2436] border-l-4 ${getBorderColor()} text-gray-200 px-5 py-4 rounded-r-lg shadow-2xl transform transition-all duration-300 ease-out ${
+        className={`fixed top-6 right-6 z-[9999] flex items-center gap-3 bg-white border border-gray-100 dark:border-0 dark:bg-[#1c2436] border-l-4 ${getBorderColor()} text-gray-600 dark:text-gray-200 px-5 py-4 rounded-r-lg shadow-2xl transform transition-all duration-300 ease-out ${
           toast.show
             ? "translate-x-0 opacity-100"
             : "translate-x-full opacity-0 pointer-events-none"
@@ -72,14 +73,18 @@ export const ToastProvider = ({ children }) => {
       >
         {renderIcon()}
         <div className="flex flex-col text-sm pr-4">
-          <span className="font-bold text-white">
+          {/* BKAV HaiHS: Đồng bộ màu chữ tiêu đề thông báo */}
+          <span className="font-bold text-gray-900 dark:text-white transition-colors duration-300">
             {toast.type === "success"
               ? "Thành công"
               : toast.type === "error"
                 ? "Thất bại"
                 : "Thông báo"}
           </span>
-          <span className="mt-0.5 text-gray-300">{toast.message}</span>
+          {/* BKAV HaiHS: Đồng bộ màu chữ nội dung thông báo */}
+          <span className="mt-0.5 text-gray-500 dark:text-gray-300 transition-colors duration-300">
+            {toast.message}
+          </span>
         </div>
       </div>
     </ToastContext.Provider>

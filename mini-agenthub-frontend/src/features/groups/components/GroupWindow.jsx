@@ -61,14 +61,12 @@ const GroupWindow = () => {
     loadGroups();
   }, [loadGroups]);
 
-  // Khởi động mở biểu mẫu ở trạng thái tạo mới hoàn toàn
   const handleOpenCreateModal = () => {
     setGroupToEdit(null);
     setIsViewMode(false);
     setIsModalOpen(true);
   };
 
-  // Khởi động mở biểu mẫu ở trạng thái chỉnh sửa thông tin nhóm quyền
   const handleOpenEditModal = (group) => {
     setGroupToEdit(group);
     setIsViewMode(false);
@@ -137,14 +135,15 @@ const GroupWindow = () => {
 
   if (!hasAnyGroupPermission) {
     return (
-      <div className="flex-1 h-full flex flex-col justify-center items-center bg-[#0b0f19] text-center px-6 select-none animate-fade-in">
+      /* BKAV HaiHS: Màu nền khu vực lỗi truy cập */
+      <div className="flex-1 h-full flex flex-col justify-center items-center bg-gray-50 dark:bg-[#0b0f19] text-center px-6 select-none animate-fade-in transition-colors duration-300">
         <div className="w-16 h-16 rounded-2xl bg-red-500/10 border border-red-500/20 flex justify-center items-center text-red-500 shadow-lg mb-4">
           <FiLock size={28} />
         </div>
-        <h3 className="text-xl font-bold text-white tracking-wide">
+        <h3 className="text-xl font-bold text-gray-900 dark:text-white tracking-wide">
           Truy cập bị từ chối
         </h3>
-        <p className="text-sm text-gray-400 mt-2 max-w-sm leading-6">
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 max-w-sm leading-6">
           Tài khoản của bạn không sở hữu bất kỳ quyền hạn nào thuộc phân khu
           nhóm quyền để khai thác module này.
         </p>
@@ -153,7 +152,8 @@ const GroupWindow = () => {
   }
 
   return (
-    <div className="flex-1 h-full overflow-y-auto bg-[#0b0f19] px-8 py-8 flex flex-col justify-between">
+    /* BKAV HaiHS: Màu nền trang GroupWindow */
+    <div className="flex-1 h-full overflow-y-auto bg-gray-50 dark:bg-[#0b0f19] px-8 py-8 flex flex-col justify-between transition-colors duration-300">
       <div className="w-full max-w-6xl mx-auto flex-1">
         <GroupHeader
           onCreateClick={handleOpenCreateModal}
@@ -163,7 +163,7 @@ const GroupWindow = () => {
         <GroupTable
           groups={groups}
           isLoading={isLoading}
-          onViewClick={handleOpenViewModal} // Đấu nối sự kiện click nút chữ i tròn xem chi tiết
+          onViewClick={handleOpenViewModal}
           onMembersClick={handleOpenMembersModal}
           onEditClick={handleOpenEditModal}
           onDeleteClick={handleOpenDeleteConfirm}
@@ -182,7 +182,6 @@ const GroupWindow = () => {
         )}
       </div>
 
-      {/* Truyền cờ điều hướng isViewMode thông suốt vào cấu trúc biểu mẫu */}
       <GroupFormModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}

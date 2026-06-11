@@ -23,7 +23,7 @@ const UserWindow = () => {
   const canRead = userPermissions.includes("USER_R");
   const canUpdate = userPermissions.includes("USER_U");
   const canDelete = userPermissions.includes("USER_D");
-  const canAddToGroup = userPermissions.includes("GROUP_ADD_USER"); // Doc ma quyen gop thanh vien vao nhom
+  const canAddToGroup = userPermissions.includes("GROUP_ADD_USER");
 
   const [users, setUsers] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -40,7 +40,7 @@ const UserWindow = () => {
 
   const [selectedIds, setSelectedIds] = useState([]);
   const [isConfirmBulkDeleteOpen, setIsConfirmBulkDeleteOpen] = useState(false);
-  const [isBulkGroupOpen, setIsBulkGroupOpen] = useState(false); // Trang thai dong mo cua popup gop nhom hang loat
+  const [isBulkGroupOpen, setIsBulkGroupOpen] = useState(false);
 
   const loadUsers = useCallback(async () => {
     if (!canRead) return;
@@ -131,7 +131,6 @@ const UserWindow = () => {
     }
   };
 
-  // Kiem tra nghiem ngat ma quyen GROUP_ADD_USER khi nguoi dung nhan vao nut gop nhom hang loat
   const handleOpenBulkGroupModal = () => {
     if (!canAddToGroup) {
       showToast(
@@ -143,12 +142,10 @@ const UserWindow = () => {
     setIsBulkGroupOpen(true);
   };
 
-  // Lay thong tin day du cua nhung user duoc chon tu khay ID phuc vu hien thi chips trong modal
   const getSelectedUsersData = () => {
     return users.filter((u) => selectedIds.includes(u.id));
   };
 
-  // Clear sach khay chon nguoi dung khi gop nhom phia trong thanh cong ruc ro
   const handleBulkGroupSuccess = () => {
     setSelectedIds([]);
     loadUsers();
@@ -156,14 +153,15 @@ const UserWindow = () => {
 
   if (!hasAnyUserPermission) {
     return (
-      <div className="flex-1 h-full flex flex-col justify-center items-center bg-[#0b0f19] text-center px-6 select-none animate-fade-in">
+      /* BKAV HaiHS: Màu nền khu vực lỗi truy cập */
+      <div className="flex-1 h-full flex flex-col justify-center items-center bg-gray-50 dark:bg-[#0b0f19] text-center px-6 select-none animate-fade-in transition-colors duration-300">
         <div className="w-16 h-16 rounded-2xl bg-red-500/10 border border-red-500/20 flex justify-center items-center text-red-500 shadow-lg mb-4">
           <FiLock size={28} />
         </div>
-        <h3 className="text-xl font-bold text-white tracking-wide">
+        <h3 className="text-xl font-bold text-gray-900 dark:text-white tracking-wide transition-colors">
           Truy cap bi tu choi
         </h3>
-        <p className="text-sm text-gray-400 mt-2 max-w-sm leading-6">
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 max-w-sm leading-6 transition-colors">
           Tai khoan cua ban khong so huu bat ky quyen han nao thuoc phan khu
           nhan su de truy cap module nay.
         </p>
@@ -172,7 +170,8 @@ const UserWindow = () => {
   }
 
   return (
-    <div className="flex-1 h-full overflow-y-auto bg-[#0b0f19] px-8 py-8 flex flex-col justify-between">
+    /* BKAV HaiHS: Màu nền trang UserWindow */
+    <div className="flex-1 h-full overflow-y-auto bg-gray-50 dark:bg-[#0b0f19] px-8 py-8 flex flex-col justify-between transition-colors duration-300">
       <div className="w-full max-w-6xl mx-auto flex-1">
         <UserHeader onAddClick={handleOpenAddModal} canCreate={canCreate} />
 
@@ -183,7 +182,7 @@ const UserWindow = () => {
           onViewClick={handleOpenViewModal}
           onDeleteClick={handleOpenDeleteConfirm}
           onBulkDeleteClick={() => setIsConfirmBulkDeleteOpen(true)}
-          onBulkGroupClick={handleOpenBulkGroupModal} // Gan ham hanh dong kiem tra quyen vao bang bieu con
+          onBulkGroupClick={handleOpenBulkGroupModal}
           selectedIds={selectedIds}
           setSelectedIds={setSelectedIds}
           canRead={canRead}
@@ -209,7 +208,6 @@ const UserWindow = () => {
         onSuccess={loadUsers}
       />
 
-      {/* Linh kien hop thoai gop nhom hang loat va dong bo hoa danh sach chip */}
       <BulkAddToGroupModal
         isOpen={isBulkGroupOpen}
         onClose={() => setIsBulkGroupOpen(false)}

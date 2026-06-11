@@ -19,7 +19,7 @@ const UserProfileWidget = () => {
   };
 
   return (
-    <div className="mt-auto p-4 border-t border-[#1e293b]/60 flex items-center justify-between bg-[#0a0e18] select-none shrink-0">
+    <div className="mt-auto p-4 border-t border-gray-200 dark:border-[#1e293b]/60 flex items-center justify-between bg-gray-50 dark:bg-[#0a0e18] select-none shrink-0 transition-colors duration-300">
       <div className="flex items-center gap-3 overflow-hidden">
         {/* AVATAR TRÍCH XUẤT 2 KÝ TỰ ĐẦU THEO TÊN ĐẦY ĐỦ CỦA USER */}
         <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 flex justify-center items-center font-bold text-white uppercase shrink-0 shadow-lg">
@@ -28,10 +28,10 @@ const UserProfileWidget = () => {
 
         {/* THÔNG TIN HỒ SƠ CHI TIẾT */}
         <div className="flex flex-col overflow-hidden text-left">
-          <span className="text-sm font-semibold text-white truncate capitalize">
+          <span className="text-sm font-semibold text-gray-900 dark:text-white truncate capitalize transition-colors duration-300">
             {user?.fullname || user?.email?.split("@")[0] || "superadmin"}
           </span>
-          <span className="text-[10px] font-bold text-blue-400 tracking-wider uppercase mt-0.5">
+          <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 tracking-wider uppercase mt-0.5 transition-colors duration-300">
             {user?.role || "Thành viên Hub"}
           </span>
         </div>
@@ -42,7 +42,7 @@ const UserProfileWidget = () => {
         type="button"
         onClick={() => setIsModalOpen(true)}
         title="Đăng xuất tài khoản"
-        className="p-2 rounded-xl hover:bg-red-500/10 text-gray-400 hover:text-red-400 transition-all cursor-pointer"
+        className="p-2 rounded-xl hover:bg-red-500/10 text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-all cursor-pointer"
       >
         <FiLogOut size={16} />
       </button>

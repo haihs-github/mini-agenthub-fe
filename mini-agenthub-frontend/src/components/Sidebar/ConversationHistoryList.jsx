@@ -131,9 +131,7 @@ const ConversationHistoryList = ({
         </div>
       </div>
 
-      {/* =========================================================================
-          HỆ THỐNG POPUP MODAL XÁC NHẬN SỬA / XÓA DÙNG HOOK THUẦN (AN TOÀN TUYỆT ĐỐI)
-          ========================================================================= */}
+      {/* HỆ THỐNG POPUP MODAL XÁC NHẬN SỬA / XÓA DÙNG HOOK THUẦN (AN TOÀN TUYỆT ĐỐI)*/}
       {modalType && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex justify-center items-center p-4 animate-fade-in">
           <div className="bg-[#161b26] border border-[#232d42] rounded-2xl max-w-sm w-full p-6 shadow-2xl space-y-4">

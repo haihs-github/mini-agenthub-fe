@@ -22,7 +22,8 @@ const ChatWindow = ({
   );
 
   return (
-    <div className="w-full h-full flex flex-col overflow-hidden bg-[#0b0f19]">
+    /* BKAV HaiHS: Đồng bộ màu nền của toàn bộ vùng ChatWindow */
+    <div className="w-full h-full flex flex-col overflow-hidden bg-gray-50 dark:bg-[#0b0f19] transition-colors duration-300">
       {/* 1. Thanh đầu trang chọn model AI */}
       <ChatHeader
         selectedModel={selectedModel}

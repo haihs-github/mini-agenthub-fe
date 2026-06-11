@@ -12,16 +12,18 @@ const GroupPagination = ({
 
   return (
     <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-6 px-2 select-none">
-      <div className="text-xs text-gray-500 font-medium">
+      {/* BKAV HaiHS: Đổi màu chữ thông báo số lượng item */}
+      <div className="text-xs text-gray-500 dark:text-gray-400 font-medium transition-colors">
         Showing {totalItems > 0 ? startNode : 0} to {endNode} of {totalItems}{" "}
         nodes
       </div>
 
       <div className="flex items-center gap-1.5 text-xs">
+        {/* BKAV HaiHS: Đổi màu nút điều hướng */}
         <button
           disabled={currentPage === 1}
           onClick={() => onPageChange(currentPage - 1)}
-          className="p-2 text-gray-500 hover:text-white disabled:opacity-20 cursor-pointer disabled:cursor-not-allowed transition-colors"
+          className="p-2 text-gray-400 hover:text-gray-900 dark:hover:text-white disabled:opacity-20 cursor-pointer disabled:cursor-not-allowed transition-colors"
         >
           &lt;
         </button>
@@ -33,10 +35,11 @@ const GroupPagination = ({
             <button
               key={pageNum}
               onClick={() => onPageChange(pageNum)}
+              /* BKAV HaiHS: Cấu hình màu nền cho page đang chọn và màu hover cho nền sáng/tối */
               className={`w-7 h-7 flex justify-center items-center rounded-lg font-bold transition-all cursor-pointer ${
                 isActive
                   ? "bg-blue-600 text-white shadow-md shadow-blue-600/20"
-                  : "text-gray-400 hover:bg-gray-800 hover:text-white"
+                  : "text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white"
               }`}
             >
               {pageNum}
@@ -47,7 +50,7 @@ const GroupPagination = ({
         <button
           disabled={currentPage === totalPages}
           onClick={() => onPageChange(currentPage + 1)}
-          className="p-2 text-gray-500 hover:text-white disabled:opacity-20 cursor-pointer disabled:cursor-not-allowed transition-colors"
+          className="p-2 text-gray-400 hover:text-gray-900 dark:hover:text-white disabled:opacity-20 cursor-pointer disabled:cursor-not-allowed transition-colors"
         >
           &gt;
         </button>
