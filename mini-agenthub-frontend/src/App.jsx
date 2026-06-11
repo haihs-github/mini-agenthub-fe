@@ -16,6 +16,7 @@ import Sidebar from "./components/Sidebar/SidebarIndex.jsx";
 import ChatWindow from "./features/chat/components/ChatWindow.jsx";
 import { useChatStream } from "./features/chat/hooks/useChatStream.js";
 import SettingsWindow from "./features/settings/components/SettingsWindow.jsx";
+import { ThemeProvider } from "./context/ThemeContext.jsx";
 
 function MainAppContent() {
   const chatProps = useChatStream("new-chat");
@@ -101,9 +102,11 @@ function AppContentSwitcher() {
 function App() {
   return (
     <AuthProvider>
-      <ToastProvider>
-        <AppContentSwitcher />
-      </ToastProvider>
+      <ThemeProvider>
+        <ToastProvider>
+          <AppContentSwitcher />
+        </ToastProvider>
+      </ThemeProvider>
     </AuthProvider>
   );
 }
