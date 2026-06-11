@@ -38,3 +38,15 @@ export const deleteConversationApi = async (id) => {
   return response.data;
 };
 // BKAV HaiHS : Xóa hội thoại - end
+
+// BKAV HaiHS: API xóa toàn bộ các cuộc hội thoại của tài khoản - start
+export const clearAllChatHistoryApi = async () => {
+  const token = localStorage.getItem("token");
+  const response = await apiClient.delete("/conversations", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return response.data;
+};
+// BKAV HaiHS: API xóa toàn bộ các cuộc hội thoại của tài khoản - end

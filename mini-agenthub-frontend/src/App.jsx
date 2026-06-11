@@ -76,7 +76,12 @@ function MainAppContent() {
         <Route path="/dashboard/groups" element={<GroupWindow />} />
 
         {/* BKAV HaiHS: Khai báo đường dẫn Route riêng biệt dành cho giao diện cấu hình cài đặt tài khoản */}
-        <Route path="/dashboard/settings" element={<SettingsWindow />} />
+        <Route
+          path="/dashboard/settings"
+          element={
+            <SettingsWindow setConversations={chatProps.setConversations} />
+          }
+        />
 
         {/* BKAV HaiHS: Chuyển tuyến đường nhảy phòng hờ wildcard xuống vị trí cuối cùng trong danh sách */}
         <Route path="*" element={<Navigate to="/dashboard" replace />} />

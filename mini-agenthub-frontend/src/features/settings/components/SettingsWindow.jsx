@@ -4,7 +4,7 @@ import Personalization from "./Personalization";
 import AccountSecurity from "./AccountSecurity";
 
 // BKAV HaiHS: components chính trang setting - start
-const SettingsWindow = () => {
+const SettingsWindow = ({ setConversations }) => {
   return (
     <div className="flex-1 h-full overflow-y-auto bg-[#0b0f19] px-8 py-8 flex flex-col">
       <div className="w-full max-w-4xl mx-auto space-y-8 flex-1 pb-12">
@@ -26,7 +26,7 @@ const SettingsWindow = () => {
         <Personalization />
 
         {/* 3. Phân khu Linh kiện Bản chốt bảo mật và Phiên đăng nhập */}
-        <AccountSecurity />
+        <AccountSecurity setConversations={setConversations} />
       </div>
     </div>
   );
