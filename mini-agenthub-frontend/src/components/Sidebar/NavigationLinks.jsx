@@ -41,7 +41,7 @@ const NavigationLinks = ({ currentView, onViewChange }) => {
       id: "settings",
       label: "Cài đặt",
       icon: FiSettings,
-      show: hasSettingsPermission,
+      show: true,
     },
   ];
 
