@@ -50,7 +50,7 @@ const LoginForm = () => {
       // Bắn Toast thành công cực kỳ đơn giản!
       showToast("Đăng nhập hệ thống thành công!", "success");
 
-      window.location.href = "/dashboard";
+      window.location.href = "/chat";
     } catch (error) {
       const errorMsg =
         error.response?.data?.message ||

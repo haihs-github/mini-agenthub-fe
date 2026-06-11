@@ -24,20 +24,20 @@ function MainAppContent() {
 
   // BKAV HaiHS: Cập nhật điều kiện lọc nhận diện trạng thái active cho cả phân hệ cài đặt settings
   const currentView =
-    location.pathname === "/dashboard/users"
+    location.pathname === "/users"
       ? "users"
-      : location.pathname === "/dashboard/groups"
+      : location.pathname === "/groups"
         ? "groups"
-        : location.pathname === "/dashboard/settings"
+        : location.pathname === "/settings"
           ? "settings"
           : "chat";
 
   // BKAV HaiHS: Thực hiện bẻ hướng url phù hợp khi người dùng click vào các mục trên sidebar
   const handleViewChange = (targetView) => {
-    if (targetView === "chat") navigate("/dashboard");
-    if (targetView === "users") navigate("/dashboard/users");
-    if (targetView === "groups") navigate("/dashboard/groups");
-    if (targetView === "settings") navigate("/dashboard/settings");
+    if (targetView === "chat") navigate("/chat");
+    if (targetView === "users") navigate("/users");
+    if (targetView === "groups") navigate("/groups");
+    if (targetView === "settings") navigate("/settings");
   };
 
   return (
@@ -59,7 +59,7 @@ function MainAppContent() {
     >
       <Routes>
         <Route
-          path="/dashboard"
+          path="/"
           element={
             <ChatWindow
               messages={chatProps.messages}
@@ -72,19 +72,19 @@ function MainAppContent() {
             />
           }
         />
-        <Route path="/dashboard/users" element={<UserWindow />} />
-        <Route path="/dashboard/groups" element={<GroupWindow />} />
+        <Route path="/users" element={<UserWindow />} />
+        <Route path="/groups" element={<GroupWindow />} />
 
         {/* BKAV HaiHS: Khai báo đường dẫn Route riêng biệt dành cho giao diện cấu hình cài đặt tài khoản */}
         <Route
-          path="/dashboard/settings"
+          path="/settings"
           element={
             <SettingsWindow setConversations={chatProps.setConversations} />
           }
         />
 
         {/* BKAV HaiHS: Chuyển tuyến đường nhảy phòng hờ wildcard xuống vị trí cuối cùng trong danh sách */}
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        <Route path="*" element={<Navigate to="" replace />} />
       </Routes>
     </AppLayout>
   );
