@@ -1,8 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import { FiKey, FiTrash2, FiUserX, FiLogOut } from "react-icons/fi";
+import ChangePasswordModal from "../../auth/components/ChangePasswordModal";
 
 // BKAV HaiHS: component các chức năng an toàn tài khoản và phiên đăng nhập - start
 const AccountSecurity = () => {
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+
   return (
     <div className="space-y-4 animate-fade-in select-none">
       <div className="flex items-center gap-2 text-white font-bold text-sm">
@@ -22,13 +25,14 @@ const AccountSecurity = () => {
                 Password & Security
               </h5>
               <p className="text-[11px] text-gray-500 font-medium truncate">
-                Last updated 14 days ago. Enable 2FA for better security.
+                Enable 2FA for better security.
               </p>
             </div>
           </div>
           <button
             type="button"
             className="px-4 py-1.5 bg-[#1e2533] border border-[#232d42] hover:bg-gray-800 text-[11px] font-bold text-blue-400 rounded-full transition-all shrink-0 shadow-md cursor-pointer"
+            onClick={() => setIsPasswordModalOpen(true)}
           >
             Update
           </button>
@@ -100,6 +104,11 @@ const AccountSecurity = () => {
           </button>
         </div>
       </div>
+      {/* popup doi mat khau */}
+      <ChangePasswordModal
+        isOpen={isPasswordModalOpen}
+        onClose={() => setIsPasswordModalOpen(false)}
+      />
     </div>
   );
 };

@@ -6,3 +6,15 @@ export const loginApi = async (email, password) => {
   return response.data;
 };
 // BKAV HaiHS : gọi API Đăng nhập - end
+
+// BKAV HaiHS : API đổi mật khẩu - start
+export const changePasswordApi = async (passwordData) => {
+  const token = localStorage.getItem("token");
+  const response = await apiClient.put("/auth/change-password", passwordData, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return response.data;
+};
+// BKAV HaiHS : API đổi mật khẩu - end
