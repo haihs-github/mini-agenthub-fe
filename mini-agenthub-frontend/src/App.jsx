@@ -59,7 +59,7 @@ function MainAppContent() {
     >
       <Routes>
         <Route
-          path="/"
+          path="/chat"
           element={
             <ChatWindow
               messages={chatProps.messages}
