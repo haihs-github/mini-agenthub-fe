@@ -130,7 +130,7 @@ const BulkAddToGroupModal = ({ isOpen, onClose, selectedUsers, onSuccess }) => {
           >
             <div className="space-y-2">
               <label className="text-[10px] font-bold tracking-widest text-gray-500 dark:text-gray-400 uppercase transition-colors">
-                {t("selected_users")} ({selectedUsers.length})
+                {t("user_selected")} ({selectedUsers.length})
               </label>
               <div className="cyber-scrollbar w-full bg-gray-50 dark:bg-[#0b0f19] border border-gray-200 dark:border-[#232d42] rounded-xl px-3 py-3 flex flex-wrap gap-2 min-h-[46px] max-h-32 overflow-y-auto cursor-not-allowed opacity-80 transition-colors">
                 {selectedUsers.map((user) => (

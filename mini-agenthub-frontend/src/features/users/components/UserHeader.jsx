@@ -23,10 +23,7 @@ const UserHeader = ({ onAddClick, canCreate }) => {
       {/* CẶP NÚT CHỨC NĂNG CHUẨN DESIGN */}
       <div className="flex items-center gap-3 shrink-0">
         {/* BKAV HaiHS: Cập nhật màu nền, viền và màu chữ cho nút Bộ lọc theo mode */}
-        <button className="flex items-center gap-2 bg-white dark:bg-[#161b26] border border-gray-200 dark:border-[#232d42] hover:border-gray-400 dark:hover:border-gray-500 text-xs font-semibold px-4 py-2.5 rounded-xl text-gray-600 dark:text-gray-300 transition-all cursor-pointer">
-          <FiFilter size={14} />
-          <span>{t("user_filter") || "Bộ lọc"}</span>
-        </button>
+
         {canCreate && (
           <button
             onClick={onAddClick}

@@ -1,10 +1,12 @@
 import React from "react";
 import { FiMessageSquare, FiUsers, FiShield, FiSettings } from "react-icons/fi";
 import { useAuth } from "../../features/auth/AuthContext";
+import { useLanguage } from "../../context/LanguageContext"; // BKAV HaiHS: Import hook ngôn ngữ
 
 // BKAV HaiHS: Component NavigationLinks trong sidebar, hiển thị các liên kết điều hướng đến các phần khác nhau của dashboard dựa trên quyền của người dùng - start
 const NavigationLinks = ({ currentView, onViewChange }) => {
   const { permissions } = useAuth();
+  const { t } = useLanguage(); // BKAV HaiHS: Khai báo hàm dịch thuật
   const userPermissions = permissions || [];
 
   const hasChatPermission =
@@ -13,33 +15,29 @@ const NavigationLinks = ({ currentView, onViewChange }) => {
   const hasGroupPermission = userPermissions.some((p) =>
     p.startsWith("GROUP_"),
   );
-  const hasSettingsPermission =
-    userPermissions.includes("SETTINGS") ||
-    userPermissions.includes("ADMIN") ||
-    userPermissions.some((p) => p.startsWith("GROUP_"));
 
   const menuItems = [
     {
       id: "chat",
-      label: "Chat",
+      label: t("nav_chat") || "Trò chuyện",
       icon: FiMessageSquare,
       show: hasChatPermission,
     },
     {
       id: "users",
-      label: "Người dùng",
+      label: t("nav_users") || "Người dùng",
       icon: FiUsers,
       show: hasUserPermission,
     },
     {
       id: "groups",
-      label: "Nhóm quyền",
+      label: t("nav_groups") || "Nhóm quyền",
       icon: FiShield,
       show: hasGroupPermission,
     },
     {
       id: "settings",
-      label: "Cài đặt",
+      label: t("nav_settings") || "Cài đặt",
       icon: FiSettings,
       show: true,
     },
@@ -64,7 +62,6 @@ const NavigationLinks = ({ currentView, onViewChange }) => {
                 : "text-gray-500 hover:text-gray-900 hover:bg-gray-100/60 border border-transparent dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-[#161b26]/40"
             }`}
           >
-            {/* Giu co dinh vung chua de ngan chan hien tuong dich chuyen sub-pixel cua SVG */}
             <span className="w-5 h-5 flex items-center justify-center shrink-0">
               <IconComponent
                 size={18}

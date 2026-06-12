@@ -94,7 +94,7 @@ const UserTable = ({
               <th className="py-4 px-6">{t("email") || "Email"}</th>
               {(canRead || canUpdate || canDelete) && (
                 <th className="py-4 px-6 text-right pr-8">
-                  {t("actions") || "Actions"}
+                  {t("action") || "Actions"}
                 </th>
               )}
             </tr>
