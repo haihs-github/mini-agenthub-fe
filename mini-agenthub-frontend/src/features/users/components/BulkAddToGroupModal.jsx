@@ -2,12 +2,14 @@ import React, { useState, useEffect, useRef } from "react";
 import { FiX, FiChevronDown, FiLoader } from "react-icons/fi";
 import { useToast } from "../../../components/Toast";
 import { getGroupsApi, bulkAddUsersToGroupApi } from "../userApi";
+import { useLanguage } from "../../../context/LanguageContext"; // BKAV HaiHS: Import hook ngôn ngữ
 
 // BKAV HaiHS: Component cua so dung chung de gop nhanh hang loat nhan su vao nhom quyen chi dinh - start
 const BulkAddToGroupModal = ({ isOpen, onClose, selectedUsers, onSuccess }) => {
   if (!isOpen) return null;
 
   const { showToast } = useToast();
+  const { t } = useLanguage(); // BKAV HaiHS: Khai báo hàm dịch thuật
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -50,7 +52,7 @@ const BulkAddToGroupModal = ({ isOpen, onClose, selectedUsers, onSuccess }) => {
       if (fetchedList.length < 10) setGroupHasMore(false);
       setGroupPage(page);
     } catch (err) {
-      console.error("Khong load duoc danh sach nhom de gop:", err);
+      console.error("Lỗi:", err);
     } finally {
       setIsLoadingGroups(false);
     }
@@ -81,14 +83,16 @@ const BulkAddToGroupModal = ({ isOpen, onClose, selectedUsers, onSuccess }) => {
     try {
       await bulkAddUsersToGroupApi(selectedGroup.id, userIds);
       showToast(
-        `Da bo sung thanh cong ${userIds.length} thanh vien vao nhom [${selectedGroup.name}]`,
+        t("toast_bulk_add_success") +
+          ` ${userIds.length} ` +
+          t("members") +
+          ` [${selectedGroup.name}]`,
         "success",
       );
       onSuccess();
       onClose();
     } catch (err) {
-      const errorMsg =
-        err?.response?.data?.message || "Gop thanh vien vao nhom that bai";
+      const errorMsg = err?.response?.data?.message || t("toast_bulk_add_fail");
       showToast(errorMsg, "error");
     } finally {
       setIsSubmitting(false);
@@ -106,11 +110,10 @@ const BulkAddToGroupModal = ({ isOpen, onClose, selectedUsers, onSuccess }) => {
       `}</style>
 
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm select-none animate-fade-in">
-        {/* BKAV HaiHS: Cập nhật màu nền và viền Card Modal - Sáng: bg-white / Tối: bg-[#161b26] */}
         <div className="w-full max-w-lg bg-white dark:bg-[#161b26] border border-gray-200 dark:border-[#232d42] rounded-2xl shadow-2xl flex flex-col relative overflow-visible transition-colors duration-300">
           <div className="px-6 py-4 border-b border-gray-200 dark:border-[#232d42] flex justify-between items-center bg-gray-50 dark:bg-[#111622]/50 rounded-t-2xl shrink-0 transition-colors duration-300">
             <h3 className="text-sm font-bold text-gray-900 dark:text-white tracking-wide transition-colors">
-              Add Users to Group
+              {t("bulk_add_title")}
             </h3>
             <button
               type="button"
@@ -125,32 +128,26 @@ const BulkAddToGroupModal = ({ isOpen, onClose, selectedUsers, onSuccess }) => {
             onSubmit={handleSubmit}
             className="p-6 space-y-5 flex-1 overflow-visible"
           >
-            {/* Truong hien thi danh sach nguoi dung */}
             <div className="space-y-2">
               <label className="text-[10px] font-bold tracking-widest text-gray-500 dark:text-gray-400 uppercase transition-colors">
-                Selected Users ({selectedUsers.length})
+                {t("selected_users")} ({selectedUsers.length})
               </label>
               <div className="cyber-scrollbar w-full bg-gray-50 dark:bg-[#0b0f19] border border-gray-200 dark:border-[#232d42] rounded-xl px-3 py-3 flex flex-wrap gap-2 min-h-[46px] max-h-32 overflow-y-auto cursor-not-allowed opacity-80 transition-colors">
-                {selectedUsers.map((user) => {
-                  return (
-                    <div
-                      key={user.id}
-                      className="bg-blue-50 dark:bg-blue-600/10 border border-blue-200 dark:border-blue-500/20 text-xs font-bold text-blue-600 dark:text-blue-400 px-2.5 py-1 rounded-lg transition-colors"
-                    >
-                      {`${user.fullname} (${user.email})`}
-                    </div>
-                  );
-                })}
+                {selectedUsers.map((user) => (
+                  <div
+                    key={user.id}
+                    className="bg-blue-50 dark:bg-blue-600/10 border border-blue-200 dark:border-blue-500/20 text-xs font-bold text-blue-600 dark:text-blue-400 px-2.5 py-1 rounded-lg transition-colors"
+                  >{`${user.fullname} (${user.email})`}</div>
+                ))}
               </div>
             </div>
 
-            {/* Truong lua chon nhom quyen */}
             <div
               className="space-y-2 relative overflow-visible"
               ref={dropdownRef}
             >
               <label className="text-[10px] font-bold tracking-widest text-gray-500 dark:text-gray-400 uppercase transition-colors">
-                Select Target Group
+                {t("target_group")}
               </label>
               <div
                 onClick={toggleDropdown}
@@ -159,7 +156,7 @@ const BulkAddToGroupModal = ({ isOpen, onClose, selectedUsers, onSuccess }) => {
                 <span
                   className={`text-sm ${selectedGroup ? "text-gray-900 dark:text-white font-semibold" : "text-gray-400 pl-1"}`}
                 >
-                  {selectedGroup ? selectedGroup.name : "Select a group"}
+                  {selectedGroup ? selectedGroup.name : t("select_group")}
                 </span>
                 <div className="flex items-center gap-2">
                   {selectedGroup && (
@@ -169,7 +166,7 @@ const BulkAddToGroupModal = ({ isOpen, onClose, selectedUsers, onSuccess }) => {
                         e.stopPropagation();
                         setSelectedGroup(null);
                       }}
-                      className="text-gray-400 hover:text-red-500 transition-colors"
+                      className="text-gray-400 hover:text-red-500"
                     >
                       <FiX size={14} />
                     </button>
@@ -181,15 +178,14 @@ const BulkAddToGroupModal = ({ isOpen, onClose, selectedUsers, onSuccess }) => {
                 </div>
               </div>
 
-              {/* Menu tha xuong */}
               {isDropdownOpen && (
                 <div
                   onScroll={handleDropdownScroll}
-                  className="cyber-scrollbar absolute left-0 right-0 mt-1.5 max-h-[210px] overflow-y-auto bg-white dark:bg-[#1a202c] border border-gray-200 dark:border-[#232d42] rounded-xl shadow-2xl z-[100] divide-y divide-gray-100 dark:divide-[#232d42]/60 animate-fade-in transition-colors"
+                  className="cyber-scrollbar absolute left-0 right-0 mt-1.5 max-h-[210px] overflow-y-auto bg-white dark:bg-[#1a202c] border border-gray-200 dark:border-[#232d42] rounded-xl shadow-2xl z-[100] animate-fade-in transition-colors"
                 >
                   {groups.length === 0 && !isLoadingGroups ? (
                     <div className="p-4 text-xs text-gray-500 italic text-center">
-                      Khong tim thay nhom quyen nao.
+                      {t("no_group_found")}
                     </div>
                   ) : (
                     groups.map((group) => {
@@ -220,7 +216,6 @@ const BulkAddToGroupModal = ({ isOpen, onClose, selectedUsers, onSuccess }) => {
               )}
             </div>
 
-            {/* Thanh nut bam chan trang */}
             <div className="pt-6 mt-8 border-t border-gray-200 dark:border-[#232d42] flex justify-end items-center gap-3 bg-white dark:bg-[#161b26] relative z-10 transition-colors">
               <button
                 type="button"
@@ -228,7 +223,7 @@ const BulkAddToGroupModal = ({ isOpen, onClose, selectedUsers, onSuccess }) => {
                 disabled={isSubmitting}
                 className="px-5 py-2.5 text-xs font-bold text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border border-gray-200 dark:border-[#232d42] bg-gray-50 dark:bg-[#111622] hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all disabled:opacity-30 cursor-pointer"
               >
-                Cancel
+                {t("cancel_btn")}
               </button>
               <button
                 type="submit"
@@ -238,10 +233,10 @@ const BulkAddToGroupModal = ({ isOpen, onClose, selectedUsers, onSuccess }) => {
                 {isSubmitting ? (
                   <>
                     <FiLoader size={14} className="animate-spin" />{" "}
-                    <span>Processing...</span>
+                    <span>{t("processing")}</span>
                   </>
                 ) : (
-                  <span>Add to Group</span>
+                  <span>{t("add_to_group")}</span>
                 )}
               </button>
             </div>

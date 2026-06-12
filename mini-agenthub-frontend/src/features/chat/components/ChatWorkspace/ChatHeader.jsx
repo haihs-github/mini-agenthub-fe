@@ -1,39 +1,43 @@
 import React, { useState } from "react";
 import { FiChevronDown, FiCpu } from "react-icons/fi";
+import { useLanguage } from "../../../../context/LanguageContext"; // BKAV HaiHS: Import hook ngôn ngữ
 
 // BKAV HaiHS : Component header của workspace chat, chứa trạng thái kết nối và dropdown chọn model AI - start
 const ChatHeader = ({ selectedModel, setSelectedModel }) => {
   const [isOpen, setIsOpen] = useState(false);
-  // các model ai
+  const { t } = useLanguage(); // BKAV HaiHS: Khai báo hàm dịch thuật
+
+  // Các model ai
   const models = [
     {
       id: "meta-llama/llama-4-scout-17b-16e-instruct",
-      name: "meta-llama/llama-4-scout-17b-16e-instruct)",
-      desc: "Siêu tốc độ, tối ưu hội thoại",
+      name: "meta-llama/llama-4-scout-17b-16e-instruct",
+      desc: t("model_desc_llama") || "Siêu tốc độ, tối ưu hội thoại",
     },
     {
       id: "flowise",
       name: "Flowise Agent",
-      desc: "Hệ thống AI quy trình kéo thả",
+      desc: t("model_desc_flowise") || "Hệ thống AI quy trình kéo thả",
     },
   ];
+
   // Lấy tên model đang chọn để hiển thị trên nút dropdown
   const currentModelName =
-    models.find((m) => m.id === selectedModel)?.name || "Chọn Model AI";
+    models.find((m) => m.id === selectedModel)?.name ||
+    t("select_model") ||
+    "Chọn Model AI";
 
   return (
-    /* BKAV HaiHS: Điều chỉnh màu nền và đường viền Header theo đa giao diện */
     <div className="h-16 border-b border-gray-200 dark:border-[#1e293b]/60 flex items-center justify-between px-6 bg-white/80 dark:bg-[#0b0f19]/80 backdrop-blur-md z-10 shrink-0 transition-colors duration-300">
       <div className="flex items-center gap-2">
         <div className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></div>
         <span className="text-sm font-semibold text-gray-900 dark:text-gray-200 transition-colors duration-300">
-          Hệ thống trợ lý AI sẵn sàng
+          {t("ai_status_ready") || "Hệ thống trợ lý AI sẵn sàng"}
         </span>
       </div>
 
       {/* DROPDOWN CHỌN MODEL*/}
       <div className="relative">
-        {/* BKAV HaiHS: Sửa nền, viền và màu chữ nút chọn model */}
         <button
           onClick={() => setIsOpen(!isOpen)}
           className="flex items-center gap-2 bg-gray-50 dark:bg-[#161b26] border border-gray-200 dark:border-[#232d42] hover:border-gray-400 dark:hover:border-gray-600 text-xs font-semibold px-4 py-2 rounded-xl transition-all text-gray-700 dark:text-gray-300 cursor-pointer"
@@ -46,7 +50,6 @@ const ChatHeader = ({ selectedModel, setSelectedModel }) => {
         </button>
 
         {isOpen && (
-          /* BKAV HaiHS: Sửa nền, viền của bảng Dropdown Model */
           <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-[#161b26] border border-gray-200 dark:border-[#232d42] rounded-xl shadow-2xl py-1.5 z-50 animate-fade-in transition-colors duration-300">
             {models.map((model) => (
               <button
@@ -55,7 +58,6 @@ const ChatHeader = ({ selectedModel, setSelectedModel }) => {
                   setSelectedModel(model.id);
                   setIsOpen(false);
                 }}
-                /* BKAV HaiHS: Điều chỉnh màu hover và viền active khi chọn model */
                 className={`w-full text-left px-4 py-2.5 hover:bg-gray-100 dark:hover:bg-[#1e293b] flex flex-col transition-colors ${
                   selectedModel === model.id
                     ? "bg-gray-100 dark:bg-[#1e293b]/60 border-l-2 border-blue-500"

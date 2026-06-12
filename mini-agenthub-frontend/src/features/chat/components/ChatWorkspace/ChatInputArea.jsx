@@ -1,6 +1,7 @@
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import { FiSend, FiPaperclip, FiSquare, FiX } from "react-icons/fi";
 import { useToast } from "../../../../components/Toast";
+import { useLanguage } from "../../../../context/LanguageContext"; // BKAV HaiHS: Import hook ngôn ngữ
 
 // BKAV HaiHS : Component khu vực nhập liệu và gửi câu hỏi trong workspace chat, hỗ trợ đính kèm ảnh và trạng thái đang trả lời - start
 const ChatInputArea = ({
@@ -11,45 +12,39 @@ const ChatInputArea = ({
   setAttachedImages,
 }) => {
   const { showToast } = useToast();
+  const { t } = useLanguage(); // BKAV HaiHS: Khai báo hàm dịch thuật
   const [prompt, setPrompt] = useState("");
-  const fileInputRef = useRef(null);
+  const fileInputRef = React.useRef(null);
 
-  // Xử lý nạp file ảnh nguyên bản từ nút ghim giấy
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
 
-    // kiểm tra định dạng file chỉ nhập ảnh
     files.forEach((file) => {
       if (!file.type.startsWith("image/")) {
-        // custom toast đã tạo từ trước
-        showToast("Hệ thống chỉ hỗ trợ đính kèm tệp tin hình ảnh!", "warning");
+        showToast(
+          t("toast_image_only") ||
+            "Hệ thống chỉ hỗ trợ đính kèm tệp tin hình ảnh!",
+          "warning",
+        );
         return;
       }
-
-      // Tạo một đường link ảo tạm thời để vẽ giao diện preview lên thẻ <img>
       const previewUrl = URL.createObjectURL(file);
-
-      // Lưu vào state một Object chứa cả File gốc (để upload) lẫn link preview (để vẽ UI)
       setAttachedImages((prev) => [
         ...prev,
         { fileObj: file, preview: previewUrl },
       ]);
     });
 
-    if (fileInputRef.current) fileInputRef.current.value = ""; // Reset input
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  // Xóa ảnh khỏi khay đính kèm chuẩn chỉnh (Có thu hồi bộ nhớ URL ảo)
   const removeImage = (indexToRemove) => {
-    // Thu hồi link ảo để tránh rò rỉ bộ nhớ trình duyệt
     URL.revokeObjectURL(attachedImages[indexToRemove].preview);
     setAttachedImages((prev) => prev.filter((_, idx) => idx !== indexToRemove));
   };
 
-  // xử lý khi người dùng bấm gửi hoặc dừng
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Nếu đang chạy, bấm nút này sẽ đóng stream
     if (isStreaming) {
       onStopStream();
       return;
@@ -57,10 +52,9 @@ const ChatInputArea = ({
     if (!prompt.trim()) return;
 
     onSendMessage(prompt.trim());
-    setPrompt(""); // Reset ô nhập
+    setPrompt("");
   };
 
-  // Bẫy phím tắt Enter để gửi câu hỏi (nhưng Shift+Enter thì xuống dòng)
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -68,16 +62,13 @@ const ChatInputArea = ({
     }
   };
 
-  // return giao diện
   return (
-    /* BKAV HaiHS: Điều chỉnh màu nền container tổng vùng nhập liệu */
     <div className="p-4 bg-gray-50 dark:bg-[#0b0f19] border-t border-gray-200 dark:border-[#1e293b]/60 shrink-0 transition-colors duration-300">
       <form
         onSubmit={handleSubmit}
-        /* BKAV HaiHS: Sửa màu nền Card nhập liệu và viền theo đa giao diện */
         className="max-w-4xl mx-auto relative bg-white border border-gray-200 dark:bg-[#161b26] dark:border-[#232d42] rounded-2xl focus-within:border-blue-500/50 transition-all shadow-2xl overflow-hidden px-4 py-3"
       >
-        {/* 1. KHAY HIỂN THỊ XEM TRƯỚC ẢNH ĐÍNH KÈM (CHẬN TRÊN DÒNG PROMPT) */}
+        {/* 1. KHAY HIỂN THỊ XEM TRƯỚC ẢNH ĐÍNH KÈM */}
         {attachedImages.length > 0 && (
           <div className="flex flex-wrap gap-2.5 pb-3 border-b border-gray-100 dark:border-[#232d42]/60 mb-2 animate-fade-in transition-colors">
             {attachedImages.map((imgObj, idx) => (
@@ -104,12 +95,11 @@ const ChatInputArea = ({
 
         {/* 2. Ô NHẬP TEXTAREA + NÚT CHỨC NĂNG CHÂN TRANG */}
         <div className="flex items-end gap-3">
-          {/* Nút kẹp giấy ẩn để chọn file */}
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
             className="p-2 rounded-xl text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-[#1e293b] transition-all cursor-pointer mb-0.5"
-            title="Đính kèm hình ảnh"
+            title={t("attach_image") || "Đính kèm hình ảnh"}
           >
             <FiPaperclip size={18} />
           </button>
@@ -127,12 +117,13 @@ const ChatInputArea = ({
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Nhập nội dung câu hỏi tại đây..."
+            placeholder={
+              t("chat_placeholder") || "Nhập nội dung câu hỏi tại đây..."
+            }
             className="flex-1 bg-transparent border-0 focus:outline-none resize-none text-sm text-gray-900 dark:text-gray-100 max-h-36 placeholder-gray-400 dark:placeholder-gray-600 leading-6 transition-colors"
             style={{ height: "auto" }}
           />
 
-          {/* NÚT CO ĐỔI TRẠNG THÁI GỬI / DỪNG CHAT */}
           <button
             type="submit"
             disabled={!isStreaming && !prompt.trim()}
@@ -152,8 +143,8 @@ const ChatInputArea = ({
       </form>
       {/* BKAV HaiHS: Sửa màu chữ cảnh báo cuối trang */}
       <div className="text-center text-[10px] text-gray-500 dark:text-gray-600 tracking-wide mt-2 transition-colors">
-        Hệ thống trí tuệ nhân tạo có thể đưa ra câu trả lời chưa chính xác, vui
-        lòng kiểm tra lại nguồn dữ liệu.
+        {t("ai_disclaimer") ||
+          "Hệ thống trí tuệ nhân tạo có thể đưa ra câu trả lời chưa chính xác, vui lòng kiểm tra lại nguồn dữ liệu."}
       </div>
     </div>
   );

@@ -3,6 +3,7 @@ import { FiX, FiChevronDown, FiLoader } from "react-icons/fi";
 import { useToast } from "../../../components/Toast";
 import { createUserApi, updateUserApi, getGroupsApi } from "../userApi";
 import ConfirmModal from "../../../components/ConfirmModal";
+import { useLanguage } from "../../../context/LanguageContext"; // BKAV HaiHS: Import hook ngôn ngữ
 
 // BKAV HaiHS: Component Modal da nang hop nhat chuc nang quan ly thanh vien - start
 const UserFormModal = ({
@@ -15,6 +16,7 @@ const UserFormModal = ({
   if (!isOpen) return null;
 
   const { showToast } = useToast();
+  const { t } = useLanguage(); // BKAV HaiHS: Khai báo hàm dịch thuật
   const isEditMode = !!userToEdit;
 
   const [fullName, setFullName] = useState("");
@@ -81,7 +83,7 @@ const UserFormModal = ({
       if (fetchedList.length < 10) setGroupHasMore(false);
       setGroupPage(page);
     } catch (err) {
-      console.error("Khong tai duoc danh sach nhom quyen:", err);
+      console.error("Lỗi:", err);
     } finally {
       setIsLoadingGroups(false);
     }
@@ -149,16 +151,15 @@ const UserFormModal = ({
     try {
       if (isEditMode) {
         await updateUserApi(userToEdit.id, payload);
-        showToast("Cap nhat thong tin thanh vien thanh cong!", "success");
+        showToast(t("toast_user_update_success"), "success");
       } else {
         await createUserApi(payload);
-        showToast("Them moi thanh vien vao mang luoi thanh cong!", "success");
+        showToast(t("toast_user_create_success"), "success");
       }
       onSuccess();
       onClose();
     } catch (err) {
-      const errorMsg =
-        err?.response?.data?.message || "Duong truyen xu ly API that bai";
+      const errorMsg = err?.response?.data?.message || t("toast_error");
       showToast(errorMsg, "error");
     } finally {
       setIsSubmitting(false);
@@ -166,10 +167,10 @@ const UserFormModal = ({
   };
 
   const modalTitle = isViewMode
-    ? "User Details"
+    ? t("modal_title_view")
     : isEditMode
-      ? "Update User"
-      : "Add New User";
+      ? t("modal_title_edit")
+      : t("modal_title_create");
 
   return (
     <>
@@ -202,20 +203,20 @@ const UserFormModal = ({
           >
             <div className="space-y-2">
               <label className="text-[10px] font-bold tracking-widest text-gray-500 dark:text-gray-400 uppercase transition-colors">
-                Full Name
+                {t("full_name")}
               </label>
               <input
                 type="text"
                 disabled={isViewMode}
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                className="w-full bg-gray-50 dark:bg-[#0b0f19] border border-gray-200 dark:border-[#232d42] focus:border-blue-500/50 text-sm text-gray-900 dark:text-gray-100 rounded-xl px-4 py-3 focus:outline-none transition-all placeholder-gray-400 dark:placeholder-gray-600 disabled:opacity-70 disabled:cursor-not-allowed"
+                className="w-full bg-gray-50 dark:bg-[#0b0f19] border border-gray-200 dark:border-[#232d42] focus:border-blue-500/50 text-sm text-gray-900 dark:text-gray-100 rounded-xl px-4 py-3 focus:outline-none transition-all placeholder-gray-400 dark:placeholder-gray-600"
               />
             </div>
 
             <div className="space-y-2">
               <label className="text-[10px] font-bold tracking-widest text-gray-500 dark:text-gray-400 uppercase transition-colors">
-                Email Address
+                {t("email_address")}
               </label>
               <input
                 type="email"
@@ -223,7 +224,7 @@ const UserFormModal = ({
                 disabled={isViewMode}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-gray-50 dark:bg-[#0b0f19] border border-gray-200 dark:border-[#232d42] focus:border-blue-500/50 text-sm text-gray-900 dark:text-gray-100 rounded-xl px-4 py-3 focus:outline-none transition-all placeholder-gray-400 dark:placeholder-gray-600 font-mono disabled:opacity-70 disabled:cursor-not-allowed"
+                className="w-full bg-gray-50 dark:bg-[#0b0f19] border border-gray-200 dark:border-[#232d42] focus:border-blue-500/50 text-sm text-gray-900 dark:text-gray-100 rounded-xl px-4 py-3 focus:outline-none transition-all placeholder-gray-400 dark:placeholder-gray-600 font-mono"
               />
             </div>
 
@@ -232,11 +233,7 @@ const UserFormModal = ({
               ref={dropdownRef}
             >
               <label className="text-[10px] font-bold tracking-widest text-gray-500 dark:text-gray-400 uppercase transition-colors">
-                {isViewMode
-                  ? "Belongs to Groups"
-                  : isEditMode
-                    ? "Groups (Multi-select)"
-                    : "Assign to Group (Optional)"}
+                {t("groups_assignment")}
               </label>
               <div
                 onClick={toggleDropdown}
@@ -245,9 +242,7 @@ const UserFormModal = ({
                 <div className="flex flex-wrap gap-1.5 items-center flex-1">
                   {selectedGroups.length === 0 ? (
                     <span className="text-sm text-gray-400 pl-1">
-                      {isViewMode
-                        ? "Khong thuoc nhom quyen nao"
-                        : "Select a group"}
+                      {isViewMode ? t("no_group_assigned") : t("select_group")}
                     </span>
                   ) : (
                     selectedGroups.map((g) => (
@@ -260,7 +255,7 @@ const UserFormModal = ({
                           <button
                             type="button"
                             onClick={(e) => removeGroupChip(g.id, e)}
-                            className="text-blue-600/40 dark:text-blue-400/60 hover:text-red-500 transition-colors"
+                            className="text-blue-600/40 dark:text-blue-400/60 hover:text-red-500"
                           >
                             <FiX size={12} />
                           </button>
@@ -280,11 +275,11 @@ const UserFormModal = ({
               {isDropdownOpen && !isViewMode && (
                 <div
                   onScroll={handleDropdownScroll}
-                  className="cyber-scrollbar absolute left-0 right-0 mt-1.5 max-h-[210px] overflow-y-auto bg-white dark:bg-[#1a202c] border border-gray-200 dark:border-[#232d42] rounded-xl shadow-2xl z-[100] divide-y divide-gray-100 dark:divide-[#232d42]/60 animate-fade-in transition-colors"
+                  className="cyber-scrollbar absolute left-0 right-0 mt-1.5 max-h-[210px] overflow-y-auto bg-white dark:bg-[#1a202c] border border-gray-200 dark:border-[#232d42] rounded-xl shadow-2xl z-[100] animate-fade-in transition-colors"
                 >
                   {groups.length === 0 && !isLoadingGroups ? (
                     <div className="p-4 text-xs text-gray-500 italic text-center">
-                      Khong tim thay nhom quyen nao.
+                      {t("no_group_found")}
                     </div>
                   ) : (
                     groups.map((group) => {
@@ -306,7 +301,7 @@ const UserFormModal = ({
                     })
                   )}
                   {isLoadingGroups && (
-                    <div className="py-2.5 flex justify-center items-center text-blue-500 bg-gray-100 dark:bg-[#0b0f19]/20">
+                    <div className="py-2.5 flex justify-center items-center text-blue-500 bg-gray-50/50 dark:bg-[#0b0f19]/20">
                       <FiLoader size={14} className="animate-spin" />
                     </div>
                   )}
@@ -317,12 +312,12 @@ const UserFormModal = ({
             {isViewMode && (
               <div className="space-y-2 animate-fade-in">
                 <label className="text-[10px] font-bold tracking-widest text-gray-500 dark:text-gray-400 uppercase transition-colors">
-                  He thong quyen han tong hop
+                  {t("system_permissions")}
                 </label>
                 <div className="cyber-scrollbar w-full bg-gray-50 dark:bg-[#0b0f19] border border-gray-200 dark:border-[#232d42] rounded-xl px-3 py-3 flex flex-wrap gap-2 min-h-[46px] max-h-36 overflow-y-auto cursor-not-allowed opacity-80 transition-colors">
                   {permissions.length === 0 ? (
                     <span className="text-sm text-gray-400 pl-1 italic">
-                      Tai khoan nay chua so huu quyen han ca biet nao
+                      {t("no_perms_assigned")}
                     </span>
                   ) : (
                     permissions.map((perm, idx) => (
@@ -343,9 +338,9 @@ const UserFormModal = ({
                 type="button"
                 onClick={handleCancelWithCheck}
                 disabled={isSubmitting}
-                className="px-5 py-2.5 text-xs font-bold text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border border-gray-200 dark:border-[#232d42] bg-gray-50 dark:bg-[#111622] hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all disabled:opacity-30 cursor-pointer"
+                className="px-5 py-2.5 text-xs font-bold text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border border-gray-200 dark:border-[#232d42] bg-gray-50 dark:bg-[#111622] hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all cursor-pointer"
               >
-                Cancel
+                {t("cancel_btn")}
               </button>
               <button
                 type="submit"
@@ -355,10 +350,12 @@ const UserFormModal = ({
                 {isSubmitting ? (
                   <>
                     <FiLoader size={14} className="animate-spin" />{" "}
-                    <span>Processing...</span>
+                    <span>{t("processing")}</span>
                   </>
                 ) : (
-                  <span>{isEditMode ? "Update User" : "Create User"}</span>
+                  <span>
+                    {isEditMode ? t("update_user") : t("create_user")}
+                  </span>
                 )}
               </button>
             </div>
@@ -370,14 +367,15 @@ const UserFormModal = ({
         isOpen={isConfirmCancelOpen}
         onClose={() => setIsConfirmCancelOpen(false)}
         onConfirm={onClose}
-        title="Xac nhan huy tac vu"
-        message="He thong phat hien ban dang nhap do du lieu. Ban co chac chan muon huy bo tien trinh them/sua thanh vien nay khong?"
-        confirmText="Đong y huy"
-        cancelText="Tiep tuc nhap"
+        title={t("confirm_cancel")}
+        message={t("confirm_cancel_msg")}
+        confirmText={t("agree_cancel")}
+        cancelText={t("keep_editing")}
         type="warning"
       />
     </>
   );
 };
+// BKAV HaiHS: Component Modal da nang hop nhat chuc nang quan ly thanh vien - end
 
 export default UserFormModal;

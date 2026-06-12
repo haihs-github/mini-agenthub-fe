@@ -4,11 +4,13 @@ import { useAuth } from "../../auth/AuthContext";
 import { useToast } from "../../../components/Toast";
 import { updateProfileApi } from "../settingsApi";
 import ConfirmModal from "../../../components/ConfirmModal";
+import { useLanguage } from "../../../context/LanguageContext"; // BKAV HaiHS: Import hook ngôn ngữ
 
 // BKAV HaiHS: component chỉnh sửa thông tin liên lạc - start
 const PersonalInfo = () => {
   const { user, login } = useAuth();
   const { showToast } = useToast();
+  const { t } = useLanguage(); // BKAV HaiHS: Khai báo hàm dịch thuật
 
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
@@ -38,7 +40,7 @@ const PersonalInfo = () => {
   const handleOpenSaveConfirm = (type, value) => {
     if (type === "phone" && !validatePhoneNumber(value)) {
       showToast(
-        "Số điện thoại không được chứa ký tự đặc biệt và phải đủ 10 chữ số!",
+        t("toast_phone_invalid") || "Số điện thoại không đúng!",
         "warning",
       );
       return;
@@ -71,7 +73,10 @@ const PersonalInfo = () => {
 
     try {
       const res = await updateProfileApi(payload);
-      showToast("Cập nhật thông tin hồ sơ tài khoản thành công!", "success");
+      showToast(
+        t("toast_profile_success") || "Cập nhật thành công!",
+        "success",
+      );
 
       if (login && res?.data) {
         login(res.data);
@@ -81,11 +86,7 @@ const PersonalInfo = () => {
         ? setIsEditingPhone(false)
         : setIsEditingAddress(false);
     } catch (err) {
-      showToast(
-        err?.response?.data?.message ||
-          "Không thể cập nhật hồ sơ do lỗi kết nối hệ thống",
-        "error",
-      );
+      showToast(err?.response?.data?.message || t("toast_error"), "error");
       if (targetType === "phone") setPhone(user?.phone || "");
       else setAddress(user?.address || "");
     } finally {
@@ -114,7 +115,7 @@ const PersonalInfo = () => {
     <div className="space-y-4 animate-fade-in">
       <div className="flex items-center gap-2 text-gray-900 dark:text-white font-bold text-sm select-none transition-colors duration-300">
         <span className="text-gray-400 text-lg">👤</span>
-        <h4>Personal Information</h4>
+        <h4>{t("personalInfo")}</h4>
       </div>
 
       <div className="bg-white dark:bg-[#161b26] border border-gray-200 dark:border-[#232d42] rounded-2xl p-5 divide-y divide-gray-100 dark:divide-[#232d42]/60 shadow-xl transition-colors duration-300">
@@ -126,7 +127,7 @@ const PersonalInfo = () => {
             </div>
             <div className="flex-1 min-w-0 space-y-1">
               <p className="text-[10px] font-mono font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest transition-colors">
-                Phone Number
+                {t("phoneNumber")}
               </p>
               {isEditingPhone ? (
                 <input
@@ -135,12 +136,12 @@ const PersonalInfo = () => {
                   onChange={(e) => setPhone(e.target.value)}
                   disabled={isSubmitting}
                   className="w-full max-w-sm bg-gray-50 dark:bg-[#0b0f19] border border-blue-500/40 text-xs text-gray-900 dark:text-gray-100 rounded-lg px-3 py-1.5 focus:outline-none font-mono transition-colors"
-                  placeholder="e.g. 0912345678"
+                  placeholder="0912345678"
                   autoFocus
                 />
               ) : (
                 <p className="text-xs font-semibold text-gray-900 dark:text-gray-200 font-mono tracking-wide truncate transition-colors">
-                  {phone || "Not configured yet"}
+                  {phone || t("notConfigured")}
                 </p>
               )}
             </div>
@@ -168,7 +169,7 @@ const PersonalInfo = () => {
                   ) : (
                     <FiCheck size={12} />
                   )}
-                  Done
+                  {t("doneBtn")}
                 </button>
               </>
             ) : (
@@ -177,7 +178,7 @@ const PersonalInfo = () => {
                 onClick={() => setIsEditingPhone(true)}
                 className="px-4 py-1.5 bg-white dark:bg-[#1e2533] border border-gray-200 dark:border-[#232d42] hover:bg-gray-100 dark:hover:bg-gray-800 text-[11px] font-bold text-blue-600 dark:text-blue-400 rounded-full transition-all cursor-pointer shadow-md"
               >
-                Update
+                {t("updateBtn")}
               </button>
             )}
           </div>
@@ -191,7 +192,7 @@ const PersonalInfo = () => {
             </div>
             <div className="flex-1 min-w-0 space-y-1">
               <p className="text-[10px] font-mono font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest transition-colors">
-                Address
+                {t("address")}
               </p>
               {isEditingAddress ? (
                 <input
@@ -200,12 +201,14 @@ const PersonalInfo = () => {
                   onChange={(e) => setAddress(e.target.value)}
                   disabled={isSubmitting}
                   className="w-full max-w-xl bg-gray-50 dark:bg-[#0b0f19] border border-blue-500/40 text-xs text-gray-900 dark:text-gray-100 rounded-lg px-3 py-1.5 focus:outline-none transition-colors"
-                  placeholder="e.g. Hà Đông, Hà Nội"
+                  placeholder={
+                    t("address_placeholder") || "e.g. Hà Nội, Vietnam"
+                  }
                   autoFocus
                 />
               ) : (
                 <p className="text-xs font-semibold text-gray-900 dark:text-gray-200 truncate transition-colors">
-                  {address || "Not configured yet"}
+                  {address || t("notConfigured")}
                 </p>
               )}
             </div>
@@ -233,7 +236,7 @@ const PersonalInfo = () => {
                   ) : (
                     <FiCheck size={12} />
                   )}
-                  Done
+                  {t("doneBtn")}
                 </button>
               </>
             ) : (
@@ -242,7 +245,7 @@ const PersonalInfo = () => {
                 onClick={() => setIsEditingAddress(true)}
                 className="px-4 py-1.5 bg-white dark:bg-[#1e2533] border border-gray-200 dark:border-[#232d42] hover:bg-gray-100 dark:hover:bg-gray-800 text-[11px] font-bold text-blue-600 dark:text-blue-400 rounded-full transition-all cursor-pointer shadow-md"
               >
-                Update
+                {t("updateBtn")}
               </button>
             )}
           </div>
@@ -257,20 +260,20 @@ const PersonalInfo = () => {
         onConfirm={handleConfirmAction}
         title={
           confirmModal.type.startsWith("save")
-            ? "Xác nhận lưu thay đổi"
-            : "Xác nhận hủy nhập liệu"
+            ? t("confirm_save_title")
+            : t("confirm_cancel_title")
         }
         message={
           confirmModal.type.startsWith("save")
-            ? "Bạn có chắc chắn muốn ghi đè thông tin mới này vào hồ sơ hệ thống không?"
-            : "Hệ thống phát hiện dữ liệu ô nhập đã thay đổi. Bạn có chắc chắn muốn hủy bỏ toàn bộ tiến trình không?"
+            ? t("confirm_save_msg")
+            : t("confirm_cancel_msg")
         }
         confirmText={
           confirmModal.type.startsWith("save")
-            ? "Đồng ý cập nhật"
-            : "Đồng ý hủy"
+            ? t("confirm_btn")
+            : t("cancel_btn")
         }
-        cancelText="Quay lại"
+        cancelText={t("back_btn")}
         type={confirmModal.type.startsWith("save") ? "info" : "warning"}
       />
     </div>

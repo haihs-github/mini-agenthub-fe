@@ -9,11 +9,13 @@ import UserFormModal from "./UserFormModal";
 import ConfirmModal from "../../../components/ConfirmModal";
 import BulkAddToGroupModal from "./BulkAddToGroupModal";
 import { FiLock } from "react-icons/fi";
+import { useLanguage } from "../../../context/LanguageContext"; // BKAV HaiHS: Import hook ngôn ngữ
 
 // BKAV HaiHS : Component chính chứa đựng toàn bộ trang quản lý user, điều phối việc hiển thị header, bảng danh sách, phân trang và popup form - start
 const UserWindow = () => {
   const { permissions } = useAuth();
   const { showToast } = useToast();
+  const { t } = useLanguage(); // BKAV HaiHS: Khai báo hàm dịch thuật
   const userPermissions = permissions || [];
 
   const hasAnyUserPermission = userPermissions.some((p) =>
@@ -51,7 +53,7 @@ const UserWindow = () => {
       setTotalPages(res?.pagination?.totalPages || 1);
       setTotalItems(res?.pagination?.totalItems || 0);
     } catch (err) {
-      console.error("Loi he thong khi tai danh sach nguoi dung:", err);
+      console.error("Lỗi:", err);
     } finally {
       setIsLoading(false);
     }
@@ -85,10 +87,7 @@ const UserWindow = () => {
 
   const handleOpenDeleteConfirm = (user) => {
     if (!canDelete) {
-      showToast(
-        "Ban khong co quyen USER_D de thuc hien hanh dong xoa thanh vien nay!",
-        "warning",
-      );
+      showToast(t("toast_no_delete_perm"), "warning");
       return;
     }
     setUserToDelete(user);
@@ -99,14 +98,13 @@ const UserWindow = () => {
     if (!userToDelete) return;
     try {
       await deleteUserApi(userToDelete.id);
-      showToast(`Da truc xuat thanh vien khoi mang luoi!`, "success");
+      showToast(t("toast_delete_success"), "success");
       loadUsers();
     } catch (err) {
-      const errorMsg =
-        err?.response?.data?.message || "Khong the xoa nguoi dung";
-      showToast(errorMsg, "error");
+      showToast(err?.response?.data?.message || t("toast_error"), "error");
     } finally {
       setUserToDelete(null);
+      setIsConfirmDeleteOpen(false);
     }
   };
 
@@ -116,35 +114,31 @@ const UserWindow = () => {
     try {
       await Promise.all(selectedIds.map((id) => deleteUserApi(id)));
       showToast(
-        `Da xoa thanh cong ${selectedIds.length} thanh vien duoc chon khoi he thong!`,
+        t("toast_bulk_delete_success") +
+          ` ${selectedIds.length} ` +
+          t("users_selected"),
         "success",
       );
       setSelectedIds([]);
       loadUsers();
     } catch (err) {
-      showToast(
-        "Co loi xay ra trong qua trinh thuc thi xoa hang loat",
-        "error",
-      );
+      showToast(t("toast_bulk_delete_fail"), "error");
     } finally {
       setIsLoading(false);
+      setIsConfirmBulkDeleteOpen(false);
     }
   };
 
   const handleOpenBulkGroupModal = () => {
     if (!canAddToGroup) {
-      showToast(
-        "Taikhoan cua ban khong co quyen GROUP_ADD_USER de gop thanh vien vao nhom!",
-        "warning",
-      );
+      showToast(t("toast_no_add_group_perm"), "warning");
       return;
     }
     setIsBulkGroupOpen(true);
   };
 
-  const getSelectedUsersData = () => {
-    return users.filter((u) => selectedIds.includes(u.id));
-  };
+  const getSelectedUsersData = () =>
+    users.filter((u) => selectedIds.includes(u.id));
 
   const handleBulkGroupSuccess = () => {
     setSelectedIds([]);
@@ -153,28 +147,24 @@ const UserWindow = () => {
 
   if (!hasAnyUserPermission) {
     return (
-      /* BKAV HaiHS: Màu nền khu vực lỗi truy cập */
       <div className="flex-1 h-full flex flex-col justify-center items-center bg-gray-50 dark:bg-[#0b0f19] text-center px-6 select-none animate-fade-in transition-colors duration-300">
         <div className="w-16 h-16 rounded-2xl bg-red-500/10 border border-red-500/20 flex justify-center items-center text-red-500 shadow-lg mb-4">
           <FiLock size={28} />
         </div>
         <h3 className="text-xl font-bold text-gray-900 dark:text-white tracking-wide transition-colors">
-          Truy cap bi tu choi
+          {t("access_denied")}
         </h3>
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 max-w-sm leading-6 transition-colors">
-          Tai khoan cua ban khong so huu bat ky quyen han nao thuoc phan khu
-          nhan su de truy cap module nay.
+          {t("access_denied_user_desc")}
         </p>
       </div>
     );
   }
 
   return (
-    /* BKAV HaiHS: Màu nền trang UserWindow */
     <div className="flex-1 h-full overflow-y-auto bg-gray-50 dark:bg-[#0b0f19] px-8 py-8 flex flex-col justify-between transition-colors duration-300">
       <div className="w-full max-w-6xl mx-auto flex-1">
         <UserHeader onAddClick={handleOpenAddModal} canCreate={canCreate} />
-
         <UserTable
           users={users}
           isLoading={isLoading}
@@ -189,7 +179,6 @@ const UserWindow = () => {
           canUpdate={canUpdate}
           canDelete={canDelete}
         />
-
         {canRead && (
           <UserPagination
             currentPage={currentPage}
@@ -207,7 +196,6 @@ const UserWindow = () => {
         isViewMode={isViewMode}
         onSuccess={loadUsers}
       />
-
       <BulkAddToGroupModal
         isOpen={isBulkGroupOpen}
         onClose={() => setIsBulkGroupOpen(false)}
@@ -219,21 +207,25 @@ const UserWindow = () => {
         isOpen={isConfirmDeleteOpen}
         onClose={() => setIsConfirmDeleteOpen(false)}
         onConfirm={handleExecuteDelete}
-        title="Canh bao xoa nhan su"
-        message={`Ban co chac chan muon xoa vinh vien tai khoan nay khoi co so du lieu?`}
-        confirmText="Dong y xoa"
-        cancelText="Giu lai"
+        title={t("confirm_delete_title")}
+        message={t("confirm_delete_msg")}
+        confirmText={t("agree_delete")}
+        cancelText={t("keep_user")}
         type="danger"
       />
-
       <ConfirmModal
         isOpen={isConfirmBulkDeleteOpen}
         onClose={() => setIsConfirmBulkDeleteOpen(false)}
         onConfirm={handleExecuteBulkDelete}
-        title="Xac nhan xoa hang loat"
-        message={`Ban co chac chan muon xoa vinh vien ${selectedIds.length} thanh vien da chon khoi he thong? Hanh dong nay khong the hoan tac!`}
-        confirmText="Xoa toan bo"
-        cancelText="Huy bo"
+        title={t("confirm_bulk_delete_title")}
+        message={
+          t("confirm_bulk_delete_msg") +
+          ` ${selectedIds.length} ` +
+          t("users_selected") +
+          "?"
+        }
+        confirmText={t("delete_all")}
+        cancelText={t("cancel_btn")}
         type="danger"
       />
     </div>

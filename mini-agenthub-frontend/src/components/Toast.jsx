@@ -5,11 +5,13 @@ import {
   FiInfo,
   FiTriangle,
 } from "react-icons/fi";
+import { useLanguage } from "../context/LanguageContext"; // BKAV HaiHS: Import hook ngôn ngữ
 
 // 1. Khởi tạo Context để quản lý trạng thái đóng mở Toast toàn hệ thống
 const ToastContext = createContext(null);
 
 export const ToastProvider = ({ children }) => {
+  const { t } = useLanguage(); // BKAV HaiHS: Sử dụng hàm t() để dịch thuật tiêu đề
   const [toast, setToast] = useState({
     show: false,
     message: "",
@@ -21,7 +23,7 @@ export const ToastProvider = ({ children }) => {
     setToast({ show: true, message, type });
   };
 
-  // Tự động ẩn Toast sau 3.5 giây
+  // Tự động ẩn Toast sau 2 giây
   useEffect(() => {
     if (toast.show) {
       const timer = setTimeout(() => {
@@ -62,8 +64,7 @@ export const ToastProvider = ({ children }) => {
     <ToastContext.Provider value={{ showToast }}>
       {children}
 
-      {/* GIAO DIỆN TOAST DÙNG CHUNG (Hỗ trợ hiệu ứng trượt mượt mà với Tailwind v4) */}
-      {/* BKAV HaiHS: Điều chỉnh màu nền và màu chữ của khay chứa thông báo trượt theo đa giao diện */}
+      {/* GIAO DIỆN TOAST DÙNG CHUNG */}
       <div
         className={`fixed top-6 right-6 z-[9999] flex items-center gap-3 bg-white border border-gray-100 dark:border-0 dark:bg-[#1c2436] border-l-4 ${getBorderColor()} text-gray-600 dark:text-gray-200 px-5 py-4 rounded-r-lg shadow-2xl transform transition-all duration-300 ease-out ${
           toast.show
@@ -73,17 +74,17 @@ export const ToastProvider = ({ children }) => {
       >
         {renderIcon()}
         <div className="flex flex-col text-sm pr-4">
-          {/* BKAV HaiHS: Đồng bộ màu chữ tiêu đề thông báo */}
+          {/* BKAV HaiHS: Đồng bộ màu chữ và sử dụng từ khóa dịch thuật */}
           <span className="font-bold text-gray-900 dark:text-white transition-colors duration-300">
             {toast.type === "success"
-              ? "Thành công"
+              ? t("toast_success") || "Thành công"
               : toast.type === "error"
-                ? "Thất bại"
-                : "Thông báo"}
+                ? t("toast_error") || "Thất bại"
+                : t("toast_info") || "Thông báo"}
           </span>
           {/* BKAV HaiHS: Đồng bộ màu chữ nội dung thông báo */}
           <span className="mt-0.5 text-gray-500 dark:text-gray-300 transition-colors duration-300">
-            {toast.message}
+            {t(toast.message)}
           </span>
         </div>
       </div>
@@ -99,4 +100,3 @@ export const useToast = () => {
   }
   return context;
 };
-// BKAV HaiHS : Custom Hook dùng chung - start

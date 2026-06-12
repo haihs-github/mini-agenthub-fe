@@ -1,5 +1,6 @@
 import React from "react";
 import { FiInfo, FiUsers, FiSettings, FiTrash2 } from "react-icons/fi";
+import { useLanguage } from "../../../context/LanguageContext"; // BKAV HaiHS: Import hook ngôn ngữ
 
 // BKAV HaiHS: Component bảng hiển thị danh sách nhóm - start
 const GroupTable = ({
@@ -13,14 +14,15 @@ const GroupTable = ({
   canUpdate,
   canDelete,
 }) => {
+  const { t } = useLanguage(); // BKAV HaiHS: Khai báo hàm dịch thuật
+
   return (
-    /* BKAV HaiHS: Cập nhật màu nền và viền Card Table theo đa giao diện */
     <div className="w-full bg-white border border-gray-200 dark:bg-[#161b26]/60 dark:border-[#232d42] rounded-2xl overflow-hidden shadow-xl dark:shadow-2xl backdrop-blur-md transition-colors duration-300">
       <div className="px-6 py-4 bg-gray-50 dark:bg-[#111622]/90 border-b border-gray-200 dark:border-[#232d42] flex items-center justify-between text-xs font-semibold tracking-wider text-gray-500 dark:text-gray-400 select-none transition-colors duration-300">
-        <span>Active Groups</span>
+        <span>{t("active_groups") || "Active Groups"}</span>
         {canRead && groups.length > 0 && (
           <span className="bg-gray-200 dark:bg-[#1e2533] px-2.5 py-1 border border-gray-300 dark:border-[#232d42] text-[10px] font-bold text-gray-600 dark:text-gray-400 rounded-lg uppercase tracking-widest transition-colors duration-300">
-            {groups.length} Total
+            {groups.length} {t("total") || "Total"}
           </span>
         )}
       </div>
@@ -29,10 +31,14 @@ const GroupTable = ({
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="border-b border-gray-200 dark:border-[#232d42] text-[11px] font-bold tracking-widest text-gray-500 uppercase select-none transition-colors duration-300">
-              <th className="py-4 px-6">Group Name</th>
-              <th className="py-4 px-6">Member Count</th>
+              <th className="py-4 px-6">{t("group_name") || "Group Name"}</th>
+              <th className="py-4 px-6">
+                {t("member_count") || "Member Count"}
+              </th>
               {(canRead || canUpdate || canDelete) && (
-                <th className="py-4 px-6 text-right pr-8">Actions</th>
+                <th className="py-4 px-6 text-right pr-8">
+                  {t("actions") || "Actions"}
+                </th>
               )}
             </tr>
           </thead>
@@ -58,8 +64,8 @@ const GroupTable = ({
                   colSpan={3}
                   className="py-12 text-center text-amber-600 dark:text-amber-500/80 italic font-medium bg-amber-50 dark:bg-[#111622]/20 transition-colors"
                 >
-                  Tài khoản của bạn không có quyền GROUP_R để xem danh sách nhóm
-                  quyền.
+                  {t("group_no_permission") ||
+                    "Tài khoản của bạn không có quyền xem danh sách nhóm."}
                 </td>
               </tr>
             ) : groups.length === 0 ? (
@@ -68,7 +74,7 @@ const GroupTable = ({
                   colSpan={3}
                   className="py-12 text-center text-gray-500 italic transition-colors"
                 >
-                  Không tìm thấy nhóm quyền nào.
+                  {t("group_empty") || "Không tìm thấy nhóm quyền nào."}
                 </td>
               </tr>
             ) : (
@@ -84,7 +90,7 @@ const GroupTable = ({
                       {group.name}
                     </td>
                     <td className="py-4 px-6 text-gray-600 dark:text-gray-400">
-                      {memberCount} members
+                      {memberCount} {t("members") || "members"}
                     </td>
 
                     {(canRead || canUpdate || canDelete) && (
@@ -92,7 +98,7 @@ const GroupTable = ({
                         <div className="flex items-center justify-end gap-1">
                           {canRead && (
                             <button
-                              title="View Details"
+                              title={t("view_details")}
                               onClick={() => onViewClick(group)}
                               className="p-2 rounded-xl text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200 dark:hover:bg-gray-800 transition-all cursor-pointer"
                             >
@@ -101,7 +107,7 @@ const GroupTable = ({
                           )}
                           {canUpdate && (
                             <button
-                              title="Manage Members"
+                              title={t("manage_members")}
                               onClick={() => onMembersClick(group)}
                               className="p-2 rounded-xl text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200 dark:hover:bg-gray-800 transition-all cursor-pointer"
                             >
@@ -110,7 +116,7 @@ const GroupTable = ({
                           )}
                           {canUpdate && (
                             <button
-                              title="Edit Settings"
+                              title={t("edit_settings")}
                               onClick={() => onEditClick(group)}
                               className="p-2 rounded-xl text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200 dark:hover:bg-gray-800 transition-all cursor-pointer"
                             >
@@ -119,7 +125,7 @@ const GroupTable = ({
                           )}
                           {canDelete && (
                             <button
-                              title="Delete Group"
+                              title={t("delete_group")}
                               onClick={() => onDeleteClick(group)}
                               className="p-2 rounded-xl text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all cursor-pointer"
                             >

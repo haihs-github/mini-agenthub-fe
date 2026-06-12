@@ -101,7 +101,7 @@ const ConversationHistoryList = ({
       </div>
 
       {/* VÙNG CUỘN DANH SÁCH LỊCH SỬ */}
-      <div className="flex-1 overflow-y-auto space-y-1.5 py-2 scrollbar-thin scrollbar-thumb-gray-800">
+      <div className="flex-1 overflow-y-auto space-y-1.5 py-2 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-800 transition-colors">
         {conversations.map((conv) => (
           <ConversationItem
             key={conv.id}
@@ -134,37 +134,42 @@ const ConversationHistoryList = ({
       {/* HỆ THỐNG POPUP MODAL XÁC NHẬN SỬA / XÓA DÙNG HOOK THUẦN (AN TOÀN TUYỆT ĐỐI)*/}
       {modalType && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex justify-center items-center p-4 animate-fade-in">
-          <div className="bg-[#161b26] border border-[#232d42] rounded-2xl max-w-sm w-full p-6 shadow-2xl space-y-4">
+          {/* BKAV HaiHS: Sửa đổi màu nền card Modal và đường viền bao quanh theo chuẩn Sáng/Tối */}
+          <div className="bg-white dark:bg-[#161b26] border border-gray-200 dark:border-[#232d42] rounded-2xl max-w-sm w-full p-6 shadow-2xl space-y-4 transition-colors duration-300">
             <div className="flex items-center gap-3 text-yellow-500">
               <FiAlertTriangle size={24} />
-              <h3 className="text-lg font-bold text-white">
+              {/* BKAV HaiHS: Sửa màu tiêu đề popup */}
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white transition-colors duration-300">
                 {modalType === "rename"
                   ? "Đổi tên cuộc trò chuyện"
                   : "Cảnh báo xóa dữ liệu"}
               </h3>
             </div>
 
-            <p className="text-sm text-gray-400">
+            {/* BKAV HaiHS: Sửa màu mô tả phụ bên dưới tiêu đề */}
+            <p className="text-sm text-gray-600 dark:text-gray-400 transition-colors duration-300">
               {modalType === "rename"
                 ? "Nhập tên tiêu đề mới cho phòng chat này của bạn:"
                 : `Bạn có chắc chắn muốn xóa đoạn hội thoại "${targetConv?.title}" không? Hành động này không thể hoàn tác.`}
             </p>
 
             {modalType === "rename" && (
+              /* BKAV HaiHS: Sửa màu nền ô nhập liệu Input tên mới */
               <input
                 type="text"
                 value={newTitle}
                 onChange={(e) => setNewTitle(e.target.value)}
-                className="w-full bg-[#0f131f] border border-[#232d42] focus:border-blue-500 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none"
+                className="w-full bg-gray-50 dark:bg-[#0f131f] border border-gray-200 dark:border-[#232d42] focus:border-blue-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white focus:outline-none transition-colors duration-300"
                 placeholder="Nhập tên mới..."
               />
             )}
 
             <div className="flex justify-end gap-3 pt-2 text-sm font-semibold">
+              {/* BKAV HaiHS: Sửa màu nút Hủy bỏ cho tiệp màu nền Sáng */}
               <button
                 onClick={() => setModalType(null)}
                 disabled={isActionLoading}
-                className="px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 transition-colors cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors cursor-pointer"
               >
                 Hủy bỏ
               </button>

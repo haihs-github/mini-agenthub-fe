@@ -1,5 +1,6 @@
 import React from "react";
 import { FiAlertTriangle, FiX } from "react-icons/fi";
+import { useLanguage } from "../context/LanguageContext";
 
 // BKAV HaiHS : Component Popup xác nhận hành động nguy hiểm - start
 const ConfirmModal = ({
@@ -12,6 +13,8 @@ const ConfirmModal = ({
   cancelText = "Hủy bỏ",
   type = "danger",
 }) => {
+  const { t } = useLanguage();
+
   if (!isOpen) return null;
 
   // Xác định màu sắc chủ đạo theo loại thông báo (danger: đỏ, warning: vàng, info: xanh)
@@ -29,7 +32,7 @@ const ConfirmModal = ({
               className={isDanger ? "text-red-500" : "text-amber-500"}
               size={16}
             />
-            <span>{title}</span>
+            <span>{t(title)}</span>
           </h4>
           <button
             onClick={onClose}
@@ -43,7 +46,7 @@ const ConfirmModal = ({
         <div className="p-5">
           {/* BKAV HaiHS: Sửa màu mô tả tin nhắn chính */}
           <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed transition-colors duration-300">
-            {message}
+            {t(message)}
           </p>
         </div>
 
@@ -55,7 +58,7 @@ const ConfirmModal = ({
             onClick={onClose}
             className="px-4 py-2 text-xs font-bold text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white bg-white border border-gray-200 hover:bg-gray-100 dark:bg-[#1a202c] dark:border-[#2d3748] dark:hover:bg-gray-800 rounded-xl transition-all cursor-pointer"
           >
-            {cancelText}
+            {t(cancelText)}
           </button>
           <button
             type="button"
@@ -69,7 +72,7 @@ const ConfirmModal = ({
                 : "bg-blue-600 hover:bg-blue-700 shadow-blue-600/10"
             }`}
           >
-            {confirmText}
+            {t(confirmText)}
           </button>
         </div>
       </div>

@@ -1,5 +1,6 @@
 import React from "react";
 import { FiEye, FiEdit2, FiTrash2 } from "react-icons/fi";
+import { useLanguage } from "../../../context/LanguageContext"; // BKAV HaiHS: Import hook ngôn ngữ
 
 // BKAV HaiHS: Component bang hien thi nhan su don nhan cac trang thai chon tu Bo chi huy trung tam - start
 const UserTable = ({
@@ -16,7 +17,8 @@ const UserTable = ({
   canDelete,
   onBulkGroupClick,
 }) => {
-  // Xu ly hanh vi tich chon hoac go bo toan bo checkbox tren trang hien tai
+  const { t } = useLanguage(); // BKAV HaiHS: Khai báo hàm dịch thuật
+
   const handleSelectAllToggle = (e) => {
     if (e.target.checked) {
       const allCurrentIds = users.map((user) => user.id);
@@ -26,7 +28,6 @@ const UserTable = ({
     }
   };
 
-  // Xu ly hanh vi tich chon hoac go bo checkbox cua tung dong rieng le
   const handleSelectRowToggle = (userId) => {
     setSelectedIds((prev) =>
       prev.includes(userId)
@@ -39,7 +40,6 @@ const UserTable = ({
     users.length > 0 && selectedIds.length === users.length;
 
   return (
-    /* BKAV HaiHS: Cập nhật màu nền và viền Card theo đa giao diện */
     <div className="w-full bg-white dark:bg-[#161b26]/60 border border-gray-200 dark:border-[#232d42] rounded-2xl overflow-hidden shadow-xl dark:shadow-2xl backdrop-blur-md transition-colors duration-300">
       {/* THANH TAC VU HANG LOAT */}
       {canRead && (
@@ -58,7 +58,7 @@ const UserTable = ({
                   : ""
               }
             >
-              {selectedIds.length} Users selected
+              {selectedIds.length} {t("users_selected") || "Users selected"}
             </span>
           </div>
 
@@ -69,7 +69,7 @@ const UserTable = ({
                 onClick={onBulkGroupClick}
                 className="bg-blue-50 dark:bg-blue-600/10 border border-blue-200 dark:border-blue-500/20 text-blue-600 dark:text-blue-400 px-3 py-1.5 rounded-xl font-bold text-[10px] tracking-wider uppercase hover:bg-blue-100 dark:hover:bg-blue-600/20 transition-all cursor-pointer"
               >
-                + Add to Group
+                + {t("add_to_group") || "Add to Group"}
               </button>
               {canDelete && (
                 <button
@@ -77,7 +77,7 @@ const UserTable = ({
                   onClick={onBulkDeleteClick}
                   className="text-red-600 dark:text-red-400 hover:text-red-700 font-bold text-[10px] tracking-wider uppercase cursor-pointer transition-all"
                 >
-                  Delete Selected
+                  {t("delete_selected") || "Delete Selected"}
                 </button>
               )}
             </div>
@@ -90,10 +90,12 @@ const UserTable = ({
           <thead>
             <tr className="border-b border-gray-200 dark:border-[#232d42] text-[11px] font-bold tracking-widest text-gray-500 uppercase select-none transition-colors duration-300">
               <th className="py-4 px-6 w-12"></th>
-              <th className="py-4 px-6">Name</th>
-              <th className="py-4 px-6">Email</th>
+              <th className="py-4 px-6">{t("name") || "Name"}</th>
+              <th className="py-4 px-6">{t("email") || "Email"}</th>
               {(canRead || canUpdate || canDelete) && (
-                <th className="py-4 px-6 text-right pr-8">Actions</th>
+                <th className="py-4 px-6 text-right pr-8">
+                  {t("actions") || "Actions"}
+                </th>
               )}
             </tr>
           </thead>
@@ -123,8 +125,7 @@ const UserTable = ({
                   colSpan={4}
                   className="py-12 text-center text-amber-600 dark:text-amber-500/80 italic font-medium bg-amber-50 dark:bg-[#111622]/20"
                 >
-                  Tai khoan cua ban khong co quyen USER_R de doc du lieu danh
-                  sach thanh vien.
+                  {t("user_no_permission")}
                 </td>
               </tr>
             ) : users.length === 0 ? (
@@ -133,7 +134,7 @@ const UserTable = ({
                   colSpan={4}
                   className="py-12 text-center text-gray-500 italic"
                 >
-                  Khong tim thay nhan su nao.
+                  {t("user_empty")}
                 </td>
               </tr>
             ) : (
@@ -169,33 +170,32 @@ const UserTable = ({
                     <td className="py-4 px-6 text-gray-500 font-mono text-xs transition-colors">
                       {user.email}
                     </td>
-
                     {(canRead || canUpdate || canDelete) && (
                       <td className="py-4 px-6 text-right pr-8">
                         <div className="flex items-center justify-end gap-1.5">
                           {canRead && (
                             <button
-                              title="Xem chi tiet"
+                              title={t("view_details")}
                               onClick={() => onViewClick(user)}
-                              className="p-2 rounded-xl text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200 dark:hover:bg-gray-800 transition-all cursor-pointer"
+                              className="p-2 rounded-xl text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200 dark:hover:bg-gray-800 transition-all"
                             >
                               <FiEye size={15} />
                             </button>
                           )}
                           {canUpdate && (
                             <button
-                              title="Sua thong tin"
+                              title={t("edit_info")}
                               onClick={() => onEditClick(user)}
-                              className="p-2 rounded-xl text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-200 dark:hover:bg-blue-500/10 transition-all cursor-pointer"
+                              className="p-2 rounded-xl text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-200 dark:hover:bg-blue-500/10 transition-all"
                             >
                               <FiEdit2 size={14} />
                             </button>
                           )}
                           {canDelete && (
                             <button
-                              title="Xoa tai khoan"
+                              title={t("delete_account")}
                               onClick={() => onDeleteClick(user)}
-                              className="p-2 rounded-xl text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-gray-200 dark:hover:bg-red-500/10 transition-all cursor-pointer"
+                              className="p-2 rounded-xl text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-gray-200 dark:hover:bg-red-500/10 transition-all"
                             >
                               <FiTrash2 size={14} />
                             </button>

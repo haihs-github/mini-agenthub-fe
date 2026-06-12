@@ -5,7 +5,7 @@ import ChatInputArea from "./ChatWorkspace/ChatInputArea";
 
 // BKAV HaiHS : Component chính của workspace chat, kết hợp header, danh sách tin nhắn và khu vực nhập liệu - start
 const ChatWindow = ({
-  activeConversationId, // Tiếp nhận mã định danh phòng chat hiện tại để phục vụ luồng cuộn phân trang
+  activeConversationId,
   messages,
   isStreaming,
   isWaitingSkeleton,
@@ -13,16 +13,16 @@ const ChatWindow = ({
   handleStopStream,
   attachedImages,
   setAttachedImages,
-  loadMoreMessages, // Tiếp nhận hàm gọi nạp thêm lịch sử tin nhắn cũ từ hook cha
-  hasMoreMessages, // Tiếp nhận cờ kiểm tra xem hệ thống còn trang tin nhắn cũ nào không
-  isLoadingMore, // Tiếp nhận trạng thái xoay vòng loading khi phân trang ngược
+  loadMoreMessages,
+  hasMoreMessages,
+  isLoadingMore,
 }) => {
   const [selectedModel, setSelectedModel] = useState(
     "meta-llama/llama-4-scout-17b-16e-instruct",
   );
 
   return (
-    /* BKAV HaiHS: Đồng bộ màu nền của toàn bộ vùng ChatWindow */
+    /* BKAV HaiHS: Đồng bộ màu nền của toàn bộ vùng ChatWindow theo theme */
     <div className="w-full h-full flex flex-col overflow-hidden bg-gray-50 dark:bg-[#0b0f19] transition-colors duration-300">
       {/* 1. Thanh đầu trang chọn model AI */}
       <ChatHeader

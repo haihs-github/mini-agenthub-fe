@@ -9,6 +9,7 @@ import {
 } from "../groupApi";
 import ConfirmModal from "../../../components/ConfirmModal";
 import { bulkAddUsersToGroupApi } from "../../users/userApi";
+import { useLanguage } from "../../../context/LanguageContext"; // BKAV HaiHS: Import hook ngôn ngữ
 
 // BKAV HaiHS: Component quản lý thành viên nhóm - start
 const GroupMembersModal = ({
@@ -22,6 +23,7 @@ const GroupMembersModal = ({
 
   const { permissions } = useAuth();
   const { showToast } = useToast();
+  const { t } = useLanguage(); // BKAV HaiHS: Khai báo hàm dịch thuật
   const userPermissions = permissions || [];
 
   const hasAddPermission = userPermissions.includes("GROUP_ADD_USER");
@@ -52,14 +54,11 @@ const GroupMembersModal = ({
       const res = await getGroupDetailsApi(groupId);
       setMembers(res?.data?.users || res?.data?.members || []);
     } catch (err) {
-      showToast(
-        "Khong the tai danh sach thanh vien hien tai cua nhom",
-        "error",
-      );
+      showToast(t("toast_load_members_fail"), "error");
     } finally {
       setIsLoadingMembers(false);
     }
-  }, [groupId, showToast]);
+  }, [groupId, showToast, t]);
 
   useEffect(() => {
     loadCurrentMembers();
@@ -101,7 +100,7 @@ const GroupMembersModal = ({
         setSearchPage(pageNum);
         setSearchHasMore(pageNum < (pagination.totalPages || 1));
       } catch (err) {
-        console.error("Loi duong truyen tim kiem tai khoan gan nhom:", err);
+        console.error("Loi:", err);
       } finally {
         setIsSearching(false);
       }
@@ -140,10 +139,7 @@ const GroupMembersModal = ({
       members.some((m) => m.id === user.id) ||
       pendingUsers.some((p) => p.id === user.id)
     ) {
-      showToast(
-        "Nhan su nay da ton tai trong khay thanh vien hien tai hoac danh sach cho gan",
-        "warning",
-      );
+      showToast(t("toast_user_already_in_group"), "warning");
     } else {
       setPendingUsers((prev) => [
         ...prev,
@@ -167,18 +163,12 @@ const GroupMembersModal = ({
         groupId,
         pendingUsers.map((p) => p.id),
       );
-      showToast(
-        `Da bo sung thanh cong ${pendingUsers.length} nhan su vao nhom`,
-        "success",
-      );
+      showToast(t("toast_add_success"), "success");
       setPendingUsers([]);
       loadCurrentMembers();
       onRefreshTotal();
     } catch (err) {
-      showToast(
-        "Xay ra loi trong qua trinh thuc thi bo sung thanh vien",
-        "error",
-      );
+      showToast(t("toast_action_fail"), "error");
     } finally {
       setIsProcessingAction(false);
     }
@@ -186,10 +176,7 @@ const GroupMembersModal = ({
 
   const handleOpenRemoveConfirm = (user) => {
     if (!hasDeletePermission) {
-      showToast(
-        "Tai khoan cua ban khong co quyen GROUP_DELETE_USER de truc xuat thanh vien",
-        "warning",
-      );
+      showToast(t("toast_no_delete_perm"), "warning");
       return;
     }
     setUserToRemove(user);
@@ -201,18 +188,12 @@ const GroupMembersModal = ({
     setIsProcessingAction(true);
     try {
       await removeUserFromGroupApi(groupId, userToRemove.id);
-      showToast(
-        `Da truc xuat thanh cong tai khoan [${userToRemove.fullname || userToRemove.email}]`,
-        "success",
-      );
+      showToast(t("toast_remove_success"), "success");
       setIsConfirmDeleteOpen(false);
       loadCurrentMembers();
       onRefreshTotal();
     } catch (err) {
-      showToast(
-        "Truc xuat thanh vien that bai do loi ket noi he thong",
-        "error",
-      );
+      showToast(t("toast_remove_fail"), "error");
     } finally {
       setIsProcessingAction(false);
       setUserToRemove(null);
@@ -239,12 +220,10 @@ const GroupMembersModal = ({
 
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm select-none animate-fade-in">
         <div className="w-full max-w-md bg-white dark:bg-[#161b26] border border-gray-200 dark:border-[#232d42] rounded-2xl shadow-2xl flex flex-col relative overflow-visible max-h-[90vh] transition-colors duration-300">
-          <div className="px-6 py-5 border-b border-gray-200 dark:border-[#232d42] flex justify-between items-center bg-gray-50 dark:bg-[#111622]/30 rounded-t-2xl shrink-0 transition-colors duration-300">
-            <div className="space-y-1">
-              <h3 className="text-md font-bold text-gray-900 dark:text-white tracking-wide truncate pr-4 transition-colors duration-300">
-                Manage Group Members: {groupName}
-              </h3>
-            </div>
+          <div className="px-6 py-5 border-b border-gray-200 dark:border-[#232d42] flex justify-between items-center bg-gray-50 dark:bg-[#111622]/30 rounded-t-2xl shrink-0 transition-colors">
+            <h3 className="text-md font-bold text-gray-900 dark:text-white tracking-wide truncate pr-4 transition-colors">
+              {t("group_members_title")}: {groupName}
+            </h3>
             <button
               type="button"
               onClick={onClose}
@@ -261,8 +240,8 @@ const GroupMembersModal = ({
                   type="text"
                   value={localFilter}
                   onChange={(e) => setLocalFilter(e.target.value)}
-                  placeholder="Search by name or email..."
-                  className="w-full bg-gray-50 dark:bg-[#0b0f19] border border-gray-200 dark:border-[#232d42] focus:border-blue-500/40 text-xs text-gray-900 dark:text-gray-100 rounded-xl pl-11 pr-4 py-2.5 focus:outline-none transition-all placeholder-gray-400 dark:placeholder-gray-600 transition-colors"
+                  placeholder={t("search_placeholder") || "Search..."}
+                  className="w-full bg-gray-50 dark:bg-[#0b0f19] border border-gray-200 dark:border-[#232d42] text-xs text-gray-900 dark:text-gray-100 rounded-xl pl-11 pr-4 py-2.5 transition-colors"
                 />
                 <FiSearch
                   size={14}
@@ -277,7 +256,7 @@ const GroupMembersModal = ({
                 ref={searchRef}
               >
                 <label className="text-[10px] font-mono font-bold tracking-widest text-gray-500 dark:text-gray-400 uppercase transition-colors">
-                  Add New Member
+                  {t("add_new_member")}
                 </label>
                 <div className="flex gap-2 w-full relative">
                   <div className="flex-1 relative">
@@ -285,8 +264,8 @@ const GroupMembersModal = ({
                       type="text"
                       value={searchKeyword}
                       onChange={(e) => setSearchKeyword(e.target.value)}
-                      placeholder="Search for new members to add..."
-                      className="w-full bg-gray-50 dark:bg-[#0b0f19] border border-gray-200 dark:border-[#232d42] focus:border-blue-500/40 text-xs text-gray-900 dark:text-gray-100 rounded-xl pl-11 pr-10 py-2.5 focus:outline-none transition-all placeholder-gray-400 dark:placeholder-gray-600 transition-colors"
+                      placeholder={t("search_add_placeholder")}
+                      className="w-full bg-gray-50 dark:bg-[#0b0f19] border border-gray-200 dark:border-[#232d42] text-xs text-gray-900 dark:text-gray-100 rounded-xl pl-11 pr-10 py-2.5 transition-colors"
                     />
                     <FiSearch
                       size={14}
@@ -305,24 +284,23 @@ const GroupMembersModal = ({
                     disabled={pendingUsers.length === 0 || isProcessingAction}
                     className="px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-200 dark:disabled:bg-gray-800 disabled:text-gray-400 text-xs font-bold text-white rounded-xl transition-all cursor-pointer shadow-md shrink-0"
                   >
-                    Add
+                    {t("add_btn")}
                   </button>
-
                   {isDropdownOpen && searchResults.length > 0 && (
                     <div
                       onScroll={handleSearchScroll}
-                      className="cyber-scrollbar absolute left-0 right-0 mt-11 max-h-[140px] overflow-y-auto bg-white dark:bg-[#1a202c] border border-gray-200 dark:border-[#232d42] rounded-xl shadow-2xl z-[110] divide-y divide-gray-100 dark:divide-[#232d42]/60 animate-fade-in transition-colors"
+                      className="cyber-scrollbar absolute left-0 right-0 mt-11 max-h-[140px] overflow-y-auto bg-white dark:bg-[#1a202c] border border-gray-200 dark:border-[#232d42] rounded-xl shadow-2xl z-[110] transition-colors"
                     >
                       {searchResults.map((user) => (
                         <div
                           key={user.id}
                           onClick={() => handleSelectUserPending(user)}
-                          className="px-4 py-2 text-xs cursor-pointer flex flex-col text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                          className="px-4 py-2 text-xs cursor-pointer flex flex-col text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                         >
-                          <span className="font-bold text-gray-900 dark:text-white capitalize">
-                            {user.fullname || "Unknown"}
+                          <span className="font-bold text-gray-900 dark:text-white">
+                            {user.fullname}
                           </span>
-                          <span className="text-gray-400 dark:text-gray-500 font-mono text-[10px]">
+                          <span className="text-[10px] font-mono">
                             {user.email}
                           </span>
                         </div>
@@ -330,7 +308,6 @@ const GroupMembersModal = ({
                     </div>
                   )}
                 </div>
-
                 {pendingUsers.length > 0 && (
                   <div className="flex flex-wrap gap-1.5 pt-1 animate-fade-in">
                     {pendingUsers.map((pUser) => (
@@ -338,13 +315,13 @@ const GroupMembersModal = ({
                         key={pUser.id}
                         className="flex items-center gap-1.5 bg-blue-50 dark:bg-blue-600/10 border border-blue-200 dark:border-blue-500/20 text-[11px] font-semibold text-blue-600 dark:text-blue-400 px-2 py-1 rounded-lg transition-colors"
                       >
-                        <span className="capitalize truncate max-w-[100px]">
+                        <span>
                           {pUser.fullname || pUser.email?.split("@")[0]}
                         </span>
                         <button
                           type="button"
                           onClick={() => handleRemovePendingChip(pUser.id)}
-                          className="text-blue-400/60 hover:text-red-500 cursor-pointer"
+                          className="text-blue-400/60 hover:text-red-500"
                         >
                           <FiX size={10} />
                         </button>
@@ -354,72 +331,57 @@ const GroupMembersModal = ({
                 )}
               </div>
             ) : (
-              <div className="text-[10px] text-gray-400 dark:text-gray-600 italic px-1 transition-colors">
-                Chuc nang cap them thanh vien moi yeu cau ma quyen
-                GROUP_ADD_USER
+              <div className="text-[10px] text-gray-400 dark:text-gray-600 italic transition-colors">
+                {t("no_add_perm")}
               </div>
             )}
 
             <div className="space-y-2 border-t border-gray-200 dark:border-[#232d42]/40 pt-4 shrink-0 transition-colors">
-              <label className="text-[10px] font-mono font-bold tracking-widest text-gray-500 dark:text-gray-400 uppercase select-none transition-colors">
-                Users ({filteredMembers.length})
+              <label className="text-[10px] font-mono font-bold tracking-widest text-gray-500 dark:text-gray-400 uppercase transition-colors">
+                {t("users_label")} ({filteredMembers.length})
               </label>
-
               <div className="h-[270px] overflow-y-auto space-y-1.5 pr-1 cyber-scrollbar">
                 {isLoadingMembers ? (
                   Array.from({ length: 3 }).map((_, idx) => (
                     <div
                       key={idx}
-                      className="flex items-center justify-between p-2 animate-pulse bg-gray-100 dark:bg-[#111622]/20 rounded-xl transition-colors"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-800" />
-                        <div className="space-y-1">
-                          <div className="h-3 w-20 bg-gray-200 dark:bg-gray-800 rounded" />
-                        </div>
-                      </div>
-                    </div>
+                      className="flex items-center justify-between p-2 animate-pulse bg-gray-100 dark:bg-[#111622]/20 rounded-xl"
+                    />
                   ))
                 ) : filteredMembers.length === 0 ? (
-                  <div className="text-center py-12 text-xs text-gray-400 dark:text-gray-600 italic select-none transition-colors">
-                    Khong tim thay nhan su phu hop nao
+                  <div className="text-center py-12 text-xs text-gray-400 dark:text-gray-600 italic">
+                    {t("no_members_found")}
                   </div>
                 ) : (
-                  filteredMembers.map((member) => {
-                    const displayName =
-                      member.fullname || member.email?.split("@")[0] || "User";
-                    const initials = displayName.substring(0, 2).toUpperCase();
-                    return (
-                      <div
-                        key={member.id}
-                        className="flex items-center justify-between p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-[#1e2533]/30 border border-transparent hover:border-gray-200 dark:hover:border-[#232d42]/40 transition-all group"
-                      >
-                        <div className="flex items-center gap-3 overflow-hidden">
-                          <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-gray-200 to-gray-300 dark:from-[#1e293b] dark:to-[#0f172a] border border-gray-200 dark:border-[#232d42] flex items-center justify-center text-[10px] font-bold text-blue-600 dark:text-blue-400 shrink-0 transition-colors">
-                            {initials}
-                          </div>
-                          <div className="flex flex-col overflow-hidden">
-                            <span className="text-xs font-bold text-gray-900 dark:text-white capitalize truncate transition-colors">
-                              {displayName}
-                            </span>
-                            <span className="text-[10px] font-mono text-gray-500 dark:text-gray-500 truncate mt-0.5 transition-colors">
-                              {member.email}
-                            </span>
-                          </div>
+                  filteredMembers.map((member) => (
+                    <div
+                      key={member.id}
+                      className="flex items-center justify-between p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-[#1e2533]/30 border border-transparent dark:border-[#232d42]/40 transition-all group"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-[#111622] flex items-center justify-center text-[10px] font-bold text-blue-600 dark:text-blue-400">
+                          {member.fullname?.substring(0, 2).toUpperCase()}
                         </div>
-
-                        {hasDeletePermission && (
-                          <button
-                            type="button"
-                            onClick={() => handleOpenRemoveConfirm(member)}
-                            className="p-2 text-gray-400 hover:text-red-500 rounded-lg hover:bg-red-50 transition-all cursor-pointer shrink-0 opacity-0 group-hover:opacity-100"
-                          >
-                            <FiTrash2 size={13} />
-                          </button>
-                        )}
+                        <div className="flex flex-col">
+                          <span className="text-xs font-bold text-gray-900 dark:text-white capitalize">
+                            {member.fullname}
+                          </span>
+                          <span className="text-[10px] font-mono text-gray-500">
+                            {member.email}
+                          </span>
+                        </div>
                       </div>
-                    );
-                  })
+                      {hasDeletePermission && (
+                        <button
+                          type="button"
+                          onClick={() => handleOpenRemoveConfirm(member)}
+                          className="p-2 text-gray-400 hover:text-red-500 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer opacity-0 group-hover:opacity-100"
+                        >
+                          <FiTrash2 size={13} />
+                        </button>
+                      )}
+                    </div>
+                  ))
                 )}
               </div>
             </div>
@@ -430,14 +392,14 @@ const GroupMembersModal = ({
                 onClick={onClose}
                 className="px-5 py-2 text-xs font-bold text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border border-gray-200 dark:border-[#232d42] bg-gray-50 dark:bg-[#111622] hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all cursor-pointer"
               >
-                Cancel
+                {t("cancel_btn")}
               </button>
               <button
                 type="button"
                 onClick={onClose}
-                className="px-5 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all shadow-md cursor-pointer"
+                className="px-5 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-md cursor-pointer"
               >
-                Update Group
+                {t("update_group")}
               </button>
             </div>
           </div>
@@ -448,10 +410,10 @@ const GroupMembersModal = ({
         isOpen={isConfirmDeleteOpen}
         onClose={() => setIsConfirmDeleteOpen(false)}
         onConfirm={handleExecuteRemoveMember}
-        title="Xác nhận trục xuất"
-        message={`Bạn có chắc chắn muốn loại bỏ nhân sự này khỏi nhóm quyền [${groupName}] không? Tài khoản sẽ mất toàn bộ các quyền hạn kế thừa lập tức!`}
-        confirmText="Đồng ý xóa"
-        cancelText="Giữ lại"
+        title={t("confirm_remove_title")}
+        message={t("confirm_remove_msg")}
+        confirmText={t("agree_remove")}
+        cancelText={t("keep_member")}
         type="danger"
       />
     </>

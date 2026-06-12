@@ -1,4 +1,5 @@
 import React from "react";
+import { useLanguage } from "../../../context/LanguageContext"; // BKAV HaiHS: Import hook ngôn ngữ
 
 // BKAV HaiHS: Component phân trang cho trang quản lý nhóm - start
 const GroupPagination = ({
@@ -7,15 +8,17 @@ const GroupPagination = ({
   totalItems,
   onPageChange,
 }) => {
+  const { t } = useLanguage(); // BKAV HaiHS: Khai báo hàm dịch thuật
   const startNode = (currentPage - 1) * 10 + 1;
   const endNode = Math.min(currentPage * 10, totalItems);
 
   return (
     <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-6 px-2 select-none">
-      {/* BKAV HaiHS: Đổi màu chữ thông báo số lượng item */}
+      {/* BKAV HaiHS: Đổi màu chữ thông báo số lượng item và dịch thuật */}
       <div className="text-xs text-gray-500 dark:text-gray-400 font-medium transition-colors">
-        Showing {totalItems > 0 ? startNode : 0} to {endNode} of {totalItems}{" "}
-        nodes
+        {t("showing") || "Showing"} {totalItems > 0 ? startNode : 0}{" "}
+        {t("to") || "to"} {endNode} {t("of") || "of"} {totalItems}{" "}
+        {t("nodes") || "nodes"}
       </div>
 
       <div className="flex items-center gap-1.5 text-xs">

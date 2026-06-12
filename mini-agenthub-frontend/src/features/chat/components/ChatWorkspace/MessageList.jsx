@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { FiLoader } from "react-icons/fi";
 import UserMessageItem from "./UserMessageItem";
 import AIMessageItem from "./AIMessageItem";
+import { useLanguage } from "../../../../context/LanguageContext"; // BKAV HaiHS: Import hook ngôn ngữ
 
 // BKAV HaiHS : Component danh sách tin nhắn hỗ trợ phân trang cuộn ngược và đồng bộ ảnh khi refresh trang - start
 const MessageList = ({
@@ -14,12 +15,12 @@ const MessageList = ({
   isLoadingMore,
 }) => {
   const scrollContainerRef = useRef(null);
+  const { t } = useLanguage(); // BKAV HaiHS: Khai báo hàm dịch thuật
   const [previousScrollHeight, setPreviousScrollHeight] = useState(0);
   const [isScrollToBottomNeeded, setIsScrollToBottomNeeded] = useState(true);
 
   const BASE_URL = "http://localhost:3000/";
 
-  // Tự động cuộn xuống đáy khi có tin nhắn mới hoặc đang trong tiến trình AI đổ chữ stream
   useEffect(() => {
     if (scrollContainerRef.current && isScrollToBottomNeeded) {
       scrollContainerRef.current.scrollTop =
@@ -27,7 +28,6 @@ const MessageList = ({
     }
   }, [messages, isStreaming, isWaitingSkeleton, isScrollToBottomNeeded]);
 
-  // Giữ nguyên vị trí góc nhìn cuộn của người dùng sau khi prepend tin nhắn cũ thành công
   useEffect(() => {
     if (
       scrollContainerRef.current &&
@@ -40,7 +40,6 @@ const MessageList = ({
     }
   }, [messages, previousScrollHeight, isScrollToBottomNeeded]);
 
-  // Theo dõi hành vi cuộn chuột để bắt sát ngưỡng đỉnh đầu 0px nhằm kích hoạt tải phân trang lịch sử cũ
   const handleScroll = async (e) => {
     const container = e.currentTarget;
     if (
@@ -62,7 +61,6 @@ const MessageList = ({
   };
 
   return (
-    /* BKAV HaiHS: Đồng bộ màu nền khu vực hội thoại - Sáng: bg-gray-50 / Tối: bg-[#0b0f19] */
     <div
       ref={scrollContainerRef}
       onScroll={handleScroll}
@@ -76,7 +74,6 @@ const MessageList = ({
         .cyber-scrollbar::-webkit-scrollbar-thumb:hover { background: #3b82f6; }
       `}</style>
 
-      {/* Hiển thị vòng xoay loading ở đỉnh đầu khi đang gọi kéo trang lịch sử cũ */}
       {isLoadingMore && (
         <div className="w-full flex justify-center py-2 animate-fade-in">
           <FiLoader size={16} className="text-blue-500 animate-spin" />
@@ -84,24 +81,20 @@ const MessageList = ({
       )}
 
       {messages.length === 0 && !isWaitingSkeleton ? (
-        /* GIAO DIỆN MÀN HÌNH CHÀO MỪNG TRỐNG (WELCOME SCREEN) */
-        /* BKAV HaiHS: Đổi màu chữ màn hình chào mừng theo theme */
         <div className="h-full flex flex-col justify-center items-center text-center opacity-40 select-none animate-fade-in">
           <span className="text-6xl mb-4">🧠</span>
           <h3 className="text-lg font-bold text-gray-900 dark:text-white tracking-wide transition-colors duration-300">
-            Mini Agent Hub Workspace
+            {t("chat_welcome_title") || "Mini Agent Hub Workspace"}
           </h3>
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 max-w-xs leading-5 transition-colors duration-300">
-            Hãy chọn một mô hình AI và gửi câu hỏi đầu tiên để bắt đầu cuộc trò
-            chuyện đột phá bứt phá.
+            {t("chat_welcome_desc") ||
+              "Hãy chọn một mô hình AI và gửi câu hỏi đầu tiên để bắt đầu cuộc trò chuyện đột phá bứt phá."}
           </p>
         </div>
       ) : (
-        /* VÒNG LẶP RENDER TIN NHẮN THEO DANH TÍNH KÈM KHỐI CHUẨN HÓA ẢNH ĐÍNH KÈM */
         messages.map((msg) => {
           const isUser = msg.role === "user";
 
-          // BKAV HaiHS: Hợp nhất ảnh lịch sử trường attachments từ BE và mảng ảnh chuỗi preview từ trạng thái local FE
           const imageUrls = [];
           if (msg.attachments && msg.attachments.length > 0) {
             msg.attachments.forEach((att) => {
@@ -114,7 +107,6 @@ const MessageList = ({
             imageUrls.push(...msg.images);
           }
 
-          // Khởi tạo một đối tượng message đã được đồng bộ toàn vẹn cả 2 khóa để truyền xuống linh kiện con
           const normalizedMsg = {
             ...msg,
             images: imageUrls,
@@ -133,14 +125,12 @@ const MessageList = ({
                 <AIMessageItem message={normalizedMsg} />
               )}
 
-              {/* Tự động kết xuất khay ảnh bổ trợ nếu linh kiện con UserMessageItem chưa cấu hình bóc tách mảng */}
               {imageUrls.length > 0 &&
                 (!msg.attachments || msg.attachments.length === 0) && (
                   <div
                     className={`grid grid-cols-1 gap-2 max-w-[70%] mt-2 ${isUser ? "mr-0" : "ml-12"}`}
                   >
                     {imageUrls.map((url, idx) => (
-                      /* BKAV HaiHS: Sửa viền và nền block ảnh bổ trợ theo đa giao diện */
                       <div
                         key={idx}
                         className="relative rounded-xl overflow-hidden border border-gray-200 dark:border-[#232d42] bg-white dark:bg-[#0b0f19] shadow-2xl max-w-xs sm:max-w-sm transition-colors duration-300"
@@ -160,12 +150,9 @@ const MessageList = ({
         })
       )}
 
-      {/* HIỆU ỨNG SKELETON AI SUY NGHĨ NHẤP NHÁY (GIỐNG CHATGPT CHUẨN DESIGN) */}
       {isWaitingSkeleton && (
         <div className="flex gap-4 max-w-[80%] mr-auto animate-pulse">
-          {/* BKAV HaiHS: Đồng bộ nền vòng tròn avatar skeleton */}
           <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-500/10 flex justify-center items-center text-sm shrink-0 transition-colors duration-300"></div>
-          {/* BKAV HaiHS: Cập nhật màu nền và viền các đường line bar skeleton */}
           <div className="flex flex-col gap-2.5 flex-1 pt-1">
             <div className="h-3.5 bg-gray-200 border border-gray-300 dark:bg-[#161b26] dark:border-[#232d42] rounded-md w-[90%] transition-colors duration-300"></div>
             <div className="h-3.5 bg-gray-200 border border-gray-300 dark:bg-[#161b26] dark:border-[#232d42] rounded-md w-[65%] transition-colors duration-300"></div>
