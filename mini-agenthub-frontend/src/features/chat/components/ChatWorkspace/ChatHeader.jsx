@@ -16,7 +16,7 @@ const ChatHeader = ({ selectedModel, setSelectedModel }) => {
     },
     {
       id: "flowise",
-      name: "Flowise Agent",
+      name: "flowise",
       desc: t("model_desc_flowise") || "Hệ thống AI quy trình kéo thả",
     },
   ];

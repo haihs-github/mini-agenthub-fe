@@ -202,6 +202,16 @@ export const translations = {
     global: "Global Preferences",
     language: "Language",
     languageDesc: "Set your preferred communication language.",
+
+    // --- LOGIN & REGISTER ---
+    login_title: "Sign in", // hoặc "Login"
+    login_desc: "Welcome back to Mini AgentHub, please sign in first",
+    secure_access: "Secure access", // hoặc "Access request" tùy ngữ cảnh
+    email_label: "Email",
+    password_label: "Password",
+    pwd_placeholder: "Enter password",
+    login_submit_btn: "login",
+    back_to_home: "back to home",
   },
   vi: {
     // --- TOAST ---
@@ -390,7 +400,7 @@ export const translations = {
     workspaceSettings: "Cài đặt không gian làm việc",
     settingsDesc: "Quản lý hồ sơ và bảo mật của bạn.",
 
-    // --- 🟢 NEW: PERSONALIZATION & PREFERENCES ---
+    // --- NEW: PERSONALIZATION & PREFERENCES ---
     personalization: "Cá nhân hóa",
     interfaceTheme: "Giao diện chủ đề",
     themeDesc:
@@ -401,6 +411,17 @@ export const translations = {
     global: "Tùy chọn toàn cục",
     language: "Ngôn ngữ",
     languageDesc: "Thiết lập ngôn ngữ giao tiếp ưu tiên của bạn.",
+
+    // --- LOGIN & REGISTER ---
+    login_title: "đăng nhập",
+    login_desc:
+      "chào mừng quay trở lại với mini agenthub, vui lòng đăng nhập trước",
+    secure_access: "yêu cầu truy cập",
+    email_label: "email",
+    password_label: "mật khẩu",
+    pwd_placeholder: "nhập mật khẩu",
+    login_submit_btn: "đăng nhập",
+    back_to_home: "về trang chủ",
   },
 };
 // BKAV HaiHS : cấu hình các ngôn ngữ - end
