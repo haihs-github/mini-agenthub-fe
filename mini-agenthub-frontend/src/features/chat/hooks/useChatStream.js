@@ -97,14 +97,11 @@ export const useChatStream = (initialActiveId = "new-chat") => {
   const sendMessage = async (prompt, modelName) => {
     if (!prompt.trim() || isStreaming) return;
 
-    // Chụp lại mảng ảnh hiện tại vào biến cục bộ ngay lập tức để đồng bộ an toàn
     const imagesToSend = [...attachedImages];
-
     let currentId = activeId;
     setIsWaitingSkeleton(true);
     setIsStreaming(true);
 
-    // Nếu là "đoạn hội thoại mới", tiến hành kích hoạt tạo phòng ngầm dưới BE
     if (currentId === "new-chat") {
       try {
         const titleProposal =
@@ -112,7 +109,7 @@ export const useChatStream = (initialActiveId = "new-chat") => {
         const newRoom = await createConversationApi(titleProposal);
 
         const roomData = newRoom?.data || newRoom;
-        currentId = roomData?.id; // Lấy ID thật từ DB
+        currentId = roomData?.id;
 
         if (!currentId) {
           throw new Error(
@@ -130,7 +127,6 @@ export const useChatStream = (initialActiveId = "new-chat") => {
       }
     }
 
-    // Đẩy tin nhắn của User lên màn hình trước (Lấy link preview ảo để vẽ lên UI bong bóng chat)
     const userMsg = {
       id: Date.now(),
       role: "user",
@@ -138,14 +134,12 @@ export const useChatStream = (initialActiveId = "new-chat") => {
       images: imagesToSend.map((img) => img.preview),
     };
     setMessages((prev) => [...prev, userMsg]);
-    setAttachedImages([]); // Reset khay chứa ảnh trên ô input giao diện công cụ
+    setAttachedImages([]);
 
-    // ĐÓNG GÓI FORM DATA THEO ĐÚNG TIÊU CHUẨN FILE NHỊ PHÂN CỦA BE
     const formData = new FormData();
     formData.append("prompt", prompt);
     formData.append("modelName", modelName);
 
-    // Duyệt mảng biến cục bộ để append File nhị phân nguyên bản vào hộp FormData
     imagesToSend.forEach((img) => {
       formData.append("images", img.fileObj);
     });
@@ -181,32 +175,66 @@ export const useChatStream = (initialActiveId = "new-chat") => {
       setIsWaitingSkeleton(false);
 
       let accumulatedText = "";
+      let streamBuffer = ""; // 🌟 BIẾN CỨU CÁNH: Bộ đệm chắp vá các mảnh dữ liệu bị cắt nửa dòng
 
       while (true) {
         const { value, done } = await reader.read();
         if (done) break;
 
-        const chunk = decoder.decode(value, { stream: true });
-        const lines = chunk.split("\n");
+        // Cộng dồn dữ liệu thô vào bộ đệm mạng
+        streamBuffer += decoder.decode(value, { stream: true });
+        const lines = streamBuffer.split("\n");
+
+        // Giữ lại dòng cuối cùng dở dang chưa có ký tự xuống dòng (\n) sang chunk sau xử lý tiếp
+        streamBuffer = lines.pop() || "";
 
         for (const line of lines) {
-          if (line.startsWith("data: ")) {
-            const dataStr = line.replace("data: ", "").trim();
-            if (dataStr === "[DONE]") break;
+          const cleanedLine = line.trim();
+          if (!cleanedLine || !cleanedLine.startsWith("data: ")) continue;
 
-            try {
-              const parsed = JSON.parse(dataStr);
-              if (parsed.content) {
-                accumulatedText += parsed.content;
-                setMessages((prev) =>
-                  prev.map((msg) =>
-                    msg.id === aiMsgId
-                      ? { ...msg, content: accumulatedText }
-                      : msg,
-                  ),
-                );
+          const dataStr = cleanedLine.replace("data: ", "").trim();
+          if (dataStr === "[DONE]") break;
+
+          try {
+            const parsed = JSON.parse(dataStr);
+            let textToken = "";
+
+            //  CHIẾN LƯỢC ĐA PHÒNG THỦ: Trích xuất chữ bất kể Backend đang chạy phiên bản nào
+            if (parsed.content) {
+              // Kịch bản A: Lỡ Backend bị bọc kép dạng { content: 'data: {"choices":...}' }
+              if (
+                typeof parsed.content === "string" &&
+                parsed.content.startsWith("data: ")
+              ) {
+                try {
+                  const innerStr = parsed.content.replace("data: ", "").trim();
+                  const innerParsed = JSON.parse(innerStr);
+                  textToken = innerParsed.choices?.[0]?.delta?.content || "";
+                } catch (e) {
+                  textToken = parsed.content;
+                }
+              } else {
+                // Kịch bản B: Backend trả về chuẩn sạch dạng { content: "từ_chữ" }
+                textToken = parsed.content;
               }
-            } catch (e) {}
+            } else if (parsed.choices?.[0]?.delta?.content !== undefined) {
+              // Kịch bản C: Backend bắn thẳng cấu hình thô OpenAI/Groq SDK
+              textToken = parsed.choices[0].delta.content;
+            }
+
+            // Tiến hành cập nhật thời gian thực lên màn hình bong bóng chat
+            if (textToken) {
+              accumulatedText += textToken;
+              setMessages((prev) =>
+                prev.map((msg) =>
+                  msg.id === aiMsgId
+                    ? { ...msg, content: accumulatedText }
+                    : msg,
+                ),
+              );
+            }
+          } catch (e) {
+            // Im lặng bỏ qua lỗi parse nếu dòng dữ liệu chưa hoàn chỉnh hẳn
           }
         }
       }
@@ -220,7 +248,6 @@ export const useChatStream = (initialActiveId = "new-chat") => {
         ),
       );
 
-      // TỐI ƯU SIDEBAR: Tự động đưa cuộc trò chuyện vừa tương tác lên đầu danh sách (Không gọi lại API trang 1)
       setConversations((prev) => {
         const target = prev.find((c) => c.id === currentId);
         if (!target) return prev;
