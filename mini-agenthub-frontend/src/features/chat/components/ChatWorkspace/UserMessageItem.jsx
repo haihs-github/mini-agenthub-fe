@@ -1,4 +1,3 @@
-import React from "react";
 import { useLanguage } from "../../../../context/LanguageContext"; // BKAV HaiHS: Import hook ngôn ngữ
 
 // BKAV HaiHS : Component hiển thị tin nhắn của người dùng trong workspace chat, hỗ trợ cả text và ảnh đính kèm - start
@@ -15,7 +14,8 @@ const UserMessageItem = ({ message }) => {
               key={idx}
               src={img}
               alt={t("user_image_alt") || "Đính kèm từ người dùng"}
-              className="max-w-[200px] max-h-[150px] rounded-xl object-cover border border-gray-200 dark:border-[#232d42] shadow-md transition-colors"
+              className="max-w-[200px] max-h-[150px] rounded-xl object-cover border border-gray-200 dark:border-[#232d42] shadow-md transition-colors cursor-pointer hover:opacity-90 transition-opacity"
+              onClick={() => window.open(img, "_blank")}
             />
           ))}
         </div>

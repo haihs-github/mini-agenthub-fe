@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { FiLoader } from "react-icons/fi";
 import UserMessageItem from "./UserMessageItem";
 import AIMessageItem from "./AIMessageItem";
@@ -125,26 +125,25 @@ const MessageList = ({
                 <AIMessageItem message={normalizedMsg} />
               )}
 
-              {imageUrls.length > 0 &&
-                (!msg.attachments || msg.attachments.length === 0) && (
-                  <div
-                    className={`grid grid-cols-1 gap-2 max-w-[70%] mt-2 ${isUser ? "mr-0" : "ml-12"}`}
-                  >
-                    {imageUrls.map((url, idx) => (
-                      <div
-                        key={idx}
-                        className="relative rounded-xl overflow-hidden border border-gray-200 dark:border-[#232d42] bg-white dark:bg-[#0b0f19] shadow-2xl max-w-xs sm:max-w-sm transition-colors duration-300"
-                      >
-                        <img
-                          src={url}
-                          alt="Attached content"
-                          className="w-full max-h-60 object-cover cursor-pointer hover:opacity-90 transition-opacity"
-                          onClick={() => window.open(url, "_blank")}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                )}
+              {imageUrls.length > 0 && !isUser && (
+                <div
+                  className="grid grid-cols-1 gap-2 max-w-[70%] mt-2 ml-12"
+                >
+                  {imageUrls.map((url, idx) => (
+                    <div
+                      key={idx}
+                      className="relative rounded-xl overflow-hidden border border-gray-200 dark:border-[#232d42] bg-white dark:bg-[#0b0f19] shadow-2xl max-w-xs sm:max-w-sm transition-colors duration-300"
+                    >
+                      <img
+                        src={url}
+                        alt="Attached content"
+                        className="w-full max-h-60 object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                        onClick={() => window.open(url, "_blank")}
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           );
         })

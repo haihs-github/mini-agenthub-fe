@@ -7,6 +7,42 @@ import {
   createConversationApi,
 } from "../chatApi";
 
+// Hàm giải mã/lọc dữ liệu SSE nếu gặp chuỗi thô từ DB cũ (legacy data)
+const cleanSSEContent = (content) => {
+  if (!content || !content.includes("data: ")) return content;
+
+  let accumulated = "";
+  const lines = content.split("\n");
+  for (const line of lines) {
+    const cleanedLine = line.trim();
+    if (!cleanedLine || !cleanedLine.startsWith("data: ")) continue;
+
+    const dataStr = cleanedLine.replace("data: ", "").trim();
+    if (dataStr === "[DONE]") continue;
+
+    try {
+      const parsed = JSON.parse(dataStr);
+      if (parsed.choices?.[0]?.delta?.content !== undefined) {
+        accumulated += parsed.choices[0].delta.content;
+      } else if (parsed.content !== undefined) {
+        if (
+          typeof parsed.content === "string" &&
+          parsed.content.startsWith("data: ")
+        ) {
+          const innerStr = parsed.content.replace("data: ", "").trim();
+          const innerParsed = JSON.parse(innerStr);
+          accumulated += innerParsed.choices?.[0]?.delta?.content || "";
+        } else {
+          accumulated += parsed.content;
+        }
+      }
+    } catch (e) {
+      // Bỏ qua dòng bị lỗi parse
+    }
+  }
+  return accumulated || content;
+};
+
 // BKAV HaiHS : Custom Hook quản lý logic Chat Stream & Hội thoại - start
 export const useChatStream = (initialActiveId = "new-chat") => {
   const [activeId, setActiveId] = useState(initialActiveId);
@@ -76,7 +112,13 @@ export const useChatStream = (initialActiveId = "new-chat") => {
       // Dò tìm mảng lịch sử tin nhắn cũ chuẩn xác, chặn đứng lỗi undefined
       const oldMessages =
         res?.data?.messages || res?.messages || (Array.isArray(res) ? res : []);
-      setMessages(oldMessages);
+
+      const cleanedMessages = oldMessages.map((msg) => ({
+        ...msg,
+        content:
+          msg.role === "assistant" ? cleanSSEContent(msg.content) : msg.content,
+      }));
+      setMessages(cleanedMessages);
     } catch (err) {
       console.error("Lỗi lấy chi tiết tin nhắn", err);
     } finally {
@@ -175,7 +217,7 @@ export const useChatStream = (initialActiveId = "new-chat") => {
       setIsWaitingSkeleton(false);
 
       let accumulatedText = "";
-      let streamBuffer = ""; // 🌟 BIẾN CỨU CÁNH: Bộ đệm chắp vá các mảnh dữ liệu bị cắt nửa dòng
+      let streamBuffer = ""; // BIẾN CỨU CÁNH: Bộ đệm chắp vá các mảnh dữ liệu bị cắt nửa dòng
 
       while (true) {
         const { value, done } = await reader.read();
