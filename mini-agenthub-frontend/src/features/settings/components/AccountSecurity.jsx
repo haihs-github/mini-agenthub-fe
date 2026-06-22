@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { FiKey, FiTrash2, FiUserX, FiLogOut, FiLoader } from "react-icons/fi";
 import ChangePasswordModal from "../../auth/components/ChangePasswordModal";
 import ConfirmModal from "../../../components/ConfirmModal";
@@ -13,6 +14,8 @@ const AccountSecurity = ({ setConversations }) => {
   const { showToast } = useToast();
   const { login } = useAuth();
   const { t } = useLanguage(); // BKAV HaiHS: Khai báo hàm dịch thuật
+
+  const navigate = useNavigate();
 
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [isClearModalOpen, setIsClearModalOpen] = useState(false);
@@ -43,7 +46,7 @@ const AccountSecurity = ({ setConversations }) => {
       showToast(t("toast_delete_acc_success"), "success");
       localStorage.removeItem("token");
       if (login) login(null);
-      window.location.href = "/";
+      navigate("/");
     } catch (err) {
       showToast(err?.response?.data?.message || t("toast_error"), "error");
     } finally {
@@ -57,7 +60,7 @@ const AccountSecurity = ({ setConversations }) => {
     if (login) {
       login(null);
     }
-    window.location.href = "/";
+    navigate("/");
     setIsSignOutModalOpen(false);
   };
 

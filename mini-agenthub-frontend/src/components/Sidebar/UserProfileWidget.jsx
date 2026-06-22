@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../features/auth/AuthContext";
 import { FiLogOut } from "react-icons/fi";
 import ConfirmModal from "../ConfirmModal"; // Nhúng hộp thoại xác nhận đồng bộ giao diện tối Cyber
@@ -8,13 +9,15 @@ const UserProfileWidget = () => {
   const { user, logout } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false); // Trạng thái điều khiển đóng mở hộp thoại xác nhận
 
+  const navigate = useNavigate();
+
   // Xử lý dọn sạch mã xác thực và đưa trình duyệt về trang chủ để nạp biểu mẫu đăng nhập
   const handleSignOut = () => {
     localStorage.removeItem("token"); // Xóa bỏ mã token bảo mật khỏi bộ nhớ cục bộ thiết bị
     if (logout) {
       logout(); // Kích hoạt hàm xóa trạng thái đăng nhập trong AuthContext
     }
-    window.location.href = "/"; // Chuyển hướng về trang gốc để AppContentSwitcher tự render LoginForm
+    navigate("/"); // Chuyển hướng về trang gốc để AppContentSwitcher tự render LoginForm
     setIsModalOpen(false);
   };
 

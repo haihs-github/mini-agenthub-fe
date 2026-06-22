@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { loginApi } from "../authApi";
 import { useAuth } from "../AuthContext";
 import { useToast } from "../../../components/Toast";
@@ -15,6 +16,7 @@ const LoginForm = () => {
   const { loginSuccess } = useAuth();
   const { showToast } = useToast();
   const { t } = useLanguage(); // BKAV HaiHS: Khai báo hàm dịch thuật t()
+  const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -51,7 +53,7 @@ const LoginForm = () => {
         "success",
       );
 
-      window.location.href = "/chat";
+      navigate("/chat");
     } catch (error) {
       const errorMsg = error.response?.data?.message || t("login_failed_msg");
 
