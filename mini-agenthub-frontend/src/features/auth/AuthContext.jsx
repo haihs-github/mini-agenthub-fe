@@ -26,6 +26,16 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem("user", JSON.stringify(userData));
     localStorage.setItem("permissions", JSON.stringify(permissionData));
   };
+  // Hàm login sẽ cập nhật thông tin người dùng trong state và LocalStorage
+  const login = (userData) => {
+    setUser(userData);
+    if (userData) {
+      localStorage.setItem("user", JSON.stringify(userData));
+    } else {
+      localStorage.removeItem("user");
+    }
+  };
+
   // Hàm logout sẽ xóa thông tin người dùng, token và quyền truy cập khỏi state và LocalStorage, trả về trạng thái chưa đăng nhập
   const logout = () => {
     setUser(null);
@@ -39,7 +49,7 @@ export const AuthProvider = ({ children }) => {
   // Cung cấp giá trị của context bao gồm thông tin người dùng, token, quyền truy cập và các hàm để đăng nhập và đăng xuất cho các component con có thể sử dụng thông qua useContext(AuthContext)
   return (
     <AuthContext.Provider
-      value={{ user, token, permissions, loginSuccess, logout }}
+      value={{ user, token, permissions, loginSuccess, logout, login }}
     >
       {children}
     </AuthContext.Provider>

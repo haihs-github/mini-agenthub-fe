@@ -12,7 +12,7 @@ import { useLanguage } from "../../../context/LanguageContext"; // BKAV HaiHS: I
 // BKAV HaiHS: Component bảo mật tài khoản - start
 const AccountSecurity = ({ setConversations }) => {
   const { showToast } = useToast();
-  const { login } = useAuth();
+  const { logout } = useAuth();
   const { t } = useLanguage(); // BKAV HaiHS: Khai báo hàm dịch thuật
 
   const navigate = useNavigate();
@@ -44,8 +44,7 @@ const AccountSecurity = ({ setConversations }) => {
     try {
       await deleteAccountApi();
       showToast(t("toast_delete_acc_success"), "success");
-      localStorage.removeItem("token");
-      if (login) login(null);
+      logout();
       navigate("/");
     } catch (err) {
       showToast(err?.response?.data?.message || t("toast_error"), "error");
@@ -56,10 +55,7 @@ const AccountSecurity = ({ setConversations }) => {
   };
 
   const handleExecuteSignOut = () => {
-    localStorage.removeItem("token");
-    if (login) {
-      login(null);
-    }
+    logout();
     navigate("/");
     setIsSignOutModalOpen(false);
   };
