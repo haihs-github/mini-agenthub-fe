@@ -86,6 +86,7 @@ function MainAppContent() {
         />
 
         {/* BKAV HaiHS: Chuyển tuyến đường nhảy phòng hờ wildcard xuống vị trí cuối cùng trong danh sách */}
+        <Route path="/" element={<Navigate to="/chat" replace />} />
         <Route path="*" element={<Navigate to="" replace />} />
       </Routes>
     </AppLayout>
