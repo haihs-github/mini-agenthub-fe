@@ -104,10 +104,10 @@ const AccountSecurity = ({ setConversations }) => {
             </div>
             <div className="flex-1 min-w-0 space-y-0.5">
               <h5 className="text-xs font-bold text-gray-900 dark:text-white transition-colors">
-                {t("clear Chat")}
+                {t("clearChat")}
               </h5>
               <p className="text-[11px] text-gray-500 font-medium truncate">
-                {t("clear ChatDesc")}
+                {t("clearChatDesc")}
               </p>
             </div>
           </div>
@@ -118,7 +118,7 @@ const AccountSecurity = ({ setConversations }) => {
             className="px-5 py-1.5 bg-transparent border border-orange-500/30 text-orange-600 dark:text-orange-400 text-[11px] font-bold rounded-full hover:bg-orange-50 dark:hover:bg-orange-500/5 transition-all shrink-0 shadow-md cursor-pointer flex items-center gap-1.5 disabled:opacity-40"
           >
             {isClearing && <FiLoader size={12} className="animate-spin" />}
-            <span>{t("clear button")}</span>
+            <span>{t("clear_button")}</span>
           </button>
         </div>
 
@@ -130,7 +130,7 @@ const AccountSecurity = ({ setConversations }) => {
             </div>
             <div className="flex-1 min-w-0 space-y-0.5">
               <h5 className="text-xs font-bold text-gray-900 dark:text-white transition-colors">
-                {t("delete Account")}
+                {t("deleteAccount")}
               </h5>
               <p className="text-[11px] text-gray-500 font-medium truncate">
                 {t("deleteAccountDesc")}
