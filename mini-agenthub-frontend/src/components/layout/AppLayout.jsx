@@ -12,9 +12,12 @@ export const useSidebar = () => useContext(SidebarContext);
 // BKAV HaiHS : Hook dung de lay trang thai dong mo sidebar - end
 
 // BKAV HaiHS : Component chia layout chính của ứng dụng - start
-const AppLayout = ({ sidebar, children }) => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
+const AppLayout = ({
+  sidebar,
+  isSidebarOpen = false,
+  setIsSidebarOpen = () => {},
+  children,
+}) => {
   // Dong sidebar tu dong khi click chon menu hoac item trong sidebar o mobile
   const handleSidebarClick = (e) => {
     const target = e.target;

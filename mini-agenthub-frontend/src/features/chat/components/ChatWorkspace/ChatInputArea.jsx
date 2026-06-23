@@ -94,11 +94,11 @@ const ChatInputArea = ({
         )}
 
         {/* 2. Ô NHẬP TEXTAREA + NÚT CHỨC NĂNG CHÂN TRANG */}
-        <div className="flex items-end gap-3">
+        <div className="flex items-center gap-3">
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="p-2 rounded-xl text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-[#1e293b] transition-all cursor-pointer mb-0.5"
+            className="p-2 rounded-xl text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-[#1e293b] transition-all cursor-pointer"
             title={t("attach_image") || "Đính kèm hình ảnh"}
           >
             <FiPaperclip size={18} />
@@ -120,7 +120,7 @@ const ChatInputArea = ({
             placeholder={
               t("chat_placeholder") || "Nhập nội dung câu hỏi tại đây..."
             }
-            className="flex-1 bg-transparent border-0 focus:outline-none resize-none text-sm text-gray-900 dark:text-gray-100 max-h-36 placeholder-gray-400 dark:placeholder-gray-600 leading-6 transition-colors"
+            className="flex-1 bg-transparent border-0 focus:outline-none resize-none text-sm text-gray-900 dark:text-gray-100 max-h-36 placeholder-gray-400 dark:placeholder-gray-600 leading-6 py-1.5 transition-colors"
             style={{ height: "auto" }}
           />
 

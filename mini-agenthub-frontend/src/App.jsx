@@ -8,7 +8,7 @@ import {
 } from "react-router-dom";
 import { AuthProvider, useAuth } from "./features/auth/AuthContext";
 import { ToastProvider } from "./components/Toast";
-import AppLayout from "./components/layout/AppLayout";
+import AppLayout, { useSidebar } from "./components/layout/AppLayout";
 import LoginForm from "./features/auth/components/LoginForm";
 import UserWindow from "./features/users/components/UserWindow";
 import GroupWindow from "./features/groups/components/GroupWindow";
@@ -23,6 +23,7 @@ function MainAppContent() {
   const chatProps = useChatStream("new-chat");
   const navigate = useNavigate();
   const location = useLocation();
+  const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
 
   // BKAV HaiHS: Cập nhật điều kiện lọc nhận diện trạng thái active cho cả phân hệ cài đặt settings
   const currentView =
@@ -36,20 +37,28 @@ function MainAppContent() {
 
   // BKAV HaiHS: Thực hiện bẻ hướng url phù hợp khi người dùng click vào các mục trên sidebar
   const handleViewChange = (targetView) => {
+    setIsSidebarOpen(false);
     if (targetView === "chat") navigate("/chat");
     if (targetView === "users") navigate("/users");
     if (targetView === "groups") navigate("/groups");
     if (targetView === "settings") navigate("/settings");
   };
 
+  const handleSelectConversation = (id) => {
+    setIsSidebarOpen(false);
+    chatProps.selectConversation(id);
+  };
+
   return (
     <AppLayout
+      isSidebarOpen={isSidebarOpen}
+      setIsSidebarOpen={setIsSidebarOpen}
       sidebar={
         <Sidebar
           conversations={chatProps.conversations}
           setConversations={chatProps.setConversations}
           activeId={chatProps.activeId}
-          selectConversation={chatProps.selectConversation}
+          selectConversation={handleSelectConversation}
           hasMore={chatProps.hasMore}
           isLoadingHistory={chatProps.isLoadingHistory}
           fetchConversations={chatProps.fetchConversations}
