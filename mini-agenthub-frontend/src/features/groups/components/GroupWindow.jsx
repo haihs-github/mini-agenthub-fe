@@ -137,7 +137,7 @@ const GroupWindow = () => {
   }
 
   return (
-    <div className="flex-1 h-full overflow-y-auto bg-gray-50 dark:bg-[#0b0f19] px-8 py-8 flex flex-col justify-between transition-colors duration-300">
+    <div className="flex-1 h-full overflow-y-auto bg-gray-50 dark:bg-[#0b0f19] px-4 py-4 md:px-8 md:py-8 flex flex-col justify-between transition-colors duration-300">
       <div className="w-full max-w-6xl mx-auto flex-1">
         <GroupHeader
           onCreateClick={handleOpenCreateModal}

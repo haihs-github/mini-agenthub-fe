@@ -1,11 +1,13 @@
 import React, { useState } from "react";
-import { FiChevronDown, FiCpu } from "react-icons/fi";
+import { FiChevronDown, FiCpu, FiMenu } from "react-icons/fi";
 import { useLanguage } from "../../../../context/LanguageContext"; // BKAV HaiHS: Import hook ngôn ngữ
+import { useSidebar } from "../../../../components/layout/AppLayout";
 
 // BKAV HaiHS : Component header của workspace chat, chứa trạng thái kết nối và dropdown chọn model AI - start
 const ChatHeader = ({ selectedModel, setSelectedModel }) => {
   const [isOpen, setIsOpen] = useState(false);
   const { t } = useLanguage(); // BKAV HaiHS: Khai báo hàm dịch thuật
+  const { setIsSidebarOpen } = useSidebar();
 
   // Các model ai
   const models = [
@@ -29,11 +31,20 @@ const ChatHeader = ({ selectedModel, setSelectedModel }) => {
 
   return (
     <div className="h-16 border-b border-gray-200 dark:border-[#1e293b]/60 flex items-center justify-between px-6 bg-white/80 dark:bg-[#0b0f19]/80 backdrop-blur-md z-10 shrink-0 transition-colors duration-300">
-      <div className="flex items-center gap-2">
-        <div className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></div>
-        <span className="text-sm font-semibold text-gray-900 dark:text-gray-200 transition-colors duration-300">
-          {t("ai_status_ready") || "Hệ thống trợ lý AI sẵn sàng"}
-        </span>
+      <div className="flex items-center gap-3">
+        <button
+          onClick={() => setIsSidebarOpen(true)}
+          className="p-2 -ml-2 rounded-xl text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 md:hidden cursor-pointer shrink-0 transition-colors duration-300"
+          title="Mở menu"
+        >
+          <FiMenu size={18} />
+        </button>
+        <div className="flex items-center gap-2">
+          <div className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></div>
+          <span className="text-sm font-semibold text-gray-900 dark:text-gray-200 transition-colors duration-300">
+            {t("ai_status_ready") || "Hệ thống trợ lý AI sẵn sàng"}
+          </span>
+        </div>
       </div>
 
       {/* DROPDOWN CHỌN MODEL*/}

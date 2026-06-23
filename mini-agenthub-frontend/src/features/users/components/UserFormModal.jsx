@@ -183,7 +183,7 @@ const UserFormModal = ({
       `}</style>
 
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm select-none animate-fade-in">
-        <div className="w-full max-w-lg bg-white dark:bg-[#161b26] border border-gray-200 dark:border-[#232d42] rounded-2xl shadow-2xl flex flex-col relative overflow-visible transition-colors duration-300">
+        <div className="w-full max-w-lg max-h-[90vh] bg-white dark:bg-[#161b26] border border-gray-200 dark:border-[#232d42] rounded-2xl shadow-2xl flex flex-col relative overflow-hidden transition-colors duration-300">
           <div className="px-6 py-4 border-b border-gray-200 dark:border-[#232d42] flex justify-between items-center bg-gray-50 dark:bg-[#111622]/50 rounded-t-2xl shrink-0 transition-colors">
             <h3 className="text-sm font-bold text-gray-900 dark:text-white tracking-wide">
               {modalTitle}
@@ -199,7 +199,7 @@ const UserFormModal = ({
 
           <form
             onSubmit={handleSubmit}
-            className="p-6 space-y-5 flex-1 overflow-visible"
+            className="p-6 space-y-5 flex-1 overflow-y-auto cyber-scrollbar"
           >
             <div className="space-y-2">
               <label className="text-[10px] font-bold tracking-widest text-gray-500 dark:text-gray-400 uppercase transition-colors">

@@ -217,7 +217,7 @@ const GroupFormModal = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm select-none animate-fade-in">
-      <div className="w-full max-w-xl bg-white dark:bg-[#161b26] border border-gray-200 dark:border-[#232d42] rounded-2xl shadow-2xl flex flex-col relative overflow-visible transition-colors">
+      <div className="w-full max-w-xl max-h-[90vh] bg-white dark:bg-[#161b26] border border-gray-200 dark:border-[#232d42] rounded-2xl shadow-2xl flex flex-col relative overflow-hidden transition-colors">
         <div className="px-6 py-5 border-b border-gray-200 dark:border-[#232d42] flex justify-between items-start bg-gray-50 dark:bg-[#111622]/30 rounded-t-2xl relative transition-colors">
           <div className="space-y-1">
             <h3 className="text-md font-bold text-gray-900 dark:text-white tracking-wide">
@@ -238,7 +238,7 @@ const GroupFormModal = ({
 
         <form
           onSubmit={handleSubmit}
-          className="p-6 space-y-6 flex-1 overflow-visible"
+          className="p-6 space-y-6 flex-1 overflow-y-auto cyber-scrollbar"
         >
           <div className="space-y-2.5">
             <label className="text-[10px] font-mono font-bold tracking-widest text-blue-600 dark:text-blue-400/90 uppercase">
