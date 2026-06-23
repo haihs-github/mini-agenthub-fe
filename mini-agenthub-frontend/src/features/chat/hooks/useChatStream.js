@@ -94,8 +94,15 @@ export const useChatStream = (initialActiveId = "new-chat") => {
   }, []);
 
   // 2. Hàm chuyển hội thoại & lấy tin nhắn cũ
+  // BKAV HaiHS : Chuyen doi phong chat va tu dong ket noi lai neu dang streaming - start
   const selectConversation = async (id) => {
-    if (isStreaming) handleStopStream();
+    if (isStreaming) {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+      setIsStreaming(false);
+      setIsWaitingSkeleton(false);
+    }
 
     setActiveId(id);
     setAttachedImages([]);
@@ -109,7 +116,6 @@ export const useChatStream = (initialActiveId = "new-chat") => {
     try {
       const res = await getConversationDetailApi(id);
 
-      // Dò tìm mảng lịch sử tin nhắn cũ chuẩn xác, chặn đứng lỗi undefined
       const oldMessages =
         res?.data?.messages || res?.messages || (Array.isArray(res) ? res : []);
 
@@ -119,21 +125,43 @@ export const useChatStream = (initialActiveId = "new-chat") => {
           msg.role === "assistant" ? cleanSSEContent(msg.content) : msg.content,
       }));
       setMessages(cleanedMessages);
+
+      const isRoomStreaming =
+        res?.data?.isStreaming || res?.isStreaming || false;
+      if (isRoomStreaming) {
+        reconnectStream(id);
+      }
     } catch (err) {
       console.error("Lỗi lấy chi tiết tin nhắn", err);
     } finally {
       setIsWaitingSkeleton(false);
     }
   };
+  // BKAV HaiHS : Chuyen doi phong chat va tu dong ket noi lai neu dang streaming - end
 
-  // 3. Hàm kích hoạt chức năng Dừng (Stop Generation)
-  const handleStopStream = () => {
+  // BKAV HaiHS : Dung luong AI va bao cho backend biet de ngat ket noi - start
+  const handleStopStream = async () => {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort(); // Phát tín hiệu ngắt kết nối HTTP
       setIsStreaming(false);
       setIsWaitingSkeleton(false);
     }
+
+    try {
+      const token = localStorage.getItem("token");
+      const baseUrl =
+        import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+      await fetch(`${baseUrl}/conversations/${activeId}/stop`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+    } catch (err) {
+      console.error("Lỗi khi dừng stream ở backend:", err);
+    }
   };
+  // BKAV HaiHS : Dung luong AI va bao cho backend biet de ngat ket noi - end
 
   // 4. CORE CHAT: Hàm gửi câu hỏi & Đọc dữ liệu Stream SSE phẳng chuẩn chỉnh
   const sendMessage = async (prompt, modelName) => {
@@ -308,6 +336,106 @@ export const useChatStream = (initialActiveId = "new-chat") => {
       abortControllerRef.current = null;
     }
   };
+
+  // BKAV HaiHS : Thuc hien dang ky lai luong stream khi vao lai phong chat - start
+  const reconnectStream = async (currentId) => {
+    setIsStreaming(true);
+    const aiMsgId = Date.now() + 1;
+
+    setMessages((prev) => {
+      const lastMsg = prev[prev.length - 1];
+      if (lastMsg && lastMsg.role === "assistant") return prev;
+      return [
+        ...prev,
+        { id: aiMsgId, role: "assistant", content: "", isStreaming: true },
+      ];
+    });
+
+    abortControllerRef.current = new AbortController();
+    const token = localStorage.getItem("token");
+
+    try {
+      const baseUrl =
+        import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+      const response = await fetch(
+        `${baseUrl}/conversations/${currentId}/chat`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          signal: abortControllerRef.current.signal,
+        },
+      );
+
+      if (!response.ok) throw new Error("Đường truyền API Chat Reconnect thất bại");
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder("utf-8");
+
+      let accumulatedText = "";
+      let streamBuffer = "";
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+
+        streamBuffer += decoder.decode(value, { stream: true });
+        const lines = streamBuffer.split("\n");
+        streamBuffer = lines.pop() || "";
+
+        for (const line of lines) {
+          const cleanedLine = line.trim();
+          if (!cleanedLine || !cleanedLine.startsWith("data: ")) continue;
+
+          const dataStr = cleanedLine.replace("data: ", "").trim();
+          if (dataStr === "[DONE]") break;
+
+          try {
+            const parsed = JSON.parse(dataStr);
+            let textToken = "";
+
+            if (parsed.content) {
+              textToken = parsed.content;
+            } else if (parsed.choices?.[0]?.delta?.content !== undefined) {
+              textToken = parsed.choices[0].delta.content;
+            }
+
+            if (textToken) {
+              accumulatedText += textToken;
+              setMessages((prev) =>
+                prev.map((msg) =>
+                  msg.id === aiMsgId ? { ...msg, content: accumulatedText } : msg,
+                ),
+              );
+            }
+          } catch (e) {
+            // Im lang bo qua dong loi parse thong tin
+          }
+        }
+      }
+
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === aiMsgId
+            ? { ...msg, isStreaming: false, responseTime: "1.2s" }
+            : msg,
+        ),
+      );
+    } catch (err) {
+      if (err.name === "AbortError") {
+        console.log("Người dùng chủ động nhấn dừng Stream.");
+      } else {
+        console.error("Lỗi trong quá trình kết nối lại Stream:", err);
+      }
+    } finally {
+      setIsStreaming(false);
+      setIsWaitingSkeleton(false);
+      abortControllerRef.current = null;
+    }
+  };
+  // BKAV HaiHS : Thuc hien dang ky lai luong stream khi vao lai phong chat - end
+
   // BKAV HaiHS : Custom Hook quản lý logic Chat Stream & Hội thoại - end
 
   return {
