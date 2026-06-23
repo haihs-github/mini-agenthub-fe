@@ -64,6 +64,7 @@ const PersonalInfo = () => {
     }
   };
 
+  // BKAV HaiHS : Goi API cap nhat thong tin lien lac va luu vao context - start
   const executeUpdateProfile = async (targetType, value) => {
     setIsSubmitting(true);
     const payload = {
@@ -79,7 +80,7 @@ const PersonalInfo = () => {
       );
 
       if (login && res?.data) {
-        login(res.data);
+        login(res.data.user, res.data.token);
       }
 
       targetType === "phone"
@@ -94,6 +95,7 @@ const PersonalInfo = () => {
       setConfirmModal({ isOpen: false, type: "", targetValue: "" });
     }
   };
+  // BKAV HaiHS : Goi API cap nhat thong tin lien lac va luu vao context - end
 
   const handleConfirmAction = () => {
     const { type, targetValue } = confirmModal;

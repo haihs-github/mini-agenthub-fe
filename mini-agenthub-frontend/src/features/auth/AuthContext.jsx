@@ -26,15 +26,20 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem("user", JSON.stringify(userData));
     localStorage.setItem("permissions", JSON.stringify(permissionData));
   };
-  // Hàm login sẽ cập nhật thông tin người dùng trong state và LocalStorage
-  const login = (userData) => {
+  // BKAV HaiHS : Cap nhat thong tin nguoi dung va token trong context - start
+  const login = (userData, tokenData) => {
     setUser(userData);
     if (userData) {
       localStorage.setItem("user", JSON.stringify(userData));
     } else {
       localStorage.removeItem("user");
     }
+    if (tokenData) {
+      setToken(tokenData);
+      localStorage.setItem("token", tokenData);
+    }
   };
+  // BKAV HaiHS : Cap nhat thong tin nguoi dung va token trong context - end
 
   // Hàm logout sẽ xóa thông tin người dùng, token và quyền truy cập khỏi state và LocalStorage, trả về trạng thái chưa đăng nhập
   const logout = () => {
