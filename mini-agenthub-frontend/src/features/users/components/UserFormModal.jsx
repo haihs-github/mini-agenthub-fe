@@ -334,30 +334,44 @@ const UserFormModal = ({
             )}
 
             <div className="pt-6 mt-8 border-t border-gray-200 dark:border-[#232d42] flex justify-end items-center gap-3 bg-white dark:bg-[#161b26] relative z-10 transition-colors">
-              <button
-                type="button"
-                onClick={handleCancelWithCheck}
-                disabled={isSubmitting}
-                className="px-5 py-2.5 text-xs font-bold text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border border-gray-200 dark:border-[#232d42] bg-gray-50 dark:bg-[#111622] hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all cursor-pointer"
-              >
-                {t("cancel_btn")}
-              </button>
-              <button
-                type="submit"
-                disabled={isSubmitting || !email.trim()}
-                className="px-5 py-2.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all shadow-lg shadow-blue-600/10 disabled:bg-gray-300 dark:disabled:bg-gray-800 disabled:text-gray-500 cursor-pointer flex items-center gap-2 min-w-[120px] justify-center"
-              >
-                {isSubmitting ? (
-                  <>
-                    <FiLoader size={14} className="animate-spin" />{" "}
-                    <span>{t("processing")}</span>
-                  </>
-                ) : (
-                  <span>
-                    {isEditMode ? t("update_user") : t("create_user")}
-                  </span>
-                )}
-              </button>
+              {/* BKAV HaiHS : Điều chỉnh các nút chức năng ở chế độ xem chi tiết - start */}
+              {isViewMode ? (
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="px-6 py-2.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all shadow-lg shadow-blue-600/10 cursor-pointer"
+                >
+                  {t("close")}
+                </button>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    onClick={handleCancelWithCheck}
+                    disabled={isSubmitting}
+                    className="px-5 py-2.5 text-xs font-bold text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border border-gray-200 dark:border-[#232d42] bg-gray-50 dark:bg-[#111622] hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all cursor-pointer"
+                  >
+                    {t("cancel_btn")}
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSubmitting || !email.trim()}
+                    className="px-5 py-2.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all shadow-lg shadow-blue-600/10 disabled:bg-gray-300 dark:disabled:bg-gray-800 disabled:text-gray-500 cursor-pointer flex items-center gap-2 min-w-[120px] justify-center"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <FiLoader size={14} className="animate-spin" />{" "}
+                        <span>{t("processing")}</span>
+                      </>
+                    ) : (
+                      <span>
+                        {isEditMode ? t("update_user") : t("create_user")}
+                      </span>
+                    )}
+                  </button>
+                </>
+              )}
+              {/* BKAV HaiHS : Điều chỉnh các nút chức năng ở chế độ xem chi tiết - end */}
             </div>
           </form>
         </div>
