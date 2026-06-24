@@ -3,11 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../features/auth/AuthContext";
 import { FiLogOut } from "react-icons/fi";
 import ConfirmModal from "../ConfirmModal"; // Nhúng hộp thoại xác nhận đồng bộ giao diện tối Cyber
+import { useLanguage } from "../../context/LanguageContext"; // BKAV HaiHS: Import hook ngôn ngữ
 
 // BKAV HaiHS : Component widget hiển thị thông tin người dùng và nút đăng xuất ở cuối sidebar - start
 const UserProfileWidget = () => {
   const { user, logout } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false); // Trạng thái điều khiển đóng mở hộp thoại xác nhận
+  const { t } = useLanguage(); // BKAV HaiHS: Khai báo hàm dịch thuật
 
   const navigate = useNavigate();
 
@@ -35,32 +37,36 @@ const UserProfileWidget = () => {
             {user?.fullname || user?.email?.split("@")[0] || "superadmin"}
           </span>
           <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 tracking-wider uppercase mt-0.5 transition-colors duration-300">
-            {user?.role || "Thành viên Hub"}
+            {/* BKAV HaiHS : Dịch nhãn vai trò người dùng - start */}
+            {user?.role || t("hub_member")}
+            {/* BKAV HaiHS : Dịch nhãn vai trò người dùng - end */}
           </span>
         </div>
       </div>
 
-      {/* NÚT ĐĂNG XUẤT KÍCH HOẠT HỘP THOẠI POPUP */}
+      {/* BKAV HaiHS : Dịch tiêu đề nút đăng xuất và sự kiện click - start */}
       <button
         type="button"
         onClick={() => setIsModalOpen(true)}
-        title="Đăng xuất tài khoản"
+        title={t("signOut")}
         className="p-2 rounded-xl hover:bg-red-500/10 text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-all cursor-pointer"
       >
         <FiLogOut size={16} />
       </button>
+      {/* BKAV HaiHS : Dịch tiêu đề nút đăng xuất và sự kiện click - end */}
 
-      {/* Hộp thoại bẫy xác nhận hành vi đăng xuất đồng bộ toàn hệ thống */}
+      {/* BKAV HaiHS : Hộp thoại xác nhận đăng xuất dịch thuật - start */}
       <ConfirmModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onConfirm={handleSignOut}
-        title="Xác nhận đăng xuất tài khoản"
-        message="Bạn có chắc chắn muốn kết thúc phiên làm việc hiện tại và đăng xuất khỏi hệ thống quản trị Agent Hub không?"
-        confirmText="Đồng ý đăng xuất"
-        cancelText="Quay lại"
+        title={t("confirm_signout_title")}
+        message={t("confirm_signout_msg")}
+        confirmText={t("agree_signout_btn")}
+        cancelText={t("go_back_btn")}
         type="warning"
       />
+      {/* BKAV HaiHS : Hộp thoại xác nhận đăng xuất dịch thuật - end */}
     </div>
   );
 };

@@ -192,26 +192,28 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
         </form>
       </div>
 
+      {/* BKAV HaiHS : Hộp thoại xác nhận đổi mật khẩu dịch thuật - start */}
       <ConfirmModal
         isOpen={subConfirm.isOpen}
         onClose={() => setSubConfirm({ isOpen: false, type: "" })}
         onConfirm={handleConfirmAction}
         title={
           subConfirm.type === "save"
-            ? "confirm_change_title"
-            : "confirm_cancel_title"
+            ? t("confirm_change_title")
+            : t("confirm_cancel_title")
         }
         message={
           subConfirm.type === "save"
-            ? "confirm_change_msg"
-            : "confirm_cancel_msg"
+            ? t("confirm_change_msg")
+            : t("confirm_cancel_msg")
         }
         confirmText={
-          subConfirm.type === "save" ? "agree_change_btn" : "agree_cancel_btn"
+          subConfirm.type === "save" ? t("agree_change_btn") : t("agree_cancel_btn")
         }
-        cancelText="go_back_btn"
+        cancelText={t("go_back_btn")}
         type={subConfirm.type === "save" ? "info" : "warning"}
       />
+      {/* BKAV HaiHS : Hộp thoại xác nhận đổi mật khẩu dịch thuật - end */}
     </div>
   );
 };
