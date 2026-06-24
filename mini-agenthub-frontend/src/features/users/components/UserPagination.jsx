@@ -13,6 +13,27 @@ const UserPagination = ({
 
   if (totalPages <= 1) return null;
 
+  // Hàm tính toán thu gọn các trang ở giữa bằng dấu ba chấm
+  const getPageNumbers = (current, total) => {
+    const pageNumbers = [];
+    const maxVisiblePages = 7;
+
+    if (total <= maxVisiblePages) {
+      for (let i = 1; i <= total; i++) {
+        pageNumbers.push(i);
+      }
+    } else {
+      if (current <= 4) {
+        pageNumbers.push(1, 2, 3, 4, 5, "...", total);
+      } else if (current >= total - 3) {
+        pageNumbers.push(1, "...", total - 4, total - 3, total - 2, total - 1, total);
+      } else {
+        pageNumbers.push(1, "...", current - 1, current, current + 1, "...", total);
+      }
+    }
+    return pageNumbers;
+  };
+
   return (
     <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-6 px-2 select-none">
       {/* BKAV HaiHS: Đổi màu chữ hiển thị số trang và dịch thuật */}
@@ -35,8 +56,18 @@ const UserPagination = ({
         </button>
 
         {/* Vòng lặp vẽ các nút số trang */}
-        {Array.from({ length: totalPages }).map((_, idx) => {
-          const pageNum = idx + 1;
+        {getPageNumbers(currentPage, totalPages).map((pageNum, idx) => {
+          if (pageNum === "...") {
+            return (
+              <span
+                key={`ellipsis-${idx}`}
+                className="w-9 h-9 flex justify-center items-center text-gray-400 dark:text-gray-600 select-none"
+              >
+                ...
+              </span>
+            );
+          }
+
           const isCurrent = pageNum === currentPage;
           return (
             <button
