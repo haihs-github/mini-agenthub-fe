@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import ConversationItem from "./ConversationItem";
 import { FiPlus, FiAlertTriangle, FiLoader } from "react-icons/fi";
 import {
@@ -132,7 +133,7 @@ const ConversationHistoryList = ({
       </div>
 
       {/* HỆ THỐNG POPUP MODAL XÁC NHẬN SỬA / XÓA DÙNG HOOK THUẦN (AN TOÀN TUYỆT ĐỐI)*/}
-      {modalType && (
+      {modalType && createPortal(
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex justify-center items-center p-4 animate-fade-in">
           {/* BKAV HaiHS: Sửa đổi màu nền card Modal và đường viền bao quanh theo chuẩn Sáng/Tối */}
           <div className="bg-white dark:bg-[#161b26] border border-gray-200 dark:border-[#232d42] rounded-2xl max-w-sm w-full p-6 shadow-2xl space-y-4 transition-colors duration-300">
@@ -194,7 +195,8 @@ const ConversationHistoryList = ({
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

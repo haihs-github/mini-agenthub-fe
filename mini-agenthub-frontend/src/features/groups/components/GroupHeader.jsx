@@ -9,7 +9,7 @@ const GroupHeader = ({ onCreateClick, canCreate }) => {
   const { setIsSidebarOpen } = useSidebar();
 
   return (
-    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 select-none">
+    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-0 select-none">
       <div className="flex items-start gap-3">
         <button
           onClick={() => setIsSidebarOpen(true)}

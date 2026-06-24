@@ -1,4 +1,5 @@
 import React from "react";
+import { createPortal } from "react-dom";
 import { FiAlertTriangle, FiX } from "react-icons/fi";
 import { useLanguage } from "../context/LanguageContext";
 
@@ -20,7 +21,7 @@ const ConfirmModal = ({
   // Xác định màu sắc chủ đạo theo loại thông báo (danger: đỏ, warning: vàng, info: xanh)
   const isDanger = type === "danger";
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm select-none animate-fade-in">
       {/* BKAV HaiHS: Cập nhật màu nền và viền của Card Modal - Sáng: bg-white / Tối: bg-[#1a202c] */}
       <div className="w-full max-w-sm bg-white border border-gray-200 dark:bg-[#1a202c] dark:border-[#2d3748] rounded-2xl shadow-2xl overflow-hidden transition-colors duration-300">
@@ -76,7 +77,8 @@ const ConfirmModal = ({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 // BKAV HaiHS : Component Popup xác nhận hành động nguy hiểm - end

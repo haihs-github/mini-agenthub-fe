@@ -162,32 +162,43 @@ const UserWindow = () => {
   }
 
   return (
-    <div className="flex-1 h-full overflow-y-auto bg-gray-50 dark:bg-[#0b0f19] px-4 py-4 md:px-8 md:py-8 flex flex-col justify-between transition-colors duration-300">
-      <div className="w-full max-w-6xl mx-auto flex-1">
-        <UserHeader onAddClick={handleOpenAddModal} canCreate={canCreate} />
-        <UserTable
-          users={users}
-          isLoading={isLoading}
-          onEditClick={handleOpenEditModal}
-          onViewClick={handleOpenViewModal}
-          onDeleteClick={handleOpenDeleteConfirm}
-          onBulkDeleteClick={() => setIsConfirmBulkDeleteOpen(true)}
-          onBulkGroupClick={handleOpenBulkGroupModal}
-          selectedIds={selectedIds}
-          setSelectedIds={setSelectedIds}
-          canRead={canRead}
-          canUpdate={canUpdate}
-          canDelete={canDelete}
-        />
-        {canRead && (
-          <UserPagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            totalItems={totalItems}
-            onPageChange={(targetPage) => setCurrentPage(targetPage)}
-          />
-        )}
+    <div className="flex-1 h-full flex flex-col overflow-hidden bg-gray-50 dark:bg-[#0b0f19] transition-colors duration-300">
+      {/* BKAV HaiHS : Thanh dau trang co dinh (sticky header) - start */}
+      <div className="w-full border-b border-gray-200 dark:border-[#232d42]/60 bg-white/80 dark:bg-[#0b0f19]/80 backdrop-blur-md shrink-0 px-4 py-4 md:px-8 md:py-5 z-10 transition-colors duration-300">
+        <div className="w-full max-w-6xl mx-auto">
+          <UserHeader onAddClick={handleOpenAddModal} canCreate={canCreate} />
+        </div>
       </div>
+      {/* BKAV HaiHS : Thanh dau trang co dinh (sticky header) - end */}
+
+      {/* BKAV HaiHS : Vung noi dung cuon phia duoi - start */}
+      <div className="flex-1 overflow-y-auto px-4 py-6 md:px-8 md:py-8">
+        <div className="w-full max-w-6xl mx-auto space-y-6 flex flex-col">
+          <UserTable
+            users={users}
+            isLoading={isLoading}
+            onEditClick={handleOpenEditModal}
+            onViewClick={handleOpenViewModal}
+            onDeleteClick={handleOpenDeleteConfirm}
+            onBulkDeleteClick={() => setIsConfirmBulkDeleteOpen(true)}
+            onBulkGroupClick={handleOpenBulkGroupModal}
+            selectedIds={selectedIds}
+            setSelectedIds={setSelectedIds}
+            canRead={canRead}
+            canUpdate={canUpdate}
+            canDelete={canDelete}
+          />
+          {canRead && (
+            <UserPagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              onPageChange={(targetPage) => setCurrentPage(targetPage)}
+            />
+          )}
+        </div>
+      </div>
+      {/* BKAV HaiHS : Vung noi dung cuon phia duoi - end */}
 
       <UserFormModal
         isOpen={isModalOpen}

@@ -12,10 +12,10 @@ const SettingsWindow = ({ setConversations }) => {
   const { setIsSidebarOpen } = useSidebar();
 
   return (
-    <div className="flex-1 h-full overflow-y-auto bg-gray-50 dark:bg-[#0b0f19] px-4 py-4 md:px-8 md:py-8 flex flex-col transition-colors duration-300">
-      <div className="w-full max-w-4xl mx-auto space-y-8 flex-1 pb-12">
-        {/* Khối tiêu đề phân khu làm việc tổng thể */}
-        <div className="space-y-1.5 select-none border-b border-gray-200 dark:border-[#232d42]/40 pb-5 transition-colors duration-300 flex items-start gap-3">
+    <div className="flex-1 h-full flex flex-col overflow-hidden bg-gray-50 dark:bg-[#0b0f19] transition-colors duration-300">
+      {/* BKAV HaiHS : Thanh dau trang co dinh (sticky header) - start */}
+      <div className="w-full border-b border-gray-200 dark:border-[#232d42]/40 bg-white/80 dark:bg-[#0b0f19]/80 backdrop-blur-md shrink-0 px-4 py-4 md:px-8 md:py-5 z-10 transition-colors duration-300">
+        <div className="w-full max-w-4xl mx-auto flex items-start gap-3 select-none">
           <button
             onClick={() => setIsSidebarOpen(true)}
             className="p-2 -ml-2 rounded-xl text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 md:hidden cursor-pointer shrink-0 mt-0.5 transition-colors duration-300"
@@ -33,15 +33,21 @@ const SettingsWindow = ({ setConversations }) => {
             </p>
           </div>
         </div>
+      </div>
+      {/* BKAV HaiHS : Thanh dau trang co dinh (sticky header) - end */}
 
-        {/* 1. Phân khu Linh kiện Thông tin tài khoản */}
-        <PersonalInfo />
+      {/* BKAV HaiHS : Vung noi dung cuon phia duoi - start */}
+      <div className="flex-1 overflow-y-auto px-4 py-6 md:px-8 md:py-8">
+        <div className="w-full max-w-4xl mx-auto space-y-8 pb-12">
+          {/* 1. Phân khu Linh kiện Thông tin tài khoản */}
+          <PersonalInfo />
 
         {/* 2. Phân khu Linh kiện Tùy chỉnh giao diện Theme màu */}
         <Personalization />
 
         {/* 3. Phân khu Linh kiện Bản chốt bảo mật và Phiên đăng nhập */}
         <AccountSecurity setConversations={setConversations} />
+        </div>
       </div>
     </div>
   );
