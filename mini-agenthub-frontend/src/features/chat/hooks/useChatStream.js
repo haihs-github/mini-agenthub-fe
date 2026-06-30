@@ -85,6 +85,13 @@ export const useChatStream = (initialActiveId = "new-chat") => {
   // Dùng Ref để lưu trữ AbortController, phục vụ chức năng bấm "Dừng" chat
   const abortControllerRef = useRef(null);
 
+  // BKAV HaiHS : Luu tru ID hien tai bang Ref de tranh stale closure khi bat dong bo - start
+  const activeIdRef = useRef(activeId);
+  useEffect(() => {
+    activeIdRef.current = activeId;
+  }, [activeId]);
+  // BKAV HaiHS : Luu tru ID hien tai bang Ref de tranh stale closure khi bat dong bo - end
+
   // 1. Hàm lấy danh sách hội thoại (Cuộn vô hạn)
   const fetchConversations = useCallback(
     async (pageNum = 1, isLoadMore = false) => {
@@ -118,53 +125,17 @@ export const useChatStream = (initialActiveId = "new-chat") => {
     fetchConversations(1, false);
   }, []);
 
-  // BKAV HaiHS : Polling kiem tra trang thai stream tu xa (Tab B nhan biet khi Tab A gui tin) - start
-  // Chi chay khi: dang nhin phong chat that (khong phai new-chat) va khong tu minh dang stream
-  useEffect(() => {
-    if (!activeId || activeId === "new-chat" || isStreaming) return;
-
-    const intervalId = setInterval(async () => {
-      // Neu trong khi poll thi ban dau stream roi thi dung poll ngay
-      if (isStreaming) {
-        clearInterval(intervalId);
-        return;
-      }
-      try {
-        const token = localStorage.getItem("token");
-        const baseUrl =
-          import.meta.env.VITE_API_URL || "http://localhost:3000/api";
-        const res = await fetch(
-          `${baseUrl}/conversations/${activeId}`,
-          { headers: { Authorization: `Bearer ${token}` } },
-        );
-        if (!res.ok) return;
-        const data = await res.json();
-        const serverIsStreaming = data?.data?.isStreaming || false;
-        if (serverIsStreaming) {
-          // Server dang stream nhung Tab nay chua ket noi -> Bat dau ket noi lai ngay
-          clearInterval(intervalId);
-          setIsStreaming(true);
-          reconnectStream(activeId);
-        }
-      } catch (_) {
-        // Bo qua loi mang trong luc poll
-      }
-    }, 3000); // Kiem tra moi 3 giay
-
-    return () => clearInterval(intervalId);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeId, isStreaming]);
-  // BKAV HaiHS : Polling kiem tra trang thai stream tu xa (Tab B nhan biet khi Tab A gui tin) - end
-
   // 2. Hàm chuyển hội thoại & lấy tin nhắn cũ
   // BKAV HaiHS : Chuyen doi phong chat va tu dong ket noi lai neu dang streaming - start
   const selectConversation = async (id) => {
     if (isStreaming) {
+      // BKAV HaiHS : Chi ngat ket noi doc SSE o FE, giu nguyen luong chay o BE - start
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
       setIsStreaming(false);
       setIsWaitingSkeleton(false);
+      // BKAV HaiHS : Chi ngat ket noi doc SSE o FE, giu nguyen luong chay o BE - end
     }
 
     setActiveId(id);
@@ -192,7 +163,11 @@ export const useChatStream = (initialActiveId = "new-chat") => {
       const isRoomStreaming =
         res?.data?.isStreaming || res?.isStreaming || false;
       if (isRoomStreaming) {
-        reconnectStream(id);
+        // BKAV HaiHS : Lay tin nhan assistant cuoi cung neu co de dung chung ID khi reconnect - start
+        const lastMsg = cleanedMessages[cleanedMessages.length - 1];
+        const existingMsgId = (lastMsg && lastMsg.role === "assistant") ? lastMsg.id : null;
+        reconnectStream(id, existingMsgId);
+        // BKAV HaiHS : Lay tin nhan assistant cuoi cung neu co de dung chung ID khi reconnect - end
       }
     } catch (err) {
       console.error("Lỗi lấy chi tiết tin nhắn", err);
@@ -281,6 +256,7 @@ export const useChatStream = (initialActiveId = "new-chat") => {
 
     abortControllerRef.current = new AbortController();
     const token = localStorage.getItem("token");
+    let aiMsgId = null;
 
     try {
       const baseUrl =
@@ -302,7 +278,7 @@ export const useChatStream = (initialActiveId = "new-chat") => {
       const reader = response.body.getReader();
       const decoder = new TextDecoder("utf-8");
 
-      const aiMsgId = Date.now() + 1;
+      aiMsgId = Date.now() + 1;
       setMessages((prev) => [
         ...prev,
         { id: aiMsgId, role: "assistant", content: "", isStreaming: true },
@@ -395,26 +371,47 @@ export const useChatStream = (initialActiveId = "new-chat") => {
       } else {
         console.error("Lỗi trong quá trình đọc Stream chữ chạy:", err);
       }
+      // BKAV HaiHS : Dam bao set isStreaming cua tin nhan assistant cuoi cung thanh false khi loi hoac dung - start
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === aiMsgId ? { ...msg, isStreaming: false } : msg,
+        ),
+      );
+      // BKAV HaiHS : Dam bao set isStreaming cua tin nhan assistant cuoi cung thanh false khi loi hoac dung - end
     } finally {
-      setIsStreaming(false);
-      setIsWaitingSkeleton(false);
+      // BKAV HaiHS : Chi reset trang thai neu room hien tai van dang active - start
+      if (activeIdRef.current === currentId) {
+        setIsStreaming(false);
+        setIsWaitingSkeleton(false);
+      }
+      // BKAV HaiHS : Chi reset trang thai neu room hien tai van dang active - end
       abortControllerRef.current = null;
     }
   };
 
   // BKAV HaiHS : Thuc hien dang ky lai luong stream theo quy trinh 3 buoc Subscribe-Query-Flush - start
-  const reconnectStream = async (currentId) => {
+  const reconnectStream = async (currentId, existingMsgId = null) => {
     setIsStreaming(true);
-    const aiMsgId = Date.now() + 1;
+    const aiMsgId = existingMsgId || (Date.now() + 1);
 
-    setMessages((prev) => {
-      const lastMsg = prev[prev.length - 1];
-      if (lastMsg && lastMsg.role === "assistant") return prev;
-      return [
-        ...prev,
-        { id: aiMsgId, role: "assistant", content: "", isStreaming: true },
-      ];
-    });
+    if (existingMsgId) {
+      // BKAV HaiHS : Neu da co tin nhan trong DB, gan no ve isStreaming = true - start
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === existingMsgId ? { ...msg, isStreaming: true } : msg,
+        ),
+      );
+      // BKAV HaiHS : Neu da co tin nhan trong DB, gan no ve isStreaming = true - end
+    } else {
+      setMessages((prev) => {
+        const lastMsg = prev[prev.length - 1];
+        if (lastMsg && lastMsg.role === "assistant") return prev;
+        return [
+          ...prev,
+          { id: aiMsgId, role: "assistant", content: "", isStreaming: true },
+        ];
+      });
+    }
 
     abortControllerRef.current = new AbortController();
     const token = localStorage.getItem("token");
@@ -512,9 +509,20 @@ export const useChatStream = (initialActiveId = "new-chat") => {
       } else {
         console.error("Lỗi trong quá trình kết nối lại Stream:", err);
       }
+      // BKAV HaiHS : Dam bao set isStreaming cua tin nhan assistant cuoi cung thanh false khi loi hoac dung - start
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === aiMsgId ? { ...msg, isStreaming: false } : msg,
+        ),
+      );
+      // BKAV HaiHS : Dam bao set isStreaming cua tin nhan assistant cuoi cung thanh false khi loi hoac dung - end
     } finally {
-      setIsStreaming(false);
-      setIsWaitingSkeleton(false);
+      // BKAV HaiHS : Chi reset trang thai neu room hien tai van dang active - start
+      if (activeIdRef.current === currentId) {
+        setIsStreaming(false);
+        setIsWaitingSkeleton(false);
+      }
+      // BKAV HaiHS : Chi reset trang thai neu room hien tai van dang active - end
       abortControllerRef.current = null;
     }
   };
