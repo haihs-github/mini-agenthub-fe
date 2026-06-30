@@ -43,6 +43,31 @@ const cleanSSEContent = (content) => {
   return accumulated || content;
 };
 
+// BKAV HaiHS : Ham trich xuat text token tu payload SSE - start
+const extractTextToken = (parsed) => {
+  if (!parsed) return "";
+  if (parsed.content && typeof parsed.content === "string") {
+    // Kịch bản A: Backend bị bọc kép dạng { content: 'data: {"choices":...}' }
+    if (parsed.content.startsWith("data: ")) {
+      try {
+        const innerStr = parsed.content.replace("data: ", "").trim();
+        const innerParsed = JSON.parse(innerStr);
+        return innerParsed.choices?.[0]?.delta?.content || "";
+      } catch (e) {
+        return parsed.content;
+      }
+    }
+    // Kịch bản B: Backend trả chuẩn LangChain { content: "từ_chữ" }
+    return parsed.content;
+  }
+  // Kịch bản C: Backend bắn thẳng cấu hình thô OpenAI/Groq SDK
+  if (parsed.choices?.[0]?.delta?.content !== undefined) {
+    return parsed.choices[0].delta.content;
+  }
+  return "";
+};
+// BKAV HaiHS : Ham trich xuat text token tu payload SSE - end
+
 // BKAV HaiHS : Custom Hook quản lý logic Chat Stream & Hội thoại - start
 export const useChatStream = (initialActiveId = "new-chat") => {
   const [activeId, setActiveId] = useState(initialActiveId);
@@ -93,6 +118,44 @@ export const useChatStream = (initialActiveId = "new-chat") => {
     fetchConversations(1, false);
   }, []);
 
+  // BKAV HaiHS : Polling kiem tra trang thai stream tu xa (Tab B nhan biet khi Tab A gui tin) - start
+  // Chi chay khi: dang nhin phong chat that (khong phai new-chat) va khong tu minh dang stream
+  useEffect(() => {
+    if (!activeId || activeId === "new-chat" || isStreaming) return;
+
+    const intervalId = setInterval(async () => {
+      // Neu trong khi poll thi ban dau stream roi thi dung poll ngay
+      if (isStreaming) {
+        clearInterval(intervalId);
+        return;
+      }
+      try {
+        const token = localStorage.getItem("token");
+        const baseUrl =
+          import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+        const res = await fetch(
+          `${baseUrl}/conversations/${activeId}`,
+          { headers: { Authorization: `Bearer ${token}` } },
+        );
+        if (!res.ok) return;
+        const data = await res.json();
+        const serverIsStreaming = data?.data?.isStreaming || false;
+        if (serverIsStreaming) {
+          // Server dang stream nhung Tab nay chua ket noi -> Bat dau ket noi lai ngay
+          clearInterval(intervalId);
+          setIsStreaming(true);
+          reconnectStream(activeId);
+        }
+      } catch (_) {
+        // Bo qua loi mang trong luc poll
+      }
+    }, 3000); // Kiem tra moi 3 giay
+
+    return () => clearInterval(intervalId);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeId, isStreaming]);
+  // BKAV HaiHS : Polling kiem tra trang thai stream tu xa (Tab B nhan biet khi Tab A gui tin) - end
+
   // 2. Hàm chuyển hội thoại & lấy tin nhắn cũ
   // BKAV HaiHS : Chuyen doi phong chat va tu dong ket noi lai neu dang streaming - start
   const selectConversation = async (id) => {
@@ -139,7 +202,7 @@ export const useChatStream = (initialActiveId = "new-chat") => {
   };
   // BKAV HaiHS : Chuyen doi phong chat va tu dong ket noi lai neu dang streaming - end
 
-  // BKAV HaiHS : Dung luong AI va bao cho backend biet de ngat ket noi - start
+  // BKAV HaiHS : Dung luong AI va bao cho backend biet de ngat ket noi cheo may chu - start
   const handleStopStream = async () => {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort(); // Phát tín hiệu ngắt kết nối HTTP
@@ -151,17 +214,19 @@ export const useChatStream = (initialActiveId = "new-chat") => {
       const token = localStorage.getItem("token");
       const baseUrl =
         import.meta.env.VITE_API_URL || "http://localhost:3000/api";
-      await fetch(`${baseUrl}/conversations/${activeId}/stop`, {
+      // BKAV HaiHS : Goi endpoint /abort de phat tin hieu ABORT cheo may chu qua Redis Pub/Sub - start
+      await fetch(`${baseUrl}/conversations/${activeId}/abort`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
+      // BKAV HaiHS : Goi endpoint /abort de phat tin hieu ABORT cheo may chu qua Redis Pub/Sub - end
     } catch (err) {
       console.error("Lỗi khi dừng stream ở backend:", err);
     }
   };
-  // BKAV HaiHS : Dung luong AI va bao cho backend biet de ngat ket noi - end
+  // BKAV HaiHS : Dung luong AI va bao cho backend biet de ngat ket noi cheo may chu - end
 
   // 4. CORE CHAT: Hàm gửi câu hỏi & Đọc dữ liệu Stream SSE phẳng chuẩn chỉnh
   const sendMessage = async (prompt, modelName) => {
@@ -246,6 +311,7 @@ export const useChatStream = (initialActiveId = "new-chat") => {
 
       let accumulatedText = "";
       let streamBuffer = ""; // BIẾN CỨU CÁNH: Bộ đệm chắp vá các mảnh dữ liệu bị cắt nửa dòng
+      let isDone = false;
 
       while (true) {
         const { value, done } = await reader.read();
@@ -263,34 +329,32 @@ export const useChatStream = (initialActiveId = "new-chat") => {
           if (!cleanedLine || !cleanedLine.startsWith("data: ")) continue;
 
           const dataStr = cleanedLine.replace("data: ", "").trim();
-          if (dataStr === "[DONE]") break;
+          if (dataStr === "[DONE]") {
+            isDone = true;
+            break;
+          }
 
           try {
             const parsed = JSON.parse(dataStr);
-            let textToken = "";
 
-            //  CHIẾN LƯỢC ĐA PHÒNG THỦ: Trích xuất chữ bất kể Backend đang chạy phiên bản nào
-            if (parsed.content) {
-              // Kịch bản A: Lỡ Backend bị bọc kép dạng { content: 'data: {"choices":...}' }
-              if (
-                typeof parsed.content === "string" &&
-                parsed.content.startsWith("data: ")
-              ) {
-                try {
-                  const innerStr = parsed.content.replace("data: ", "").trim();
-                  const innerParsed = JSON.parse(innerStr);
-                  textToken = innerParsed.choices?.[0]?.delta?.content || "";
-                } catch (e) {
-                  textToken = parsed.content;
-                }
-              } else {
-                // Kịch bản B: Backend trả về chuẩn sạch dạng { content: "từ_chữ" }
-                textToken = parsed.content;
+            // BKAV HaiHS : Xu ly su kien sync khi nhan lai lich su tu Backend - start
+            if (parsed.sync === true) {
+              // Sự kiện sync: Backend gửi toàn bộ lịch sử trong một khối duy nhất
+              if (parsed.content) {
+                accumulatedText = parsed.content;
+                setMessages((prev) =>
+                  prev.map((msg) =>
+                    msg.id === aiMsgId
+                      ? { ...msg, content: accumulatedText }
+                      : msg,
+                  ),
+                );
               }
-            } else if (parsed.choices?.[0]?.delta?.content !== undefined) {
-              // Kịch bản C: Backend bắn thẳng cấu hình thô OpenAI/Groq SDK
-              textToken = parsed.choices[0].delta.content;
+              continue;
             }
+            // BKAV HaiHS : Xu ly su kien sync khi nhan lai lich su tu Backend - end
+
+            const textToken = extractTextToken(parsed);
 
             // Tiến hành cập nhật thời gian thực lên màn hình bong bóng chat
             if (textToken) {
@@ -307,6 +371,7 @@ export const useChatStream = (initialActiveId = "new-chat") => {
             // Im lặng bỏ qua lỗi parse nếu dòng dữ liệu chưa hoàn chỉnh hẳn
           }
         }
+        if (isDone) break; // BKAV HaiHS : Thoat ngay while loop de khong bi chan tai reader.read() sau khi nhan DONE
       }
 
       // STREAM KẾT THÚC THÀNH CÔNG
@@ -337,7 +402,7 @@ export const useChatStream = (initialActiveId = "new-chat") => {
     }
   };
 
-  // BKAV HaiHS : Thuc hien dang ky lai luong stream khi vao lai phong chat - start
+  // BKAV HaiHS : Thuc hien dang ky lai luong stream theo quy trinh 3 buoc Subscribe-Query-Flush - start
   const reconnectStream = async (currentId) => {
     setIsStreaming(true);
     const aiMsgId = Date.now() + 1;
@@ -357,8 +422,9 @@ export const useChatStream = (initialActiveId = "new-chat") => {
     try {
       const baseUrl =
         import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+      // BKAV HaiHS : Gui tham so ?resume=true de Backend xu ly theo quy trinh 3 buoc - start
       const response = await fetch(
-        `${baseUrl}/conversations/${currentId}/chat`,
+        `${baseUrl}/conversations/${currentId}/chat?resume=true`,
         {
           method: "GET",
           headers: {
@@ -367,6 +433,7 @@ export const useChatStream = (initialActiveId = "new-chat") => {
           signal: abortControllerRef.current.signal,
         },
       );
+      // BKAV HaiHS : Gui tham so ?resume=true de Backend xu ly theo quy trinh 3 buoc - end
 
       if (!response.ok) throw new Error("Đường truyền API Chat Reconnect thất bại");
 
@@ -375,10 +442,11 @@ export const useChatStream = (initialActiveId = "new-chat") => {
 
       let accumulatedText = "";
       let streamBuffer = "";
+      let isDone = false;
 
       while (true) {
         const { value, done } = await reader.read();
-        if (done) break;
+        if (done || isDone) break;
 
         streamBuffer += decoder.decode(value, { stream: true });
         const lines = streamBuffer.split("\n");
@@ -389,18 +457,32 @@ export const useChatStream = (initialActiveId = "new-chat") => {
           if (!cleanedLine || !cleanedLine.startsWith("data: ")) continue;
 
           const dataStr = cleanedLine.replace("data: ", "").trim();
-          if (dataStr === "[DONE]") break;
+          if (dataStr === "[DONE]") {
+            isDone = true;
+            break;
+          }
 
           try {
             const parsed = JSON.parse(dataStr);
-            let textToken = "";
 
-            if (parsed.content) {
-              textToken = parsed.content;
-            } else if (parsed.choices?.[0]?.delta?.content !== undefined) {
-              textToken = parsed.choices[0].delta.content;
+            // BKAV HaiHS : Xu ly su kien sync: thay the toan bo lich su bang khoi van ban nhan duoc - start
+            if (parsed.sync === true) {
+              if (parsed.content) {
+                accumulatedText = parsed.content;
+                setMessages((prev) =>
+                  prev.map((msg) =>
+                    msg.id === aiMsgId
+                      ? { ...msg, content: accumulatedText }
+                      : msg,
+                  ),
+                );
+              }
+              continue;
             }
+            // BKAV HaiHS : Xu ly su kien sync: thay the toan bo lich su bang khoi van ban nhan duoc - end
 
+            // BKAV HaiHS : Xu ly token live nhan tiep sau khi da dong bo lich su - start
+            const textToken = extractTextToken(parsed);
             if (textToken) {
               accumulatedText += textToken;
               setMessages((prev) =>
@@ -409,10 +491,12 @@ export const useChatStream = (initialActiveId = "new-chat") => {
                 ),
               );
             }
+            // BKAV HaiHS : Xu ly token live nhan tiep sau khi da dong bo lich su - end
           } catch (e) {
             // Im lang bo qua dong loi parse thong tin
           }
         }
+        if (isDone) break; // BKAV HaiHS : Thoat ngay while loop de khong bi chan tai reader.read() sau khi nhan DONE
       }
 
       setMessages((prev) =>
@@ -434,7 +518,7 @@ export const useChatStream = (initialActiveId = "new-chat") => {
       abortControllerRef.current = null;
     }
   };
-  // BKAV HaiHS : Thuc hien dang ky lai luong stream khi vao lai phong chat - end
+  // BKAV HaiHS : Thuc hien dang ky lai luong stream theo quy trinh 3 buoc Subscribe-Query-Flush - end
 
   // BKAV HaiHS : Custom Hook quản lý logic Chat Stream & Hội thoại - end
 
