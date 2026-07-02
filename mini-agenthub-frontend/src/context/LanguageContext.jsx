@@ -1,4 +1,6 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext } from "react";
+import i18n from "i18next";
+import { initReactI18next, useTranslation } from "react-i18next";
 
 const LanguageContext = createContext();
 
@@ -532,22 +534,30 @@ export const translations = {
 };
 // BKAV HaiHS : cấu hình các ngôn ngữ - end
 
-// BKAV HaiHS : privider chuyển ngôn ngữ - start
+// BKAV HaiHS : Khởi tạo cấu hình i18next - start
+i18n.use(initReactI18next).init({
+  resources: {
+    en: { translation: translations.en },
+    vi: { translation: translations.vi },
+  },
+  lng: localStorage.getItem("language") || "en",
+  fallbackLng: "en",
+  interpolation: {
+    escapeValue: false, // React đã tự động ngăn chặn XSS
+  },
+});
+// BKAV HaiHS : Khởi tạo cấu hình i18next - end
+
+// BKAV HaiHS : provider chuyển ngôn ngữ sử dụng i18next - start
 export const LanguageProvider = ({ children }) => {
-  // Tự động kiểm tra trạng thái ngôn ngữ cũ trong máy, mặc định ban đầu là tiếng Anh 'en'
-  const [language, setLanguageState] = useState(() => {
-    return localStorage.getItem("language") || "en";
-  });
+  const { t, i18n: i18nInstance } = useTranslation();
 
   const setLanguage = (lang) => {
-    setLanguageState(lang);
+    i18nInstance.changeLanguage(lang);
     localStorage.setItem("language", lang); // Ghi nhớ lựa chọn vào bộ nhớ trình duyệt
   };
 
-  // Hàm helper t() chịu trách nhiệm bóc tách text động dựa theo key truyền vào
-  const t = (key) => {
-    return translations[language]?.[key] || key;
-  };
+  const language = i18nInstance.language;
 
   return (
     <LanguageContext.Provider value={{ language, setLanguage, t }}>
@@ -555,6 +565,6 @@ export const LanguageProvider = ({ children }) => {
     </LanguageContext.Provider>
   );
 };
-// BKAV HaiHS : privider chuyển ngôn ngữ - end
+// BKAV HaiHS : provider chuyển ngôn ngữ sử dụng i18next - end
 
 export const useLanguage = () => useContext(LanguageContext);
