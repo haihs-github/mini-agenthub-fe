@@ -1,32 +1,81 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
+import apiClient, { setAccessToken } from "../../services/apiClient";
 
 const AuthContext = createContext(null); // khởi tạo context
 
-// BKAV HaiHS : Tạo AuthProvider để quản lý trạng thái đăng nhập và quyền truy cập của người dùng - start
+// BKAV HaiHS : Tạo AuthProvider để quản lý trạng thái đăng nhập bằng 2 Token - start
 export const AuthProvider = ({ children }) => {
-  // Khởi tạo state để lưu thông tin người dùng, token và quyền truy cập
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem("token"));
+  const [token, setTokenState] = useState(null); // Lưu trữ Token hoàn toàn trong RAM!
   const [permissions, setPermissions] = useState([]);
+  const [loading, setLoading] = useState(true); // Trạng thái kiểm tra khôi phục đăng nhập ban đầu
 
-  //   Khi component AuthProvider được mount, tự động kiểm tra nếu có thông tin người dùng và quyền truy cập đã lưu trong LocalStorage, nếu có thì khôi phục lại vào state
+  // Lắng nghe sự kiện đăng xuất từ Axios interceptor khi Refresh Token hết hạn
   useEffect(() => {
-    const savedUser = localStorage.getItem("user");
-    const savedPermissions = localStorage.getItem("permissions");
-    if (savedUser) setUser(JSON.parse(savedUser));
-    if (savedPermissions) setPermissions(JSON.parse(savedPermissions));
+    const handleAuthLogout = () => {
+      logoutStateOnly();
+    };
+    window.addEventListener("auth-logout", handleAuthLogout);
+    return () => window.removeEventListener("auth-logout", handleAuthLogout);
   }, []);
 
-  // Hàm loginSuccess sẽ được gọi khi người dùng đăng nhập thành công, nó sẽ cập nhật state và lưu thông tin vào LocalStorage để duy trì trạng thái đăng nhập ngay cả khi người dùng làm mới trang
+  // Tự động kiểm tra trạng thái đăng nhập khi ứng dụng khởi chạy (F5/Reload)
+  useEffect(() => {
+    const initAuth = async () => {
+      // Load nhanh thông tin không nhạy cảm từ LocalStorage để tối ưu UX vẽ giao diện nhanh
+      const savedUser = localStorage.getItem("user");
+      const savedPermissions = localStorage.getItem("permissions");
+      if (savedUser) setUser(JSON.parse(savedUser));
+      if (savedPermissions) setPermissions(JSON.parse(savedPermissions));
+
+      try {
+        // Thực hiện cuộc gọi gia hạn ngầm (Silent Refresh) lên Backend qua Cookie
+        const res = await apiClient.post("/auth/refresh");
+        const { token: newAccessToken, user: userData } = res.data.data;
+
+        // Lưu Access Token mới nhận được vào RAM (JS Memory)
+        setTokenState(newAccessToken);
+        setAccessToken(newAccessToken);
+        setUser(userData);
+        setPermissions(userData.permissions || []);
+
+        // Đồng bộ lại thông tin không nhạy cảm vào cache LocalStorage
+        localStorage.setItem("user", JSON.stringify(userData));
+        localStorage.setItem("permissions", JSON.stringify(userData.permissions || []));
+      } catch (err) {
+        // Nếu không có cookie hoặc hết hạn -> Dọn dẹp bộ nhớ
+        logoutStateOnly();
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    initAuth();
+  }, []);
+
+  // Hàm cập nhật trạng thái khi đăng xuất nhưng chỉ ở phía Client (dùng làm callback)
+  const logoutStateOnly = () => {
+    setUser(null);
+    setTokenState(null);
+    setAccessToken(null);
+    setPermissions([]);
+    localStorage.removeItem("user");
+    localStorage.removeItem("permissions");
+    localStorage.removeItem("token"); // Dọn dẹp tàn dư cũ nếu có
+  };
+
+  // Hàm loginSuccess cập nhật trạng thái đăng nhập thành công
   const loginSuccess = (userData, tokenData, permissionData) => {
     setUser(userData);
-    setToken(tokenData);
+    setTokenState(tokenData); // Lưu vào RAM
+    setAccessToken(tokenData); // Lưu vào apiClient RAM
     setPermissions(permissionData);
-    localStorage.setItem("token", tokenData);
+
+    // Lưu các thông tin không nhạy cảm để vẽ UI nhanh khi tải lại trang
     localStorage.setItem("user", JSON.stringify(userData));
     localStorage.setItem("permissions", JSON.stringify(permissionData));
   };
-  // BKAV HaiHS : Cap nhat thong tin nguoi dung va token trong context - start
+
   const login = (userData, tokenData) => {
     setUser(userData);
     if (userData) {
@@ -35,31 +84,29 @@ export const AuthProvider = ({ children }) => {
       localStorage.removeItem("user");
     }
     if (tokenData) {
-      setToken(tokenData);
-      localStorage.setItem("token", tokenData);
+      setTokenState(tokenData); // Lưu vào RAM
+      setAccessToken(tokenData);
     }
   };
-  // BKAV HaiHS : Cap nhat thong tin nguoi dung va token trong context - end
 
-  // Hàm logout sẽ xóa thông tin người dùng, token và quyền truy cập khỏi state và LocalStorage, trả về trạng thái chưa đăng nhập
-  const logout = () => {
-    setUser(null);
-    setToken(null);
-    setPermissions([]);
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    localStorage.removeItem("permissions");
+  // Hàm logout xóa sạch thông tin người dùng khỏi cả Client và Backend
+  const logout = async () => {
+    logoutStateOnly();
+    try {
+      await apiClient.post("/auth/logout");
+    } catch (e) {
+      console.error("Lỗi gửi yêu cầu đăng xuất tới Backend", e);
+    }
   };
 
-  // Cung cấp giá trị của context bao gồm thông tin người dùng, token, quyền truy cập và các hàm để đăng nhập và đăng xuất cho các component con có thể sử dụng thông qua useContext(AuthContext)
   return (
     <AuthContext.Provider
-      value={{ user, token, permissions, loginSuccess, logout, login }}
+      value={{ user, token, permissions, loginSuccess, logout, login, loading }}
     >
-      {children}
+      {!loading && children}
     </AuthContext.Provider>
   );
 };
-// BKAV HaiHS : Tạo AuthProvider để quản lý trạng thái đăng nhập và quyền truy cập của người dùng - end
+// BKAV HaiHS : Tạo AuthProvider để quản lý trạng thái đăng nhập bằng 2 Token - end
 
 export const useAuth = () => useContext(AuthContext); // xuất context
