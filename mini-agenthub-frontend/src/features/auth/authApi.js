@@ -9,12 +9,7 @@ export const loginApi = async (email, password) => {
 
 // BKAV HaiHS : API đổi mật khẩu - start
 export const changePasswordApi = async (passwordData) => {
-  const token = localStorage.getItem("token");
-  const response = await apiClient.put("/auth/change-password", passwordData, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  const response = await apiClient.put("/auth/change-password", passwordData);
   return response.data;
 };
 // BKAV HaiHS : API đổi mật khẩu - end

@@ -6,6 +6,9 @@ import {
   getConversationDetailApi,
   createConversationApi,
 } from "../chatApi";
+// BKAV HaiHS : Import getAccessToken de lay token tu RAM cho fetch/SSE - start
+import { getAccessToken } from "../../../services/apiClient";
+// BKAV HaiHS : Import getAccessToken de lay token tu RAM cho fetch/SSE - end
 
 // Hàm giải mã/lọc dữ liệu SSE nếu gặp chuỗi thô từ DB cũ (legacy data)
 const cleanSSEContent = (content) => {
@@ -186,7 +189,7 @@ export const useChatStream = (initialActiveId = "new-chat") => {
     }
 
     try {
-      const token = localStorage.getItem("token");
+      const token = getAccessToken();
       const baseUrl =
         import.meta.env.VITE_API_URL || "http://localhost:3000/api";
       // BKAV HaiHS : Goi endpoint /abort de phat tin hieu ABORT cheo may chu qua Redis Pub/Sub - start
@@ -255,7 +258,7 @@ export const useChatStream = (initialActiveId = "new-chat") => {
     });
 
     abortControllerRef.current = new AbortController();
-    const token = localStorage.getItem("token");
+    const token = getAccessToken();
     let aiMsgId = null;
 
     try {
@@ -414,7 +417,7 @@ export const useChatStream = (initialActiveId = "new-chat") => {
     }
 
     abortControllerRef.current = new AbortController();
-    const token = localStorage.getItem("token");
+    const token = getAccessToken();
 
     try {
       const baseUrl =

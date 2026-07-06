@@ -46,12 +46,7 @@ export const bulkAddUsersToGroupApi = async (groupId, userIds) => {
 
 // BKAV HaiHS: API gửi yêu cầu xóa bỏ hoàn toàn tài khoản người dùng hiện tại - start
 export const deleteAccountApi = async () => {
-  const token = localStorage.getItem("token");
-  const response = await apiClient.delete("/users/profile", {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  const response = await apiClient.delete("/users/profile");
   return response.data;
 };
 // BKAV HaiHS: API gửi yêu cầu xóa bỏ hoàn toàn tài khoản người dùng hiện tại - end
