@@ -18,6 +18,18 @@ import { useChatStream } from "./features/chat/hooks/useChatStream.js";
 import SettingsWindow from "./features/settings/components/SettingsWindow.jsx";
 import { ThemeProvider } from "./context/ThemeContext.jsx";
 import { LanguageProvider } from "./context/LanguageContext.jsx";
+// BKAV HaiHS : Import TanStack Query de dung cache - start
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // Cache trong 5 phút trước khi coi là cũ
+      refetchOnWindowFocus: false, // Tránh gọi API khi tab lấy lại focus
+    },
+  },
+});
+// BKAV HaiHS : Import TanStack Query de dung cache - end
 
 function MainAppContent() {
   const chatProps = useChatStream("new-chat");
@@ -112,15 +124,17 @@ function AppContentSwitcher() {
 
 function App() {
   return (
-    <AuthProvider>
-      <LanguageProvider>
-        <ThemeProvider>
-          <ToastProvider>
-            <AppContentSwitcher />
-          </ToastProvider>
-        </ThemeProvider>
-      </LanguageProvider>
-    </AuthProvider>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <LanguageProvider>
+          <ThemeProvider>
+            <ToastProvider>
+              <AppContentSwitcher />
+            </ToastProvider>
+          </ThemeProvider>
+        </LanguageProvider>
+      </AuthProvider>
+    </QueryClientProvider>
   );
 }
 

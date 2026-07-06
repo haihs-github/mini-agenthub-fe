@@ -10,6 +10,9 @@ import ConfirmModal from "../../../components/ConfirmModal";
 import BulkAddToGroupModal from "./BulkAddToGroupModal";
 import { FiLock } from "react-icons/fi";
 import { useLanguage } from "../../../context/LanguageContext"; // BKAV HaiHS: Import hook ngôn ngữ
+// BKAV HaiHS : Import TanStack Query - start
+import { useQuery, useQueryClient, keepPreviousData } from "@tanstack/react-query";
+// BKAV HaiHS : Import TanStack Query - end
 
 // BKAV HaiHS : Component chính chứa đựng toàn bộ trang quản lý user, điều phối việc hiển thị header, bảng danh sách, phân trang và popup form - start
 const UserWindow = () => {
@@ -27,11 +30,8 @@ const UserWindow = () => {
   const canDelete = userPermissions.includes("USER_D");
   const canAddToGroup = userPermissions.includes("GROUP_ADD_USER");
 
-  const [users, setUsers] = useState([]);
+  const queryClient = useQueryClient();
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [userToEdit, setUserToEdit] = useState(null);
@@ -44,24 +44,25 @@ const UserWindow = () => {
   const [isConfirmBulkDeleteOpen, setIsConfirmBulkDeleteOpen] = useState(false);
   const [isBulkGroupOpen, setIsBulkGroupOpen] = useState(false);
 
-  const loadUsers = useCallback(async () => {
-    if (!canRead) return;
-    setIsLoading(true);
-    try {
-      const res = await getUsersApi(currentPage, 10);
-      setUsers(res?.data || []);
-      setTotalPages(res?.pagination?.totalPages || 1);
-      setTotalItems(res?.pagination?.totalItems || 0);
-    } catch (err) {
-      console.error("Lỗi:", err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [currentPage, canRead]);
+  // BKAV HaiHS : Dung useQuery de cache phan trang va lay danh sach nguoi dung - start
+  const { data, isLoading: isQueryLoading, isFetching } = useQuery({
+    queryKey: ["users", currentPage, 10],
+    queryFn: async () => {
+      if (!canRead) return { data: [], pagination: { totalPages: 1, totalItems: 0 } };
+      return await getUsersApi(currentPage, 10);
+    },
+    placeholderData: keepPreviousData,
+  });
 
-  useEffect(() => {
-    loadUsers();
-  }, [loadUsers]);
+  const users = data?.data || [];
+  const totalPages = data?.pagination?.totalPages || 1;
+  const totalItems = data?.pagination?.totalItems || 0;
+  const isLoading = isQueryLoading;
+
+  const loadUsers = () => {
+    queryClient.invalidateQueries({ queryKey: ["users"] });
+  };
+  // BKAV HaiHS : Dung useQuery de cache phan trang va lay danh sach nguoi dung - end
 
   useEffect(() => {
     setSelectedIds([]);
@@ -174,20 +175,28 @@ const UserWindow = () => {
       {/* BKAV HaiHS : Vung noi dung cuon phia duoi - start */}
       <div className="flex-1 overflow-y-auto px-4 py-6 md:px-8 md:py-8">
         <div className="w-full max-w-6xl mx-auto space-y-6 flex flex-col">
-          <UserTable
-            users={users}
-            isLoading={isLoading}
-            onEditClick={handleOpenEditModal}
-            onViewClick={handleOpenViewModal}
-            onDeleteClick={handleOpenDeleteConfirm}
-            onBulkDeleteClick={() => setIsConfirmBulkDeleteOpen(true)}
-            onBulkGroupClick={handleOpenBulkGroupModal}
-            selectedIds={selectedIds}
-            setSelectedIds={setSelectedIds}
-            canRead={canRead}
-            canUpdate={canUpdate}
-            canDelete={canDelete}
-          />
+          {/* BKAV HaiHS : Hieu ung lam mo nhe khi dang lay du lieu phan trang ngam - start */}
+          <div
+            className={`transition-opacity duration-200 ${
+              isFetching && !isLoading ? "opacity-50 pointer-events-none" : "opacity-100"
+            }`}
+          >
+            <UserTable
+              users={users}
+              isLoading={isLoading}
+              onEditClick={handleOpenEditModal}
+              onViewClick={handleOpenViewModal}
+              onDeleteClick={handleOpenDeleteConfirm}
+              onBulkDeleteClick={() => setIsConfirmBulkDeleteOpen(true)}
+              onBulkGroupClick={handleOpenBulkGroupModal}
+              selectedIds={selectedIds}
+              setSelectedIds={setSelectedIds}
+              canRead={canRead}
+              canUpdate={canUpdate}
+              canDelete={canDelete}
+            />
+          </div>
+          {/* BKAV HaiHS : Hieu ung lam mo nhe khi dang lay du lieu phan trang ngam - end */}
           {canRead && (
             <UserPagination
               currentPage={currentPage}

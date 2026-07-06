@@ -10,6 +10,9 @@ import GroupMembersModal from "./GroupMembersModal";
 import ConfirmModal from "../../../components/ConfirmModal";
 import { FiLock } from "react-icons/fi";
 import { useLanguage } from "../../../context/LanguageContext"; // BKAV HaiHS: Import hook ngôn ngữ
+// BKAV HaiHS : Import TanStack Query - start
+import { useQuery, useQueryClient, keepPreviousData } from "@tanstack/react-query";
+// BKAV HaiHS : Import TanStack Query - end
 
 // BKAV HaiHS: Component đại diện toàn bộ trang quản lý quyền - start
 const GroupWindow = () => {
@@ -26,11 +29,8 @@ const GroupWindow = () => {
   const canUpdate = groupPermissions.includes("GROUP_U");
   const canDelete = groupPermissions.includes("GROUP_D");
 
-  const [groups, setGroups] = useState([]);
+  const queryClient = useQueryClient();
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [groupToEdit, setGroupToEdit] = useState(null);
@@ -42,24 +42,25 @@ const GroupWindow = () => {
   const [isMembersOpen, setIsMembersOpen] = useState(false);
   const [selectedGroupForMembers, setSelectedGroupForMembers] = useState(null);
 
-  const loadGroups = useCallback(async () => {
-    if (!canRead) return;
-    setIsLoading(true);
-    try {
-      const res = await getGroupsListApi(currentPage, 10);
-      setGroups(res?.data || []);
-      setTotalPages(res?.pagination?.totalPages || 1);
-      setTotalItems(res?.pagination?.totalItems || 0);
-    } catch (err) {
-      console.error("Lỗi:", err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [currentPage, canRead]);
+  // BKAV HaiHS : Dung useQuery de cache phan trang va lay danh sach nhom - start
+  const { data, isLoading: isQueryLoading, isFetching } = useQuery({
+    queryKey: ["groups", currentPage, 10],
+    queryFn: async () => {
+      if (!canRead) return { data: [], pagination: { totalPages: 1, totalItems: 0 } };
+      return await getGroupsListApi(currentPage, 10);
+    },
+    placeholderData: keepPreviousData,
+  });
 
-  useEffect(() => {
-    loadGroups();
-  }, [loadGroups]);
+  const groups = data?.data || [];
+  const totalPages = data?.pagination?.totalPages || 1;
+  const totalItems = data?.pagination?.totalItems || 0;
+  const isLoading = isQueryLoading;
+
+  const loadGroups = () => {
+    queryClient.invalidateQueries({ queryKey: ["groups"] });
+  };
+  // BKAV HaiHS : Dung useQuery de cache phan trang va lay danh sach nhom - end
 
   const handleOpenCreateModal = () => {
     setGroupToEdit(null);
@@ -152,17 +153,25 @@ const GroupWindow = () => {
       {/* BKAV HaiHS : Vung noi dung cuon phia duoi - start */}
       <div className="flex-1 overflow-y-auto px-4 py-6 md:px-8 md:py-8">
         <div className="w-full max-w-6xl mx-auto space-y-6 flex flex-col">
-          <GroupTable
-            groups={groups}
-            isLoading={isLoading}
-            onViewClick={handleOpenViewModal}
-            onMembersClick={handleOpenMembersModal}
-            onEditClick={handleOpenEditModal}
-            onDeleteClick={handleOpenDeleteConfirm}
-            canRead={canRead}
-            canUpdate={canUpdate}
-            canDelete={canDelete}
-          />
+          {/* BKAV HaiHS : Hieu ung lam mo nhe khi dang lay du lieu phan trang ngam - start */}
+          <div
+            className={`transition-opacity duration-200 ${
+              isFetching && !isLoading ? "opacity-50 pointer-events-none" : "opacity-100"
+            }`}
+          >
+            <GroupTable
+              groups={groups}
+              isLoading={isLoading}
+              onViewClick={handleOpenViewModal}
+              onMembersClick={handleOpenMembersModal}
+              onEditClick={handleOpenEditModal}
+              onDeleteClick={handleOpenDeleteConfirm}
+              canRead={canRead}
+              canUpdate={canUpdate}
+              canDelete={canDelete}
+            />
+          </div>
+          {/* BKAV HaiHS : Hieu ung lam mo nhe khi dang lay du lieu phan trang ngam - end */}
           {canRead && (
             <GroupPagination
               currentPage={currentPage}
