@@ -41,7 +41,10 @@ export const AuthProvider = ({ children }) => {
 
         // Đồng bộ lại thông tin không nhạy cảm vào cache LocalStorage
         localStorage.setItem("user", JSON.stringify(userData));
-        localStorage.setItem("permissions", JSON.stringify(userData.permissions || []));
+        localStorage.setItem(
+          "permissions",
+          JSON.stringify(userData.permissions || []),
+        );
       } catch (err) {
         // Nếu không có cookie hoặc hết hạn -> Dọn dẹp bộ nhớ
         logoutStateOnly();
