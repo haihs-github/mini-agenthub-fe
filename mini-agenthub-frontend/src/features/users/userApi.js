@@ -50,3 +50,10 @@ export const deleteAccountApi = async () => {
   return response.data;
 };
 // BKAV HaiHS: API gửi yêu cầu xóa bỏ hoàn toàn tài khoản người dùng hiện tại - end
+
+// BKAV HaiHS: API tìm kiếm người dùng phân trang - start
+export const searchUsersApi = async (keyword, page = 1, limit = 10) => {
+  const response = await apiClient.get(`/users/search?keyword=${keyword}&page=${page}&limit=${limit}`);
+  return response.data;
+};
+// BKAV HaiHS: API tìm kiếm người dùng phân trang - end
