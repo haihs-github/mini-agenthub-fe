@@ -71,6 +71,18 @@ apiClient.interceptors.response.use(
         return Promise.reject(refreshError);
       }
     }
+
+    // BKAV HaiHS : Bắt lỗi 429 Rate Limit và phát sự kiện hiển thị toast - start
+    if (error.response && error.response.status === 429) {
+      const message = error.response.data?.message || "Thao tác quá nhanh, vui lòng thử lại!";
+      window.dispatchEvent(
+        new CustomEvent("show-toast", {
+          detail: { message, type: "error" },
+        })
+      );
+    }
+    // BKAV HaiHS : Bắt lỗi 429 Rate Limit và phát sự kiện hiển thị toast - end
+
     return Promise.reject(error);
   }
 );

@@ -276,7 +276,19 @@ export const useChatStream = (initialActiveId = "new-chat") => {
         },
       );
 
-      if (!response.ok) throw new Error("Đường truyền API Chat thất bại");
+      if (!response.ok) {
+        if (response.status === 429) {
+          const errData = await response.json().catch(() => ({}));
+          const message = errData.message || "Bạn đã vượt giới hạn chat. Vui lòng thử lại sau!";
+          window.dispatchEvent(
+            new CustomEvent("show-toast", {
+              detail: { message, type: "error" },
+            })
+          );
+          throw new Error(message);
+        }
+        throw new Error("Đường truyền API Chat thất bại");
+      }
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder("utf-8");
@@ -435,7 +447,19 @@ export const useChatStream = (initialActiveId = "new-chat") => {
       );
       // BKAV HaiHS : Gui tham so ?resume=true de Backend xu ly theo quy trinh 3 buoc - end
 
-      if (!response.ok) throw new Error("Đường truyền API Chat Reconnect thất bại");
+      if (!response.ok) {
+        if (response.status === 429) {
+          const errData = await response.json().catch(() => ({}));
+          const message = errData.message || "Bạn đã vượt giới hạn kết nối lại. Vui lòng thử lại!";
+          window.dispatchEvent(
+            new CustomEvent("show-toast", {
+              detail: { message, type: "error" },
+            })
+          );
+          throw new Error(message);
+        }
+        throw new Error("Đường truyền API Chat Reconnect thất bại");
+      }
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder("utf-8");

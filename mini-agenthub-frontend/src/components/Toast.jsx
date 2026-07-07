@@ -33,6 +33,17 @@ export const ToastProvider = ({ children }) => {
     }
   }, [toast.show]);
 
+  // BKAV HaiHS : Đăng ký sự kiện lắng nghe để kích hoạt toast từ các file JS thuần - start
+  useEffect(() => {
+    const handleShowToast = (e) => {
+      const { message, type } = e.detail || {};
+      showToast(message, type);
+    };
+    window.addEventListener("show-toast", handleShowToast);
+    return () => window.removeEventListener("show-toast", handleShowToast);
+  }, []);
+  // BKAV HaiHS : Đăng ký sự kiện lắng nghe để kích hoạt toast từ các file JS thuần - end
+
   // Cấu hình Icon và Màu sắc tương ứng với từng trạng thái nghiệp vụ
   const renderIcon = () => {
     switch (toast.type) {

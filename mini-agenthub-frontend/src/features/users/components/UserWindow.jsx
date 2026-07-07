@@ -10,9 +10,11 @@ import ConfirmModal from "../../../components/ConfirmModal";
 import BulkAddToGroupModal from "./BulkAddToGroupModal";
 import { FiLock } from "react-icons/fi";
 import { useLanguage } from "../../../context/LanguageContext"; // BKAV HaiHS: Import hook ngôn ngữ
-// BKAV HaiHS : Import TanStack Query - start
-import { useQuery, useQueryClient, keepPreviousData } from "@tanstack/react-query";
-// BKAV HaiHS : Import TanStack Query - end
+import {
+  useQuery,
+  useQueryClient,
+  keepPreviousData,
+} from "@tanstack/react-query";
 
 // BKAV HaiHS : Component chính chứa đựng toàn bộ trang quản lý user, điều phối việc hiển thị header, bảng danh sách, phân trang và popup form - start
 const UserWindow = () => {
@@ -45,10 +47,15 @@ const UserWindow = () => {
   const [isBulkGroupOpen, setIsBulkGroupOpen] = useState(false);
 
   // BKAV HaiHS : Dung useQuery de cache phan trang va lay danh sach nguoi dung - start
-  const { data, isLoading: isQueryLoading, isFetching } = useQuery({
+  const {
+    data,
+    isLoading: isQueryLoading,
+    isFetching,
+  } = useQuery({
     queryKey: ["users", currentPage, 10],
     queryFn: async () => {
-      if (!canRead) return { data: [], pagination: { totalPages: 1, totalItems: 0 } };
+      if (!canRead)
+        return { data: [], pagination: { totalPages: 1, totalItems: 0 } };
       return await getUsersApi(currentPage, 10);
     },
     placeholderData: keepPreviousData,
@@ -178,7 +185,9 @@ const UserWindow = () => {
           {/* BKAV HaiHS : Hieu ung lam mo nhe khi dang lay du lieu phan trang ngam - start */}
           <div
             className={`transition-opacity duration-200 ${
-              isFetching && !isLoading ? "opacity-50 pointer-events-none" : "opacity-100"
+              isFetching && !isLoading
+                ? "opacity-50 pointer-events-none"
+                : "opacity-100"
             }`}
           >
             <UserTable
