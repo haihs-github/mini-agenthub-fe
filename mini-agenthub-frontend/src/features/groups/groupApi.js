@@ -52,3 +52,12 @@ export const removeUserFromGroupApi = async (groupId, userId) => {
   return response.data;
 };
 // BKAV HaiHS: api delete thành viên ra khỏi nhóm quyền - end
+
+// BKAV HaiHS: API quét tìm kiếm nhóm phân trang theo từ khóa - start
+export const searchGroupsApi = async (keyword, page = 1, limit = 10) => {
+  const response = await apiClient.get(
+    `/groups/search?keyword=${keyword}&page=${page}&limit=${limit}`,
+  );
+  return response.data;
+};
+// BKAV HaiHS: API quét tìm kiếm nhóm phân trang theo từ khóa - end
