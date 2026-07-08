@@ -94,7 +94,7 @@ const ConversationHistoryList = ({
       <div className="px-4 py-3">
         <button
           onClick={() => selectConversation("new-chat")}
-          className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-3 px-4 rounded-xl transition-all shadow-lg shadow-blue-600/10 cursor-pointer"
+          className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 active:scale-[0.98] text-white text-sm font-semibold py-3 px-4 rounded-xl transition-all shadow-lg shadow-blue-600/10 cursor-pointer"
         >
           <FiPlus size={16} />
           <span>Đoạn hội thoại mới</span>
