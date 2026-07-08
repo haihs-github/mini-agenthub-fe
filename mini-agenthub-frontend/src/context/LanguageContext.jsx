@@ -629,6 +629,9 @@ export const LanguageProvider = ({ children }) => {
 
   // BKAV HaiHS : Hàm định vị và dịch lỗi hệ thống từ Backend - start
   const tError = (error, defaultKey = "toast_error") => {
+    if (error?._alreadyToasted) {
+      return null;
+    }
     const errData = error?.response?.data;
     const errorCode = errData?.code;
     const translatedMsg = errorCode ? t(errorCode) : null;

@@ -82,6 +82,7 @@ apiClient.interceptors.response.use(
           detail: { message, type: "error" },
         })
       );
+      error._alreadyToasted = true;
     }
     // BKAV HaiHS : Bắt lỗi 429 Rate Limit và phát sự kiện hiển thị toast - end
 
