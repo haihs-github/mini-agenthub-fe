@@ -52,6 +52,8 @@ export const translations = {
     ai_disclaimer:
       "AI can provide inaccurate answers, please verify the source.",
     user_image_alt: "User attachment",
+    show_more: "Read more",
+    show_less: "Show less",
 
     // --- USER MANAGEMENT ---
     user_title: "User Management",
@@ -333,6 +335,8 @@ export const translations = {
     ai_disclaimer:
       "AI có thể cung cấp câu trả lời không chính xác, vui lòng xác minh nguồn.",
     user_image_alt: "Hình ảnh người dùng đính kèm",
+    show_more: "Xem thêm",
+    show_less: "Thu nhỏ",
 
     // --- USER MANAGEMENT ---
     user_title: "Quản lý người dùng",
