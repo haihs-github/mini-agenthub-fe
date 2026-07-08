@@ -1,5 +1,5 @@
 import React from "react";
-import { FiEye, FiEdit2, FiTrash2 } from "react-icons/fi";
+import { FiInfo, FiEdit2, FiTrash2 } from "react-icons/fi";
 import { useLanguage } from "../../../context/LanguageContext"; // BKAV HaiHS: Import hook ngôn ngữ
 
 // BKAV HaiHS: Component bang hien thi nhan su don nhan cac trang thai chon tu Bo chi huy trung tam - start
@@ -149,9 +149,10 @@ const UserTable = ({
                 return (
                   <tr
                     key={user.id}
-                    className={`transition-colors group ${isRowChecked ? "bg-blue-50 dark:bg-blue-500/5" : "hover:bg-gray-100 dark:hover:bg-[#1e2533]/40"}`}
+                    onClick={() => canRead && onViewClick(user)}
+                    className={`transition-colors group cursor-pointer ${isRowChecked ? "bg-blue-50 dark:bg-blue-500/5" : "hover:bg-gray-100 dark:hover:bg-[#1e2533]/40"}`}
                   >
-                    <td className="py-4 px-6">
+                    <td className="py-4 px-6" onClick={(e) => e.stopPropagation()}>
                       {canRead && (
                         <input
                           type="checkbox"
@@ -171,7 +172,7 @@ const UserTable = ({
                       {user.email}
                     </td>
                     {(canRead || canUpdate || canDelete) && (
-                      <td className="py-4 px-6 text-right pr-8">
+                      <td className="py-4 px-6 text-right pr-8" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center justify-end gap-1.5">
                           {canRead && (
                             <button
@@ -179,7 +180,7 @@ const UserTable = ({
                               onClick={() => onViewClick(user)}
                               className="p-2 rounded-xl text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200 dark:hover:bg-gray-800 transition-all"
                             >
-                              <FiEye size={15} />
+                              <FiInfo size={15} />
                             </button>
                           )}
                           {canUpdate && (
