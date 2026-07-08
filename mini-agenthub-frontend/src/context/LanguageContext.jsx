@@ -110,6 +110,7 @@ export const translations = {
     confirm_bulk_delete_msg:
       "Are you sure you want to delete selected members?",
     delete_all: "Delete All",
+    deselect_all: "Deselect All",
 
     // --- GROUP MANAGEMENT ---
     group_title: "Group Management",
@@ -286,12 +287,18 @@ export const translations = {
       "Conversation does not exist or you do not have permission!",
     GROUP_NOT_FOUND: "Group not found on the system!",
     GROUP_ALREADY_EXISTS: "This group name already exists in the system!",
-    RATE_LIMIT_GENERAL: "You are acting too fast. Please try again after 1 minute!",
-    RATE_LIMIT_AUTH: "Too many authentication requests. Please try again after 1 minute!",
-    RATE_LIMIT_REFRESH: "Session refresh requests are too fast. Please try again later!",
-    RATE_LIMIT_CHAT: "You have exceeded the rate limit of 10 chat messages per minute. Please wait and try again!",
-    RATE_LIMIT_HEAVY: "The system is busy processing your queries. Please try again later!",
-    RATE_LIMIT_WRITE: "You are making too many write requests. Please wait and try again!",
+    RATE_LIMIT_GENERAL:
+      "You are acting too fast. Please try again after 1 minute!",
+    RATE_LIMIT_AUTH:
+      "Too many authentication requests. Please try again after 1 minute!",
+    RATE_LIMIT_REFRESH:
+      "Session refresh requests are too fast. Please try again later!",
+    RATE_LIMIT_CHAT:
+      "You have exceeded the rate limit of 10 chat messages per minute. Please wait and try again!",
+    RATE_LIMIT_HEAVY:
+      "The system is busy processing your queries. Please try again later!",
+    RATE_LIMIT_WRITE:
+      "You are making too many write requests. Please wait and try again!",
     verifying: "Verifying information...",
     footer_e2ee: "END-TO-END ENCRYPTION (E2EE)",
     footer_iso: "ISO 27001 CERTIFIED",
@@ -458,6 +465,7 @@ export const translations = {
     confirm_remove_msg: "Xóa thành viên khỏi nhóm?",
     agree_remove: "Xác nhận",
     keep_member: "Hủy",
+    deselect_all: "bỏ chọn tất cả",
 
     // --- PAGINATION ---
     showing_page: "Đang hiển thị trang",
@@ -577,12 +585,16 @@ export const translations = {
       "Cuộc hội thoại không tồn tại hoặc bạn không có quyền truy cập!",
     GROUP_NOT_FOUND: "Không tìm thấy Nhóm yêu cầu trên hệ thống!",
     GROUP_ALREADY_EXISTS: "Tên nhóm này đã tồn tại trên hệ thống!",
-    RATE_LIMIT_GENERAL: "Bạn đang thao tác quá nhanh. Vui lòng thử lại sau 1 phút!",
+    RATE_LIMIT_GENERAL:
+      "Bạn đang thao tác quá nhanh. Vui lòng thử lại sau 1 phút!",
     RATE_LIMIT_AUTH: "Quá nhiều yêu cầu xác thực. Vui lòng thử lại sau 1 phút!",
     RATE_LIMIT_REFRESH: "Yêu cầu gia hạn quá nhanh. Vui lòng thử lại sau!",
-    RATE_LIMIT_CHAT: "Bạn đã vượt giới hạn chat 10 tin nhắn/phút. Vui lòng đợi và thử lại!",
-    RATE_LIMIT_HEAVY: "Hệ thống đang bận xử lý truy vấn của bạn. Vui lòng thử lại sau!",
-    RATE_LIMIT_WRITE: "Bạn đang thực hiện quá nhiều thao tác thay đổi dữ liệu. Vui lòng đợi!",
+    RATE_LIMIT_CHAT:
+      "Bạn đã vượt giới hạn chat 10 tin nhắn/phút. Vui lòng đợi và thử lại!",
+    RATE_LIMIT_HEAVY:
+      "Hệ thống đang bận xử lý truy vấn của bạn. Vui lòng thử lại sau!",
+    RATE_LIMIT_WRITE:
+      "Bạn đang thực hiện quá nhiều thao tác thay đổi dữ liệu. Vui lòng đợi!",
     verifying: "Đang xác thực thông tin...",
     footer_e2ee: "MÃ HÓA ĐẦU CUỐI (E2EE)",
     footer_iso: "CHỨNG NHẬN ISO 27001",

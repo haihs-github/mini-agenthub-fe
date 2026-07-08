@@ -10,8 +10,8 @@ const UserTable = ({
   onViewClick,
   onDeleteClick,
   onBulkDeleteClick,
-  selectedIds,
-  setSelectedIds,
+  selectedUsers,
+  setSelectedUsers,
   canRead,
   canUpdate,
   canDelete,
@@ -21,29 +21,32 @@ const UserTable = ({
 
   const handleSelectAllToggle = (e) => {
     if (e.target.checked) {
-      const allCurrentIds = users.map((user) => user.id);
-      setSelectedIds(allCurrentIds);
+      setSelectedUsers((prev) => {
+        const usersToAdd = users.filter((user) => !prev.some((u) => u.id === user.id));
+        return [...prev, ...usersToAdd];
+      });
     } else {
-      setSelectedIds([]);
+      const currentIds = users.map((user) => user.id);
+      setSelectedUsers((prev) => prev.filter((u) => !currentIds.includes(u.id)));
     }
   };
 
-  const handleSelectRowToggle = (userId) => {
-    setSelectedIds((prev) =>
-      prev.includes(userId)
-        ? prev.filter((id) => id !== userId)
-        : [...prev, userId],
+  const handleSelectRowToggle = (user) => {
+    setSelectedUsers((prev) =>
+      prev.some((u) => u.id === user.id)
+        ? prev.filter((u) => u.id !== user.id)
+        : [...prev, user],
     );
   };
 
   const isAllSelectedOnPage =
-    users.length > 0 && selectedIds.length === users.length;
+    users.length > 0 && users.every((user) => selectedUsers.some((u) => u.id === user.id));
 
   return (
     <div className="w-full bg-white dark:bg-[#161b26]/60 border border-gray-200 dark:border-[#232d42] rounded-2xl overflow-hidden shadow-xl dark:shadow-2xl backdrop-blur-md transition-colors duration-300">
       {/* THANH TAC VU HANG LOAT */}
       {canRead && (
-        <div className="px-6 py-4 bg-gray-50 dark:bg-[#111622]/90 border-b border-gray-200 dark:border-[#232d42] flex items-center justify-between text-xs font-semibold tracking-wider text-gray-500 dark:text-gray-400 select-none transition-colors duration-300">
+        <div className="px-6 h-[52px] bg-gray-50 dark:bg-[#111622]/90 border-b border-gray-200 dark:border-[#232d42] flex items-center justify-between text-xs font-semibold tracking-wider text-gray-500 dark:text-gray-400 select-none transition-colors duration-300">
           <div className="flex items-center gap-3">
             <input
               type="checkbox"
@@ -53,17 +56,24 @@ const UserTable = ({
             />
             <span
               className={
-                selectedIds.length > 0
+                selectedUsers.length > 0
                   ? "text-blue-600 dark:text-blue-400 font-bold"
                   : ""
               }
             >
-              {selectedIds.length} {t("users_selected") || "Users selected"}
+              {selectedUsers.length} {t("users_selected") || "Users selected"}
             </span>
           </div>
 
-          {selectedIds.length > 0 && (
+          {selectedUsers.length > 0 && (
             <div className="flex items-center gap-4 animate-fade-in">
+              <button
+                type="button"
+                onClick={() => setSelectedUsers([])}
+                className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white font-semibold text-[10px] tracking-wider uppercase cursor-pointer transition-all"
+              >
+                {t("deselect_all") || "Bỏ chọn tất cả"}
+              </button>
               <button
                 type="button"
                 onClick={onBulkGroupClick}
@@ -144,7 +154,7 @@ const UserTable = ({
                 const avatarCode = user.email
                   ? user.email.substring(0, 2).toUpperCase()
                   : "US";
-                const isRowChecked = selectedIds.includes(user.id);
+                const isRowChecked = selectedUsers.some((u) => u.id === user.id);
 
                 return (
                   <tr
@@ -152,12 +162,15 @@ const UserTable = ({
                     onClick={() => canRead && onViewClick(user)}
                     className={`transition-colors group cursor-pointer ${isRowChecked ? "bg-blue-50 dark:bg-blue-500/5" : "hover:bg-gray-100 dark:hover:bg-[#1e2533]/40"}`}
                   >
-                    <td className="py-4 px-6" onClick={(e) => e.stopPropagation()}>
+                    <td
+                      className="py-4 px-6"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       {canRead && (
                         <input
                           type="checkbox"
                           checked={isRowChecked}
-                          onChange={() => handleSelectRowToggle(user.id)}
+                          onChange={() => handleSelectRowToggle(user)}
                           className="w-4 h-4 rounded border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-blue-600 focus:ring-0 cursor-pointer"
                         />
                       )}
@@ -172,7 +185,10 @@ const UserTable = ({
                       {user.email}
                     </td>
                     {(canRead || canUpdate || canDelete) && (
-                      <td className="py-4 px-6 text-right pr-8" onClick={(e) => e.stopPropagation()}>
+                      <td
+                        className="py-4 px-6 text-right pr-8"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <div className="flex items-center justify-end gap-1.5">
                           {canRead && (
                             <button

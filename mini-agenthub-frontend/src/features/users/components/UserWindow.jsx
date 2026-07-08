@@ -42,7 +42,7 @@ const UserWindow = () => {
   const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
 
-  const [selectedIds, setSelectedIds] = useState([]);
+  const [selectedUsers, setSelectedUsers] = useState([]);
   const [isConfirmBulkDeleteOpen, setIsConfirmBulkDeleteOpen] = useState(false);
   const [isBulkGroupOpen, setIsBulkGroupOpen] = useState(false);
 
@@ -204,9 +204,7 @@ const UserWindow = () => {
   };
   // BKAV HaiHS : Dung useQuery de cache phan trang va lay danh sach nguoi dung - end
 
-  useEffect(() => {
-    setSelectedIds([]);
-  }, [users]);
+  // Bỏ useEffect xóa chọn khi đổi trang users để lưu trạng thái chọn xuyên trang
 
   const handleOpenAddModal = () => {
     setUserToEdit(null);
@@ -250,17 +248,18 @@ const UserWindow = () => {
   };
 
   const handleExecuteBulkDelete = async () => {
-    if (selectedIds.length === 0) return;
+    if (selectedUsers.length === 0) return;
     setIsLoading(true);
     try {
-      await Promise.all(selectedIds.map((id) => deleteUserApi(id)));
+      const userIds = selectedUsers.map((u) => u.id);
+      await Promise.all(userIds.map((id) => deleteUserApi(id)));
       showToast(
         t("toast_bulk_delete_success") +
-          ` ${selectedIds.length} ` +
+          ` ${selectedUsers.length} ` +
           t("users_selected"),
         "success",
       );
-      setSelectedIds([]);
+      setSelectedUsers([]);
       loadUsers();
     } catch (err) {
       showToast(t("toast_bulk_delete_fail"), "error");
@@ -278,11 +277,8 @@ const UserWindow = () => {
     setIsBulkGroupOpen(true);
   };
 
-  const getSelectedUsersData = () =>
-    users.filter((u) => selectedIds.includes(u.id));
-
   const handleBulkGroupSuccess = () => {
-    setSelectedIds([]);
+    setSelectedUsers([]);
     loadUsers();
   };
 
@@ -544,8 +540,8 @@ const UserWindow = () => {
               onDeleteClick={handleOpenDeleteConfirm}
               onBulkDeleteClick={() => setIsConfirmBulkDeleteOpen(true)}
               onBulkGroupClick={handleOpenBulkGroupModal}
-              selectedIds={selectedIds}
-              setSelectedIds={setSelectedIds}
+              selectedUsers={selectedUsers}
+              setSelectedUsers={setSelectedUsers}
               canRead={canRead}
               canUpdate={canUpdate}
               canDelete={canDelete}
@@ -574,7 +570,7 @@ const UserWindow = () => {
       <BulkAddToGroupModal
         isOpen={isBulkGroupOpen}
         onClose={() => setIsBulkGroupOpen(false)}
-        selectedUsers={getSelectedUsersData()}
+        selectedUsers={selectedUsers}
         onSuccess={handleBulkGroupSuccess}
       />
 
@@ -595,7 +591,7 @@ const UserWindow = () => {
         title={t("confirm_bulk_delete_title")}
         message={
           t("confirm_bulk_delete_msg") +
-          ` ${selectedIds.length} ` +
+          ` ${selectedUsers.length} ` +
           t("users_selected") +
           "?"
         }
