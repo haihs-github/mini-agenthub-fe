@@ -168,7 +168,8 @@ export const useChatStream = (initialActiveId = "new-chat") => {
       if (isRoomStreaming) {
         // BKAV HaiHS : Lay tin nhan assistant cuoi cung neu co de dung chung ID khi reconnect - start
         const lastMsg = cleanedMessages[cleanedMessages.length - 1];
-        const existingMsgId = (lastMsg && lastMsg.role === "assistant") ? lastMsg.id : null;
+        const existingMsgId =
+          lastMsg && lastMsg.role === "assistant" ? lastMsg.id : null;
         reconnectStream(id, existingMsgId);
         // BKAV HaiHS : Lay tin nhan assistant cuoi cung neu co de dung chung ID khi reconnect - end
       }
@@ -240,8 +241,9 @@ export const useChatStream = (initialActiveId = "new-chat") => {
       }
     }
 
+    const userMsgId = Date.now();
     const userMsg = {
-      id: Date.now(),
+      id: userMsgId,
       role: "user",
       content: prompt,
       images: imagesToSend.map((img) => img.preview),
@@ -279,11 +281,13 @@ export const useChatStream = (initialActiveId = "new-chat") => {
       if (!response.ok) {
         if (response.status === 429) {
           const errData = await response.json().catch(() => ({}));
-          const message = errData.message || "Bạn đã vượt giới hạn chat. Vui lòng thử lại sau!";
+          const message =
+            errData.message ||
+            "Bạn đã vượt giới hạn chat. Vui lòng thử lại sau!";
           window.dispatchEvent(
             new CustomEvent("show-toast", {
               detail: { message, type: "error" },
-            })
+            }),
           );
           throw new Error(message);
         }
@@ -381,6 +385,11 @@ export const useChatStream = (initialActiveId = "new-chat") => {
         return [target, ...filtered];
       });
     } catch (err) {
+      // Nếu lỗi xảy ra trước khi AI kịp phản hồi (ví dụ rate limit 429), xóa tin nhắn user khỏi UI
+      if (!aiMsgId) {
+        setMessages((prev) => prev.filter((msg) => msg.id !== userMsgId));
+      }
+
       if (err.name === "AbortError") {
         console.log("Người dùng chủ động nhấn dừng Stream.");
       } else {
@@ -407,7 +416,7 @@ export const useChatStream = (initialActiveId = "new-chat") => {
   // BKAV HaiHS : Thuc hien dang ky lai luong stream theo quy trinh 3 buoc Subscribe-Query-Flush - start
   const reconnectStream = async (currentId, existingMsgId = null) => {
     setIsStreaming(true);
-    const aiMsgId = existingMsgId || (Date.now() + 1);
+    const aiMsgId = existingMsgId || Date.now() + 1;
 
     if (existingMsgId) {
       // BKAV HaiHS : Neu da co tin nhan trong DB, gan no ve isStreaming = true - start
@@ -450,11 +459,13 @@ export const useChatStream = (initialActiveId = "new-chat") => {
       if (!response.ok) {
         if (response.status === 429) {
           const errData = await response.json().catch(() => ({}));
-          const message = errData.message || "Bạn đã vượt giới hạn kết nối lại. Vui lòng thử lại!";
+          const message =
+            errData.message ||
+            "Bạn đã vượt giới hạn kết nối lại. Vui lòng thử lại!";
           window.dispatchEvent(
             new CustomEvent("show-toast", {
               detail: { message, type: "error" },
-            })
+            }),
           );
           throw new Error(message);
         }
@@ -511,7 +522,9 @@ export const useChatStream = (initialActiveId = "new-chat") => {
               accumulatedText += textToken;
               setMessages((prev) =>
                 prev.map((msg) =>
-                  msg.id === aiMsgId ? { ...msg, content: accumulatedText } : msg,
+                  msg.id === aiMsgId
+                    ? { ...msg, content: accumulatedText }
+                    : msg,
                 ),
               );
             }
