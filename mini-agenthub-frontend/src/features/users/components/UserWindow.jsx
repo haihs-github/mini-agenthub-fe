@@ -56,7 +56,11 @@ const UserWindow = () => {
   const [dropdownPage, setDropdownPage] = useState(1);
   const [dropdownHasMore, setDropdownHasMore] = useState(true);
   const [isDropdownLoading, setIsDropdownLoading] = useState(false);
+  const [focusedIndex, setFocusedIndex] = useState(-1); // BKAV HaiHS: chỉ số item đang được Tab focus trong dropdown
   const dropdownRef = useRef(null);
+  const inputRef = useRef(null);
+  const dropdownListRef = useRef(null); // BKAV HaiHS: ref cho container danh sách cuộn
+  const itemRefs = useRef([]); // BKAV HaiHS: mảng ref cho từng item dropdown
   const searchTimeoutRef = useRef(null);
   // BKAV HaiHS : Cac trang thai cua bo tim kiem nang cao - end
 
@@ -98,6 +102,24 @@ const UserWindow = () => {
     return () => clearTimeout(searchTimeoutRef.current);
   }, [searchKeyword, activeSearchQuery, selectedDropdownUser]);
   // BKAV HaiHS : Bộ lọc chống rung cho Dropdown tìm kiếm - end
+
+  // BKAV HaiHS : Reset focusedIndex khi danh sách kết quả thay đổi - start
+  useEffect(() => {
+    setFocusedIndex(-1);
+    itemRefs.current = [];
+  }, [dropdownResults]);
+  // BKAV HaiHS : Reset focusedIndex khi danh sách kết quả thay đổi - end
+
+  // BKAV HaiHS : Auto-scroll item đang được focus vào tầm nhìn khi Tab - start
+  useEffect(() => {
+    if (focusedIndex >= 0 && itemRefs.current[focusedIndex]) {
+      itemRefs.current[focusedIndex].scrollIntoView({
+        block: "nearest",
+        behavior: "smooth",
+      });
+    }
+  }, [focusedIndex]);
+  // BKAV HaiHS : Auto-scroll item đang được focus vào tầm nhìn khi Tab - end
 
   // BKAV HaiHS : Tu dong dong dropdown khi click ra ngoai - start
   useEffect(() => {
@@ -301,10 +323,14 @@ const UserWindow = () => {
             .dark .cyber-scrollbar::-webkit-scrollbar-thumb { background: #232d42; }
             .cyber-scrollbar::-webkit-scrollbar-thumb:hover { background: #3b82f6; }
           `}</style>
-          <div className="relative z-20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="relative z-30 w-full max-w-md bg-white dark:bg-[#161b26]/40 p-1.5 rounded-2xl border border-gray-200 dark:border-[#232d42] flex items-center gap-2 shadow-lg backdrop-blur-md transition-colors" ref={dropdownRef}>
+          <div className="relative z-20 flex flex-col gap-3">
+            <div
+              className="relative z-30 w-full max-w-md bg-white dark:bg-[#161b26]/40 p-1.5 rounded-2xl border border-gray-200 dark:border-[#232d42] flex items-center gap-2 shadow-lg backdrop-blur-md transition-colors"
+              ref={dropdownRef}
+            >
               <div className="relative flex-1 flex items-center">
                 <input
+                  ref={inputRef}
                   type="text"
                   value={searchKeyword}
                   onChange={(e) => {
@@ -325,6 +351,57 @@ const UserWindow = () => {
                       setIsDropdownOpen(true);
                     }
                   }}
+                  onKeyDown={(e) => {
+                    // Esc: đóng dropdown, giống click ra ngoài
+                    if (e.key === "Escape") {
+                      setIsDropdownOpen(false);
+                      setFocusedIndex(-1);
+                      inputRef.current?.blur();
+                      return;
+                    }
+                    // Tab: điều hướng qua các item trong dropdown
+                    if (
+                      e.key === "Tab" &&
+                      isDropdownOpen &&
+                      dropdownResults.length > 0
+                    ) {
+                      e.preventDefault();
+                      setFocusedIndex((prev) =>
+                        e.shiftKey
+                          ? prev <= 0
+                            ? dropdownResults.length - 1
+                            : prev - 1
+                          : prev >= dropdownResults.length - 1
+                            ? 0
+                            : prev + 1,
+                      );
+                      return;
+                    }
+                    // Enter: nếu đang focus vào 1 item thì chọn user đó, ngược lại tìm theo keyword
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      if (
+                        focusedIndex >= 0 &&
+                        focusedIndex < dropdownResults.length
+                      ) {
+                        const u = dropdownResults[focusedIndex];
+                        setSelectedDropdownUser(u);
+                        setSearchKeyword(u.fullname || u.email);
+                        setActiveSearchQuery("");
+                        setIsDropdownOpen(false);
+                        setDropdownResults([]);
+                        setFocusedIndex(-1);
+                      } else {
+                        if (!searchKeyword.trim()) return;
+                        setActiveSearchQuery(searchKeyword);
+                        setSelectedDropdownUser(null);
+                        setCurrentPage(1);
+                        setIsDropdownOpen(false);
+                        setDropdownResults([]);
+                        setSearchKeyword("");
+                      }
+                    }
+                  }}
                 />
                 {searchKeyword && (
                   <button
@@ -343,7 +420,7 @@ const UserWindow = () => {
                   </button>
                 )}
               </div>
-              
+
               <button
                 type="button"
                 onClick={() => {
@@ -362,31 +439,59 @@ const UserWindow = () => {
               {/* DROPDOWN KẾT QUẢ TÌM KIẾM TRÊN RAM CUỘN VÔ HẠN */}
               {isDropdownOpen && dropdownResults.length > 0 && (
                 <div
+                  ref={dropdownListRef}
                   onScroll={handleDropdownScroll}
                   className="cyber-scrollbar absolute left-0 right-0 top-full mt-2 max-h-[220px] overflow-y-auto bg-white dark:bg-[#1a202c] border border-gray-200 dark:border-[#232d42] rounded-2xl shadow-2xl z-[100] transition-colors"
                 >
-                  {dropdownResults.map((u) => {
+                  {/* BKAV HaiHS: Hiển thị số lượng kết quả tìm kiếm */}
+                  <div className="sticky top-0 z-10 px-4 py-2 bg-gray-50/90 dark:bg-[#0f1623]/90 backdrop-blur-sm border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
+                    <span className="text-[11px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-widest">
+                      {t("search_results") || "Kết quả"}
+                    </span>
+                    <span className="text-[11px] font-bold text-blue-500 bg-blue-50 dark:bg-blue-500/10 border border-blue-100 dark:border-blue-500/20 px-2 py-0.5 rounded-full">
+                      {dropdownResults.length}
+                      {dropdownHasMore ? "+" : ""}
+                    </span>
+                  </div>
+                  {dropdownResults.map((u, idx) => {
                     const displayName = u.fullname || u.email.split("@")[0];
+                    const isFocused = focusedIndex === idx;
                     return (
                       <div
                         key={u.id}
+                        ref={(el) => {
+                          itemRefs.current[idx] = el;
+                        }}
                         onClick={() => {
                           setSelectedDropdownUser(u);
                           setSearchKeyword(u.fullname || u.email);
                           setActiveSearchQuery("");
                           setIsDropdownOpen(false);
                           setDropdownResults([]);
+                          setFocusedIndex(-1);
                         }}
-                        className="px-4 py-2.5 text-sm hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer flex flex-col transition-colors border-b border-gray-100 dark:border-gray-800 last:border-0"
+                        className={`px-4 py-2.5 text-sm cursor-pointer flex flex-col transition-colors border-b border-gray-100 dark:border-gray-800 last:border-0 ${
+                          isFocused
+                            ? "bg-blue-50 dark:bg-blue-600/15 border-l-2 border-l-blue-500"
+                            : "hover:bg-gray-100 dark:hover:bg-gray-800"
+                        }`}
                       >
-                        <span className="font-bold text-gray-800 dark:text-gray-200">{displayName}</span>
-                        <span className="text-xs text-gray-500 font-mono mt-0.5">{u.email}</span>
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold text-gray-800 dark:text-gray-200">
+                            {displayName}
+                          </span>
+                        </div>
+                        <span className="text-xs text-gray-500 font-mono mt-0.5">
+                          {u.email}
+                        </span>
                       </div>
                     );
                   })}
                   {isDropdownLoading && (
                     <div className="py-2.5 flex justify-center text-blue-500 bg-gray-50/50 dark:bg-[#0b0f19]/20">
-                      <span className="text-xs italic">{t("loading_more")}</span>
+                      <span className="text-xs italic">
+                        {t("loading_more")}
+                      </span>
                     </div>
                   )}
                 </div>
@@ -401,8 +506,8 @@ const UserWindow = () => {
                 </span>
                 <div className="flex items-center gap-1.5 bg-blue-50 dark:bg-blue-600/10 border border-blue-200 dark:border-blue-500/20 text-xs font-bold text-blue-600 dark:text-blue-400 px-3 py-1.5 rounded-xl">
                   <span>
-                    {selectedDropdownUser 
-                      ? `${t("filter_user")} ${selectedDropdownUser.fullname || selectedDropdownUser.email}` 
+                    {selectedDropdownUser
+                      ? `${t("filter_user")} ${selectedDropdownUser.fullname || selectedDropdownUser.email}`
                       : `${t("filter_keyword")} "${activeSearchQuery}"`}
                   </span>
                   <button

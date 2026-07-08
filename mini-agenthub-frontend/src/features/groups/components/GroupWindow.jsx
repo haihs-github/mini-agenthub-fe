@@ -271,7 +271,7 @@ const GroupWindow = () => {
             .dark .cyber-scrollbar::-webkit-scrollbar-thumb { background: #232d42; }
             .cyber-scrollbar::-webkit-scrollbar-thumb:hover { background: #3b82f6; }
           `}</style>
-          <div className="relative z-20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="relative z-20 flex flex-col gap-3">
             <div className="relative z-30 w-full max-w-md bg-white dark:bg-[#161b26]/40 p-1.5 rounded-2xl border border-gray-200 dark:border-[#232d42] flex items-center gap-2 shadow-lg backdrop-blur-md transition-colors" ref={dropdownRef}>
               <div className="relative flex-1 flex items-center">
                 <input
