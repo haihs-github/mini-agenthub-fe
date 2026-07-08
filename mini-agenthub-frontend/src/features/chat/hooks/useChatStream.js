@@ -8,6 +8,7 @@ import {
 } from "../chatApi";
 // BKAV HaiHS : Import getAccessToken de lay token tu RAM cho fetch/SSE - start
 import { getAccessToken } from "../../../services/apiClient";
+import { useLanguage } from "../../../context/LanguageContext";
 // BKAV HaiHS : Import getAccessToken de lay token tu RAM cho fetch/SSE - end
 
 // Hàm giải mã/lọc dữ liệu SSE nếu gặp chuỗi thô từ DB cũ (legacy data)
@@ -73,6 +74,7 @@ const extractTextToken = (parsed) => {
 
 // BKAV HaiHS : Custom Hook quản lý logic Chat Stream & Hội thoại - start
 export const useChatStream = (initialActiveId = "new-chat") => {
+  const { t } = useLanguage();
   const [activeId, setActiveId] = useState(initialActiveId);
   const [conversations, setConversations] = useState([]);
   const [messages, setMessages] = useState([]);
@@ -281,9 +283,8 @@ export const useChatStream = (initialActiveId = "new-chat") => {
       if (!response.ok) {
         if (response.status === 429) {
           const errData = await response.json().catch(() => ({}));
-          const message =
-            errData.message ||
-            "Bạn đã vượt giới hạn chat. Vui lòng thử lại sau!";
+          const errorCode = errData.code || "RATE_LIMIT_CHAT";
+          const message = t(errorCode) || errData.message || t("RATE_LIMIT_CHAT");
           window.dispatchEvent(
             new CustomEvent("show-toast", {
               detail: { message, type: "error" },
