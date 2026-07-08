@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { FiSend, FiPaperclip, FiSquare, FiX } from "react-icons/fi";
 import { useToast } from "../../../../components/Toast";
 import { useLanguage } from "../../../../context/LanguageContext"; // BKAV HaiHS: Import hook ngôn ngữ
@@ -15,6 +15,19 @@ const ChatInputArea = ({
   const { t } = useLanguage(); // BKAV HaiHS: Khai báo hàm dịch thuật
   const [prompt, setPrompt] = useState("");
   const fileInputRef = React.useRef(null);
+  const textareaRef = useRef(null);
+
+  // BKAV HaiHS: Tự động co giãn chiều cao của textarea theo nội dung nhập - start
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    // Reset chiều cao về auto để tính toán scrollHeight chính xác khi xóa chữ
+    textarea.style.height = "auto";
+    // Đặt chiều cao mới dựa trên scrollHeight (không vượt quá max-height cấu hình qua CSS)
+    textarea.style.height = `${textarea.scrollHeight}px`;
+  }, [prompt]);
+  // BKAV HaiHS: Tự động co giãn chiều cao của textarea theo nội dung nhập - end
 
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
@@ -64,6 +77,14 @@ const ChatInputArea = ({
 
   return (
     <div className="p-4 bg-gray-50 dark:bg-[#0b0f19] border-t border-gray-200 dark:border-[#1e293b]/60 shrink-0 transition-colors duration-300">
+      {/* BKAV HaiHS : Custom style cho thanh cuộn của textarea nhập câu hỏi */}
+      <style>{`
+        .cyber-scrollbar::-webkit-scrollbar { width: 4px; }
+        .cyber-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .cyber-scrollbar::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 99px; }
+        .dark .cyber-scrollbar::-webkit-scrollbar-thumb { background: #232d42; }
+        .cyber-scrollbar::-webkit-scrollbar-thumb:hover { background: #3b82f6; }
+      `}</style>
       <form
         onSubmit={handleSubmit}
         className="max-w-4xl mx-auto relative bg-white border border-gray-200 dark:bg-[#161b26] dark:border-[#232d42] rounded-2xl focus-within:border-blue-500/50 transition-all shadow-2xl overflow-hidden px-4 py-3"
@@ -113,6 +134,7 @@ const ChatInputArea = ({
           />
 
           <textarea
+            ref={textareaRef}
             rows={1}
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
@@ -120,7 +142,7 @@ const ChatInputArea = ({
             placeholder={
               t("chat_placeholder") || "Nhập nội dung câu hỏi tại đây..."
             }
-            className="flex-1 bg-transparent border-0 focus:outline-none resize-none text-sm text-gray-900 dark:text-gray-100 max-h-36 placeholder-gray-400 dark:placeholder-gray-600 leading-6 py-1.5 transition-colors"
+            className="cyber-scrollbar flex-1 bg-transparent border-0 focus:outline-none resize-none text-sm text-gray-900 dark:text-gray-100 max-h-36 placeholder-gray-400 dark:placeholder-gray-600 leading-6 py-1.5 transition-colors overflow-y-auto"
             style={{ height: "auto" }}
           />
 
