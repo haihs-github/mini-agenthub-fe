@@ -44,7 +44,6 @@ export const translations = {
     chat_welcome_title: "Mini Agent Hub Workspace",
     chat_welcome_desc:
       "Choose an AI model and send your first question to start a breakthrough conversation.",
-    ai_status_ready: "AI Assistant System Ready",
     model_desc_llama: "High speed, optimized conversation",
     model_desc_flowise: "Drag & drop AI workflow system",
     select_model: "Select AI Model",
@@ -266,7 +265,8 @@ export const translations = {
     go_back_btn: "Go Back",
     hub_member: "Hub Member",
     confirm_signout_title: "Confirm Sign Out",
-    confirm_signout_msg: "Are you sure you want to end your current session and sign out of the Agent Hub administration system?",
+    confirm_signout_msg:
+      "Are you sure you want to end your current session and sign out of the Agent Hub administration system?",
     agree_signout_btn: "Sign Out",
     // BKAV HaiHS : Bổ sung bản dịch tiếng Anh cho chức năng đổi mật khẩu và đăng xuất - end
     login_success: "Successfully logged in to the system!",
@@ -279,7 +279,8 @@ export const translations = {
     AUTH_WRONG_OLD_PASSWORD: "Old password is incorrect!",
     USER_NOT_FOUND: "User not found on the system!",
     USER_EMAIL_ALREADY_EXISTS: "This email already exists in the system!",
-    CONVERSATION_NOT_FOUND: "Conversation does not exist or you do not have permission!",
+    CONVERSATION_NOT_FOUND:
+      "Conversation does not exist or you do not have permission!",
     GROUP_NOT_FOUND: "Group not found on the system!",
     GROUP_ALREADY_EXISTS: "This group name already exists in the system!",
     verifying: "Verifying information...",
@@ -324,7 +325,6 @@ export const translations = {
     chat_welcome_title: "Không gian làm việc Mini Agent Hub",
     chat_welcome_desc:
       "Chọn một mô hình AI và gửi câu hỏi đầu tiên của bạn để bắt đầu một cuộc trò chuyện đột phá.",
-    ai_status_ready: "Hệ thống trợ lý AI đã sẵn sàng",
     model_desc_llama: "Tốc độ cao, tối ưu hóa cuộc trò chuyện",
     model_desc_flowise: "Hệ thống quy trình công việc AI kéo & thả",
     select_model: "Chọn mô hình AI",
@@ -547,7 +547,8 @@ export const translations = {
     go_back_btn: "Quay lại",
     hub_member: "Thành viên Hub",
     confirm_signout_title: "Xác nhận đăng xuất tài khoản",
-    confirm_signout_msg: "Bạn có chắc chắn muốn kết thúc phiên làm việc hiện tại và đăng xuất khỏi hệ thống quản trị Agent Hub không?",
+    confirm_signout_msg:
+      "Bạn có chắc chắn muốn kết thúc phiên làm việc hiện tại và đăng xuất khỏi hệ thống quản trị Agent Hub không?",
     agree_signout_btn: "Đồng ý đăng xuất",
     // BKAV HaiHS : Bổ sung bản dịch tiếng Việt cho chức năng đổi mật khẩu và đăng xuất - end
     login_success: "Đăng nhập hệ thống thành công!",
@@ -560,7 +561,8 @@ export const translations = {
     AUTH_WRONG_OLD_PASSWORD: "Mật khẩu cũ không chính xác!",
     USER_NOT_FOUND: "Không tìm thấy người dùng yêu cầu trên hệ thống!",
     USER_EMAIL_ALREADY_EXISTS: "Email này đã tồn tại trong hệ thống!",
-    CONVERSATION_NOT_FOUND: "Cuộc hội thoại không tồn tại hoặc bạn không có quyền truy cập!",
+    CONVERSATION_NOT_FOUND:
+      "Cuộc hội thoại không tồn tại hoặc bạn không có quyền truy cập!",
     GROUP_NOT_FOUND: "Không tìm thấy Nhóm yêu cầu trên hệ thống!",
     GROUP_ALREADY_EXISTS: "Tên nhóm này đã tồn tại trên hệ thống!",
     verifying: "Đang xác thực thông tin...",
@@ -602,9 +604,9 @@ export const LanguageProvider = ({ children }) => {
     const translatedMsg = errorCode ? t(errorCode) : null;
     // Nếu có bản dịch cho mã code của lỗi (ví dụ: USER_NOT_FOUND) -> dùng bản dịch đó
     // Nếu không -> Fallback về 'message' tiếng Việt của Backend hoặc nhãn lỗi mặc định
-    return (translatedMsg && translatedMsg !== errorCode)
+    return translatedMsg && translatedMsg !== errorCode
       ? translatedMsg
-      : (errData?.message || t(defaultKey) || "An error occurred");
+      : errData?.message || t(defaultKey) || "An error occurred";
   };
   // BKAV HaiHS : Hàm định vị và dịch lỗi hệ thống từ Backend - end
 

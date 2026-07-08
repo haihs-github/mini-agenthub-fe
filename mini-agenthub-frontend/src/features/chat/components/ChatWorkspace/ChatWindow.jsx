@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import ChatHeader from "./ChatWorkspace/ChatHeader";
-import MessageList from "./ChatWorkspace/MessageList";
-import ChatInputArea from "./ChatWorkspace/ChatInputArea";
+import ChatHeader from "./ChatHeader";
+import MessageList from "./MessageList";
+import ChatInputArea from "./ChatInputArea";
 
 // BKAV HaiHS : Component chính của workspace chat, kết hợp header, danh sách tin nhắn và khu vực nhập liệu - start
 const ChatWindow = ({

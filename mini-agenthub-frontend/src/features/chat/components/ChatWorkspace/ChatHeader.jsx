@@ -39,12 +39,6 @@ const ChatHeader = ({ selectedModel, setSelectedModel }) => {
         >
           <FiMenu size={18} />
         </button>
-        <div className="flex items-center gap-2">
-          <div className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></div>
-          <span className="text-sm font-semibold text-gray-900 dark:text-gray-200 transition-colors duration-300">
-            {t("ai_status_ready") || "Hệ thống trợ lý AI sẵn sàng"}
-          </span>
-        </div>
       </div>
 
       {/* DROPDOWN CHỌN MODEL*/}
