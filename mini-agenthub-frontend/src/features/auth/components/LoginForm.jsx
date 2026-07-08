@@ -55,12 +55,16 @@ const LoginForm = () => {
 
       navigate("/chat");
     } catch (error) {
-      const errorMsg = error.response?.data?.message || t("login_failed_msg");
+      const errData = error.response?.data;
+      const errorCode = errData?.code;
+      const translatedMsg = errorCode ? t(errorCode) : null;
+      // Dịch dựa trên 'code' của lỗi, nếu không tìm thấy bản dịch thì hiển thị 'message' của lỗi từ backend
+      const errorMsg =
+        translatedMsg && translatedMsg !== errorCode
+          ? translatedMsg
+          : errData?.message || t("login_failed_msg");
 
-      setApiError(
-        t("login_failed_text") || "Thông tin đăng nhập không chính xác",
-      );
-
+      setApiError(errorMsg);
       showToast(errorMsg, "error");
     } finally {
       setIsLoading(false);
@@ -74,12 +78,6 @@ const LoginForm = () => {
         <span className="text-lg font-bold tracking-wider text-gray-900 dark:text-white transition-colors duration-300">
           Agent Hub
         </span>
-        <a
-          href="/"
-          className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
-        >
-          {t("back_to_home") || "← Quay lại trang chủ"}
-        </a>
       </div>
 
       {/* KHUNG FORM ĐĂNG NHẬP CHÍNH */}

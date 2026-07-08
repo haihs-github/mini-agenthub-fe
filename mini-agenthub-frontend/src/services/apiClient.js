@@ -40,13 +40,15 @@ apiClient.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // Nếu gặp lỗi 401 (Access Token hết hạn) và chưa thử lại lần nào, đồng thời không phải là chính request refresh
+    // Nếu gặp lỗi 401 (Access Token hết hạn) và chưa thử lại lần nào, đồng thời không phải là các request liên quan đến auth (refresh, login, logout)
     if (
       error.response &&
       error.response.status === 401 &&
       !originalRequest._retry &&
       originalRequest.url &&
-      !originalRequest.url.includes("/auth/refresh")
+      !originalRequest.url.includes("/auth/refresh") &&
+      !originalRequest.url.includes("/auth/login") &&
+      !originalRequest.url.includes("/auth/logout")
     ) {
       originalRequest._retry = true;
       try {
