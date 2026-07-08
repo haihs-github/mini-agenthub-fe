@@ -16,7 +16,7 @@ const GroupFormModal = ({
   if (!isOpen) return null;
 
   const { showToast } = useToast();
-  const { t } = useLanguage();
+  const { t, tError } = useLanguage();
   const isEditMode = !!groupToEdit;
 
   const [name, setName] = useState("");
@@ -207,7 +207,7 @@ const GroupFormModal = ({
       onSuccess();
       onClose();
     } catch (err) {
-      showToast(err?.response?.data?.message || t("toast_error"), "error");
+      showToast(tError(err), "error");
     } finally {
       setIsSubmitting(false);
     }

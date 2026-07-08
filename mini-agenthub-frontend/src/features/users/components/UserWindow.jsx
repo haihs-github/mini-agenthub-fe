@@ -20,7 +20,7 @@ import {
 const UserWindow = () => {
   const { permissions } = useAuth();
   const { showToast } = useToast();
-  const { t } = useLanguage(); // BKAV HaiHS: Khai báo hàm dịch thuật
+  const { t, tError } = useLanguage(); // BKAV HaiHS: Khai báo hàm dịch thuật
   const userPermissions = permissions || [];
 
   const hasAnyUserPermission = userPermissions.some((p) =>
@@ -220,7 +220,7 @@ const UserWindow = () => {
       showToast(t("toast_delete_success"), "success");
       loadUsers();
     } catch (err) {
-      showToast(err?.response?.data?.message || t("toast_error"), "error");
+      showToast(tError(err), "error");
     } finally {
       setUserToDelete(null);
       setIsConfirmDeleteOpen(false);

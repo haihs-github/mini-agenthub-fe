@@ -10,7 +10,7 @@ import { useLanguage } from "../../../context/LanguageContext"; // BKAV HaiHS: I
 const PersonalInfo = () => {
   const { user, login } = useAuth();
   const { showToast } = useToast();
-  const { t } = useLanguage(); // BKAV HaiHS: Khai báo hàm dịch thuật
+  const { t, tError } = useLanguage(); // BKAV HaiHS: Khai báo hàm dịch thuật
 
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
@@ -87,7 +87,7 @@ const PersonalInfo = () => {
         ? setIsEditingPhone(false)
         : setIsEditingAddress(false);
     } catch (err) {
-      showToast(err?.response?.data?.message || t("toast_error"), "error");
+      showToast(tError(err), "error");
       if (targetType === "phone") setPhone(user?.phone || "");
       else setAddress(user?.address || "");
     } finally {

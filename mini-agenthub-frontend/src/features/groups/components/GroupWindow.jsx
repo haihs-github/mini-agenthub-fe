@@ -18,7 +18,7 @@ import { useQuery, useQueryClient, keepPreviousData } from "@tanstack/react-quer
 const GroupWindow = () => {
   const { permissions } = useAuth();
   const { showToast } = useToast();
-  const { t } = useLanguage(); // BKAV HaiHS: Khai báo hàm dịch thuật
+  const { t, tError } = useLanguage(); // BKAV HaiHS: Khai báo hàm dịch thuật
   const groupPermissions = permissions || [];
 
   const hasAnyGroupPermission = groupPermissions.some((p) =>
@@ -224,7 +224,7 @@ const GroupWindow = () => {
       setIsConfirmDeleteOpen(false);
       loadGroups();
     } catch (err) {
-      showToast(err?.response?.data?.message || t("toast_error"), "error");
+      showToast(tError(err), "error");
     } finally {
       setIsLoading(false);
       setGroupToDelete(null);

@@ -8,7 +8,7 @@ import { useLanguage } from "../../../context/LanguageContext"; // BKAV HaiHS: I
 // BKAV HaiHS: Component đổi mật khẩu - start
 const ChangePasswordModal = ({ isOpen, onClose }) => {
   const { showToast } = useToast();
-  const { t } = useLanguage(); // BKAV HaiHS: Khai báo hook dịch thuật
+  const { t, tError } = useLanguage(); // BKAV HaiHS: Khai báo hook dịch thuật
 
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -50,10 +50,7 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
       showToast("Thay đổi mật khẩu tài khoản thành công!", "success");
       onClose();
     } catch (err) {
-      showToast(
-        err?.response?.data?.message || "Mật khẩu hiện tại không chính xác!",
-        "error",
-      );
+      showToast(tError(err, "AUTH_WRONG_OLD_PASSWORD"), "error");
     } finally {
       setIsSubmitting(false);
     }

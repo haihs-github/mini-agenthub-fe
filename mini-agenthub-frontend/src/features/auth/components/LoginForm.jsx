@@ -15,7 +15,7 @@ import { FiShield, FiAlertCircle, FiCheckCircle } from "react-icons/fi";
 const LoginForm = () => {
   const { loginSuccess } = useAuth();
   const { showToast } = useToast();
-  const { t } = useLanguage(); // BKAV HaiHS: Khai báo hàm dịch thuật t()
+  const { t, tError } = useLanguage(); // BKAV HaiHS: Khai báo hàm dịch thuật t()
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
@@ -55,15 +55,7 @@ const LoginForm = () => {
 
       navigate("/chat");
     } catch (error) {
-      const errData = error.response?.data;
-      const errorCode = errData?.code;
-      const translatedMsg = errorCode ? t(errorCode) : null;
-      // Dịch dựa trên 'code' của lỗi, nếu không tìm thấy bản dịch thì hiển thị 'message' của lỗi từ backend
-      const errorMsg =
-        translatedMsg && translatedMsg !== errorCode
-          ? translatedMsg
-          : errData?.message || t("login_failed_msg");
-
+      const errorMsg = tError(error, "login_failed_msg");
       setApiError(errorMsg);
       showToast(errorMsg, "error");
     } finally {

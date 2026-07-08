@@ -17,7 +17,7 @@ const UserFormModal = ({
   if (!isOpen) return null;
 
   const { showToast } = useToast();
-  const { t } = useLanguage(); // BKAV HaiHS: Khai báo hàm dịch thuật
+  const { t, tError } = useLanguage(); // BKAV HaiHS: Khai báo hàm dịch thuật
   const isEditMode = !!userToEdit;
 
   const [fullName, setFullName] = useState("");
@@ -179,8 +179,7 @@ const UserFormModal = ({
       onSuccess();
       onClose();
     } catch (err) {
-      const errorMsg = err?.response?.data?.message || t("toast_error");
-      showToast(errorMsg, "error");
+      showToast(tError(err), "error");
     } finally {
       setIsSubmitting(false);
     }

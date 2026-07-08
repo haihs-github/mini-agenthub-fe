@@ -13,7 +13,7 @@ import { useLanguage } from "../../../context/LanguageContext"; // BKAV HaiHS: I
 const AccountSecurity = ({ setConversations }) => {
   const { showToast } = useToast();
   const { logout } = useAuth();
-  const { t } = useLanguage(); // BKAV HaiHS: Khai báo hàm dịch thuật
+  const { t, tError } = useLanguage(); // BKAV HaiHS: Khai báo hàm dịch thuật
 
   const navigate = useNavigate();
 
@@ -32,7 +32,7 @@ const AccountSecurity = ({ setConversations }) => {
       showToast(t("toast_clear_success"), "success");
       if (setConversations) setConversations([]);
     } catch (err) {
-      showToast(err?.response?.data?.message || t("toast_error"), "error");
+      showToast(tError(err), "error");
     } finally {
       setIsClearing(false);
       setIsClearModalOpen(false);
@@ -47,7 +47,7 @@ const AccountSecurity = ({ setConversations }) => {
       logout();
       navigate("/");
     } catch (err) {
-      showToast(err?.response?.data?.message || t("toast_error"), "error");
+      showToast(tError(err), "error");
     } finally {
       setIsDeleting(false);
       setIsDeleteModalOpen(false);

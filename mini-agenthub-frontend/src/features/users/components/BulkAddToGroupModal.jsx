@@ -9,7 +9,7 @@ const BulkAddToGroupModal = ({ isOpen, onClose, selectedUsers, onSuccess }) => {
   if (!isOpen) return null;
 
   const { showToast } = useToast();
-  const { t } = useLanguage(); // BKAV HaiHS: Khai báo hàm dịch thuật
+  const { t, tError } = useLanguage(); // BKAV HaiHS: Khai báo hàm dịch thuật
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -92,8 +92,7 @@ const BulkAddToGroupModal = ({ isOpen, onClose, selectedUsers, onSuccess }) => {
       onSuccess();
       onClose();
     } catch (err) {
-      const errorMsg = err?.response?.data?.message || t("toast_bulk_add_fail");
-      showToast(errorMsg, "error");
+      showToast(tError(err, "toast_bulk_add_fail"), "error");
     } finally {
       setIsSubmitting(false);
     }

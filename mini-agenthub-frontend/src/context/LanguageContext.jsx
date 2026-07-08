@@ -276,6 +276,12 @@ export const translations = {
     AUTH_REFRESH_TOKEN_REQUIRED: "Session token not found!",
     AUTH_REFRESH_TOKEN_INVALID: "Invalid session token!",
     AUTH_SESSION_EXPIRED: "Session expired. Please log in again!",
+    AUTH_WRONG_OLD_PASSWORD: "Old password is incorrect!",
+    USER_NOT_FOUND: "User not found on the system!",
+    USER_EMAIL_ALREADY_EXISTS: "This email already exists in the system!",
+    CONVERSATION_NOT_FOUND: "Conversation does not exist or you do not have permission!",
+    GROUP_NOT_FOUND: "Group not found on the system!",
+    GROUP_ALREADY_EXISTS: "This group name already exists in the system!",
     verifying: "Verifying information...",
     footer_e2ee: "END-TO-END ENCRYPTION (E2EE)",
     footer_iso: "ISO 27001 CERTIFIED",
@@ -551,6 +557,12 @@ export const translations = {
     AUTH_REFRESH_TOKEN_REQUIRED: "Không tìm thấy token gia hạn!",
     AUTH_REFRESH_TOKEN_INVALID: "Token gia hạn không hợp lệ hoặc đã hết hạn!",
     AUTH_SESSION_EXPIRED: "Phiên làm việc đã hết hạn. Vui lòng đăng nhập lại!",
+    AUTH_WRONG_OLD_PASSWORD: "Mật khẩu cũ không chính xác!",
+    USER_NOT_FOUND: "Không tìm thấy người dùng yêu cầu trên hệ thống!",
+    USER_EMAIL_ALREADY_EXISTS: "Email này đã tồn tại trong hệ thống!",
+    CONVERSATION_NOT_FOUND: "Cuộc hội thoại không tồn tại hoặc bạn không có quyền truy cập!",
+    GROUP_NOT_FOUND: "Không tìm thấy Nhóm yêu cầu trên hệ thống!",
+    GROUP_ALREADY_EXISTS: "Tên nhóm này đã tồn tại trên hệ thống!",
     verifying: "Đang xác thực thông tin...",
     footer_e2ee: "MÃ HÓA ĐẦU CUỐI (E2EE)",
     footer_iso: "CHỨNG NHẬN ISO 27001",
@@ -583,8 +595,21 @@ export const LanguageProvider = ({ children }) => {
 
   const language = i18nInstance.language;
 
+  // BKAV HaiHS : Hàm định vị và dịch lỗi hệ thống từ Backend - start
+  const tError = (error, defaultKey = "toast_error") => {
+    const errData = error?.response?.data;
+    const errorCode = errData?.code;
+    const translatedMsg = errorCode ? t(errorCode) : null;
+    // Nếu có bản dịch cho mã code của lỗi (ví dụ: USER_NOT_FOUND) -> dùng bản dịch đó
+    // Nếu không -> Fallback về 'message' tiếng Việt của Backend hoặc nhãn lỗi mặc định
+    return (translatedMsg && translatedMsg !== errorCode)
+      ? translatedMsg
+      : (errData?.message || t(defaultKey) || "An error occurred");
+  };
+  // BKAV HaiHS : Hàm định vị và dịch lỗi hệ thống từ Backend - end
+
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t }}>
+    <LanguageContext.Provider value={{ language, setLanguage, t, tError }}>
       {children}
     </LanguageContext.Provider>
   );
