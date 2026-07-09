@@ -359,7 +359,7 @@ const GroupFormModal = ({
               <button
                 type="button"
                 onClick={onClose}
-                className="px-6 py-2.5 text-xs font-bold text-gray-900 dark:text-white bg-gray-100 dark:bg-[#1e2533] rounded-full"
+                className="px-6 py-2.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 active:scale-95 rounded-full transition-all duration-200 shadow-lg shadow-blue-600/10 cursor-pointer"
               >
                 {t("close")}
               </button>

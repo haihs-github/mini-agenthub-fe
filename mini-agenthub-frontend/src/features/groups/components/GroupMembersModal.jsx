@@ -404,20 +404,13 @@ const GroupMembersModal = ({
               </div>
             </div>
 
-            <div className="pt-4 border-t border-gray-200 dark:border-[#232d42] flex justify-end items-center gap-3 bg-white dark:bg-[#161b26] shrink-0 transition-colors">
+            <div className="pt-4 border-t border-gray-200 dark:border-[#232d42] flex justify-end items-center bg-white dark:bg-[#161b26] shrink-0 transition-colors">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-5 py-2 text-xs font-bold text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border border-gray-200 dark:border-[#232d42] bg-gray-50 dark:bg-[#111622] hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all cursor-pointer"
+                className="px-6 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 active:scale-95 rounded-xl transition-all shadow-md cursor-pointer"
               >
-                {t("cancel_btn")}
-              </button>
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-5 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-md cursor-pointer"
-              >
-                {t("update_group")}
+                {t("close")}
               </button>
             </div>
           </div>

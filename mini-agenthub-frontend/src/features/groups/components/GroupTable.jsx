@@ -1,9 +1,15 @@
 import React, { useState, useRef } from "react";
-import { FiInfo, FiUsers, FiSettings, FiTrash2 } from "react-icons/fi";
+import { FiInfo, FiUsers, FiEdit2, FiTrash2 } from "react-icons/fi";
 import { useLanguage } from "../../../context/LanguageContext"; // BKAV HaiHS: Import hook ngôn ngữ
 
 // Helper component to conditionally show title on hover only when text overflows (is truncated)
-const TruncatedText = ({ text, className, maxWClass, onClick, showUnderline = true }) => {
+const TruncatedText = ({
+  text,
+  className,
+  maxWClass,
+  onClick,
+  showUnderline = true,
+}) => {
   const [showTitle, setShowTitle] = useState(false);
   const textRef = useRef(null);
 
@@ -147,7 +153,7 @@ const GroupTable = ({
                               onClick={() => onEditClick(group)}
                               className="p-2 rounded-xl text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200 dark:hover:bg-gray-800 transition-all cursor-pointer"
                             >
-                              <FiSettings size={14} />
+                              <FiEdit2 size={14} />
                             </button>
                           )}
                           {canDelete && (
