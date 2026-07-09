@@ -90,6 +90,14 @@ const GroupFormModal = ({
     setSearchResults([]);
   }, [groupToEdit, isEditMode, isViewMode, isOpen]);
 
+  // Reset trạng thái khi đóng modal để không bị lưu trạng thái cũ cho lần mở tiếp theo
+  useEffect(() => {
+    if (!isOpen) {
+      setIsConfirmCancelOpen(false);
+      setIsDropdownOpen(false);
+    }
+  }, [isOpen]);
+
   useEffect(() => {
     if (isViewMode) return;
     const handleOutsideClick = (e) => {

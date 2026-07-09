@@ -36,20 +36,6 @@ const UserFormModal = ({
   }, [isOpen, isViewMode]);
 
 
-  // Lắng nghe sự kiện phím Esc để đóng/hủy modal
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const handleKeyDown = (e) => {
-      if (e.key === "Escape") {
-        handleCancelWithCheck();
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, fullName, email, selectedGroups, isViewMode]);
-
   const [permissions, setPermissions] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -88,6 +74,14 @@ const UserFormModal = ({
       setPermissions([]);
     }
   }, [userToEdit, isEditMode, isViewMode, isOpen]);
+
+  // Reset trạng thái khi đóng modal để không bị lưu trạng thái cũ cho lần mở tiếp theo
+  useEffect(() => {
+    if (!isOpen) {
+      setIsConfirmCancelOpen(false);
+      setIsDropdownOpen(false);
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     if (isViewMode) return;
@@ -191,10 +185,28 @@ const UserFormModal = ({
     }
   };
 
+  // Lắng nghe sự kiện phím Esc để đóng/hủy modal hoặc đóng dropdown nhóm
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        if (isDropdownOpen) {
+          setIsDropdownOpen(false);
+        } else {
+          handleCancelWithCheck();
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, isDropdownOpen, fullName, email, selectedGroups, isViewMode, isEditMode, userToEdit]);
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (isViewMode || !email.trim() || isSubmitting) return;
+    if (isViewMode || !email.trim() || !fullName.trim() || isSubmitting) return;
 
     setIsSubmitting(true);
     const payload = {
@@ -295,9 +307,9 @@ const UserFormModal = ({
               </label>
               <div
                 onClick={toggleDropdown}
-                className={`w-full bg-gray-50 dark:bg-[#0b0f19] border border-gray-200 dark:border-[#232d42] rounded-xl px-3 py-2.5 flex flex-wrap items-center justify-between gap-1.5 min-h-[46px] transition-all ${isViewMode ? "cursor-not-allowed opacity-70" : "hover:border-gray-400 dark:hover:border-gray-700 cursor-pointer"}`}
+                className={`w-full bg-gray-50 dark:bg-[#0b0f19] border border-gray-200 dark:border-[#232d42] rounded-xl px-3 py-2 flex items-center justify-between gap-2 min-h-[46px] transition-all ${isViewMode ? "cursor-not-allowed opacity-70" : "hover:border-gray-400 dark:hover:border-gray-700 cursor-pointer"}`}
               >
-                <div className="flex flex-wrap gap-1.5 items-center flex-1">
+                <div className="flex flex-wrap gap-1.5 items-center flex-1 max-h-[96px] overflow-y-auto cyber-scrollbar pr-1">
                   {selectedGroups.length === 0 ? (
                     <span className="text-sm text-gray-400 pl-1">
                       {isViewMode ? t("no_group_assigned") : t("select_group")}
@@ -325,7 +337,7 @@ const UserFormModal = ({
                 {!isViewMode && (
                   <FiChevronDown
                     size={16}
-                    className={`text-gray-400 transition-transform duration-200 ${isDropdownOpen ? "rotate-180 text-blue-500" : ""}`}
+                    className={`text-gray-400 shrink-0 transition-transform duration-200 ${isDropdownOpen ? "rotate-180 text-blue-500" : ""}`}
                   />
                 )}
               </div>
@@ -429,7 +441,7 @@ const UserFormModal = ({
                   </button>
                   <button
                     type="submit"
-                    disabled={isSubmitting || !email.trim()}
+                    disabled={isSubmitting || !email.trim() || !fullName.trim()}
                     className="px-5 py-2.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all shadow-lg shadow-blue-600/10 disabled:bg-gray-300 dark:disabled:bg-gray-800 disabled:text-gray-500 cursor-pointer flex items-center gap-2 min-w-[120px] justify-center"
                   >
                     {isSubmitting ? (
