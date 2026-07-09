@@ -1,6 +1,32 @@
-import React from "react";
+import React, { useState, useRef } from "react";
 import { FiInfo, FiUsers, FiSettings, FiTrash2 } from "react-icons/fi";
 import { useLanguage } from "../../../context/LanguageContext"; // BKAV HaiHS: Import hook ngôn ngữ
+
+// Helper component to conditionally show title on hover only when text overflows (is truncated)
+const TruncatedText = ({ text, className, maxWClass, onClick }) => {
+  const [showTitle, setShowTitle] = useState(false);
+  const textRef = useRef(null);
+
+  const handleMouseEnter = () => {
+    const el = textRef.current;
+    if (el) {
+      const isOverflowing = el.scrollWidth > el.clientWidth;
+      setShowTitle(isOverflowing);
+    }
+  };
+
+  return (
+    <span
+      ref={textRef}
+      onMouseEnter={handleMouseEnter}
+      title={showTitle ? text : undefined}
+      onClick={onClick}
+      className={`truncate block cursor-pointer hover:underline ${maxWClass} ${className || ""}`}
+    >
+      {text}
+    </span>
+  );
+};
 
 // BKAV HaiHS: Component bảng hiển thị danh sách nhóm - start
 const GroupTable = ({
@@ -18,15 +44,6 @@ const GroupTable = ({
 
   return (
     <div className="w-full bg-white border border-gray-200 dark:bg-[#161b26]/60 dark:border-[#232d42] rounded-2xl overflow-hidden shadow-xl dark:shadow-2xl backdrop-blur-md transition-colors duration-300">
-      <div className="px-6 py-4 bg-gray-50 dark:bg-[#111622]/90 border-b border-gray-200 dark:border-[#232d42] flex items-center justify-between text-xs font-semibold tracking-wider text-gray-500 dark:text-gray-400 select-none transition-colors duration-300">
-        <span>{t("active_groups") || "Active Groups"}</span>
-        {canRead && groups.length > 0 && (
-          <span className="bg-gray-200 dark:bg-[#1e2533] px-2.5 py-1 border border-gray-300 dark:border-[#232d42] text-[10px] font-bold text-gray-600 dark:text-gray-400 rounded-lg uppercase tracking-widest transition-colors duration-300">
-            {groups.length} {t("total") || "Total"}
-          </span>
-        )}
-      </div>
-
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
@@ -86,8 +103,12 @@ const GroupTable = ({
                     key={group.id}
                     className="transition-colors hover:bg-gray-100 dark:hover:bg-[#1e2533]/40"
                   >
-                    <td className="py-4 px-6 font-semibold text-blue-600 dark:text-blue-400 cursor-pointer hover:underline">
-                      {group.name}
+                    <td className="py-4 px-6 font-semibold text-blue-600 dark:text-blue-400">
+                      <TruncatedText
+                        text={group.name}
+                        maxWClass="max-w-[200px] sm:max-w-[300px]"
+                        onClick={() => onViewClick(group)}
+                      />
                     </td>
                     <td className="py-4 px-6 text-gray-600 dark:text-gray-400">
                       {memberCount} {t("members") || "members"}
