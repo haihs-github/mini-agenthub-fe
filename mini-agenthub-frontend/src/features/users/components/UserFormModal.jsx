@@ -53,6 +53,15 @@ const UserFormModal = ({
   const [isConfirmCancelOpen, setIsConfirmCancelOpen] = useState(false);
   const dropdownRef = useRef(null);
 
+  // Kiểm tra xem dữ liệu trong form có thay đổi so với ban đầu không (dirty check)
+  const hasChanges = isEditMode
+    ? fullName.trim() !== (userToEdit?.fullname || "") ||
+      email.trim() !== (userToEdit?.email || "") ||
+      selectedGroups.length !== (userToEdit?.groups?.length || 0) ||
+      selectedGroups.some((g) => !userToEdit?.groups?.some((ug) => ug.id === g.id))
+    : fullName.trim() || email.trim() || selectedGroups.length > 0;
+
+
   useEffect(() => {
     if ((isEditMode || isViewMode) && userToEdit) {
       setFullName(userToEdit.fullname || "");
@@ -170,15 +179,7 @@ const UserFormModal = ({
       return;
     }
 
-    // Kiểm tra xem dữ liệu trong form có thay đổi so với ban đầu không (dirty check)
-    const hasChanged = isEditMode
-      ? fullName.trim() !== (userToEdit?.fullname || "") ||
-        email.trim() !== (userToEdit?.email || "") ||
-        selectedGroups.length !== (userToEdit?.groups?.length || 0) ||
-        selectedGroups.some((g) => !userToEdit?.groups?.some((ug) => ug.id === g.id))
-      : fullName.trim() || email.trim() || selectedGroups.length > 0;
-
-    if (hasChanged) {
+    if (hasChanges) {
       setIsConfirmCancelOpen(true);
     } else {
       onClose();
@@ -201,7 +202,7 @@ const UserFormModal = ({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, isDropdownOpen, fullName, email, selectedGroups, isViewMode, isEditMode, userToEdit]);
+  }, [isOpen, isDropdownOpen, hasChanges, isViewMode, isEditMode, userToEdit]);
 
 
   const handleSubmit = async (e) => {
@@ -441,7 +442,7 @@ const UserFormModal = ({
                   </button>
                   <button
                     type="submit"
-                    disabled={isSubmitting || !email.trim() || !fullName.trim()}
+                    disabled={isSubmitting || !email.trim() || !fullName.trim() || (isEditMode && !hasChanges)}
                     className="px-5 py-2.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all shadow-lg shadow-blue-600/10 disabled:bg-gray-300 dark:disabled:bg-gray-800 disabled:text-gray-500 cursor-pointer flex items-center gap-2 min-w-[120px] justify-center"
                   >
                     {isSubmitting ? (
