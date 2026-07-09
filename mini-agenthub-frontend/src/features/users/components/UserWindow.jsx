@@ -175,14 +175,18 @@ const UserWindow = () => {
         return { data: [], pagination: { totalPages: 1, totalItems: 0 } };
 
       if (selectedDropdownUser) {
-        return {
-          data: [selectedDropdownUser],
-          pagination: {
-            currentPage: 1,
-            totalPages: 1,
-            totalItems: 1,
-          },
-        };
+        try {
+          return await searchUsersApi(selectedDropdownUser.email, 1, 1);
+        } catch (err) {
+          return {
+            data: [],
+            pagination: {
+              currentPage: 1,
+              totalPages: 1,
+              totalItems: 0,
+            },
+          };
+        }
       }
 
       if (activeSearchQuery) {
