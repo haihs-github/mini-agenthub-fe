@@ -3,7 +3,7 @@ import { FiInfo, FiUsers, FiSettings, FiTrash2 } from "react-icons/fi";
 import { useLanguage } from "../../../context/LanguageContext"; // BKAV HaiHS: Import hook ngôn ngữ
 
 // Helper component to conditionally show title on hover only when text overflows (is truncated)
-const TruncatedText = ({ text, className, maxWClass, onClick }) => {
+const TruncatedText = ({ text, className, maxWClass, onClick, showUnderline = true }) => {
   const [showTitle, setShowTitle] = useState(false);
   const textRef = useRef(null);
 
@@ -21,7 +21,7 @@ const TruncatedText = ({ text, className, maxWClass, onClick }) => {
       onMouseEnter={handleMouseEnter}
       title={showTitle ? text : undefined}
       onClick={onClick}
-      className={`truncate block cursor-pointer hover:underline ${maxWClass} ${className || ""}`}
+      className={`truncate block cursor-pointer ${showUnderline ? "hover:underline" : ""} ${maxWClass} ${className || ""}`}
     >
       {text}
     </span>
@@ -103,14 +103,20 @@ const GroupTable = ({
                     key={group.id}
                     className="transition-colors hover:bg-gray-100 dark:hover:bg-[#1e2533]/40"
                   >
-                    <td className="py-4 px-6 font-semibold text-blue-600 dark:text-blue-400">
+                    <td
+                      onClick={() => onViewClick(group)}
+                      className="py-4 px-6 font-semibold text-blue-600 dark:text-blue-400 cursor-pointer hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
+                    >
                       <TruncatedText
                         text={group.name}
                         maxWClass="max-w-[200px] sm:max-w-[300px]"
-                        onClick={() => onViewClick(group)}
+                        showUnderline={false}
                       />
                     </td>
-                    <td className="py-4 px-6 text-gray-600 dark:text-gray-400">
+                    <td
+                      onClick={() => onMembersClick(group)}
+                      className="py-4 px-6 text-gray-600 dark:text-gray-400 cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition-colors select-none"
+                    >
                       {memberCount} {t("members") || "members"}
                     </td>
 
