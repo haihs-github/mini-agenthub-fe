@@ -24,20 +24,6 @@ const GroupFormModal = ({
   const [members, setMembers] = useState([]);
   const [activeTab, setActiveTab] = useState("user");
 
-  // Lắng nghe sự kiện phím Esc để đóng/hủy modal
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const handleKeyDown = (e) => {
-      if (e.key === "Escape") {
-        handleCancelWithCheck();
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, name, selectedPermissions, members, isViewMode]);
-
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isConfirmCancelOpen, setIsConfirmCancelOpen] = useState(false);
 
@@ -74,6 +60,34 @@ const GroupFormModal = ({
       desc: t("desc_del_bulk"),
     },
   ];
+
+  // Kiểm tra xem dữ liệu trong form có thay đổi so với ban đầu không (dirty check)
+  const originalMembers = groupToEdit?.users || groupToEdit?.members || [];
+  const hasChanges = isEditMode
+    ? name.trim() !== (groupToEdit?.name || "") ||
+      selectedPermissions.length !== (groupToEdit?.permissions?.length || 0) ||
+      selectedPermissions.some((p) => !groupToEdit?.permissions?.includes(p)) ||
+      members.length !== originalMembers.length ||
+      members.some((m) => !originalMembers.some((om) => om.id === m.id))
+    : name.trim() || selectedPermissions.length > 0 || members.length > 0;
+
+  // Lắng nghe sự kiện phím Esc để đóng/hủy modal
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        if (isConfirmCancelOpen) {
+          setIsConfirmCancelOpen(false);
+        } else {
+          handleCancelWithCheck();
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, hasChanges, isConfirmCancelOpen, isViewMode]);
 
   useEffect(() => {
     if ((isEditMode || isViewMode) && groupToEdit) {
@@ -199,9 +213,7 @@ const GroupFormModal = ({
       onClose();
       return;
     }
-    const hasData =
-      name.trim() || selectedPermissions.length > 0 || members.length > 0;
-    if (hasData) {
+    if (hasChanges) {
       setIsConfirmCancelOpen(true);
     } else {
       onClose();
@@ -364,20 +376,30 @@ const GroupFormModal = ({
                 {t("close")}
               </button>
             ) : (
-              <button
-                type="submit"
-                disabled={isSubmitting || !name.trim()}
-                className="px-6 py-2.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 active:scale-95 disabled:bg-gray-300 dark:disabled:bg-gray-800 disabled:text-gray-500 disabled:cursor-not-allowed disabled:active:scale-100 rounded-full transition-all shadow-lg shadow-blue-600/10 cursor-pointer flex items-center gap-2 min-w-[110px] justify-center"
-              >
-                {isSubmitting ? (
-                  <>
-                    <FiLoader size={14} className="animate-spin" />
-                    <span>{t("processing") || "Đang xử lý..."}</span>
-                  </>
-                ) : (
-                  <span>{isEditMode ? t("update") : t("initialize")}</span>
-                )}
-              </button>
+              <>
+                <button
+                  type="button"
+                  onClick={handleCancelWithCheck}
+                  disabled={isSubmitting}
+                  className="px-6 py-2.5 text-xs font-bold text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border border-gray-200 dark:border-[#232d42] bg-gray-50 dark:bg-[#111622] hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-all duration-200 active:scale-95 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {t("cancel_btn")}
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting || !name.trim() || (isEditMode && !hasChanges)}
+                  className="px-6 py-2.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 active:scale-95 disabled:bg-gray-300 dark:disabled:bg-gray-800 disabled:text-gray-500 disabled:cursor-not-allowed disabled:active:scale-100 rounded-full transition-all shadow-lg shadow-blue-600/10 cursor-pointer flex items-center gap-2 min-w-[110px] justify-center"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <FiLoader size={14} className="animate-spin" />
+                      <span>{t("processing") || "Đang xử lý..."}</span>
+                    </>
+                  ) : (
+                    <span>{isEditMode ? t("update") : t("initialize")}</span>
+                  )}
+                </button>
+              </>
             )}
           </div>
         </form>
