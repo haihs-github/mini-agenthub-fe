@@ -1,6 +1,31 @@
-import React from "react";
+import React, { useState, useRef } from "react";
 import { FiInfo, FiEdit2, FiTrash2 } from "react-icons/fi";
 import { useLanguage } from "../../../context/LanguageContext"; // BKAV HaiHS: Import hook ngôn ngữ
+
+// Helper component to conditionally show title on hover only when text overflows (is truncated)
+const TruncatedText = ({ text, className, maxWClass }) => {
+  const [showTitle, setShowTitle] = useState(false);
+  const textRef = useRef(null);
+
+  const handleMouseEnter = () => {
+    const el = textRef.current;
+    if (el) {
+      const isOverflowing = el.scrollWidth > el.clientWidth;
+      setShowTitle(isOverflowing);
+    }
+  };
+
+  return (
+    <span
+      ref={textRef}
+      onMouseEnter={handleMouseEnter}
+      title={showTitle ? text : undefined}
+      className={`truncate block ${maxWClass} ${className || ""}`}
+    >
+      {text}
+    </span>
+  );
+};
 
 // BKAV HaiHS: Component bang hien thi nhan su don nhan cac trang thai chon tu Bo chi huy trung tam - start
 const UserTable = ({
@@ -179,10 +204,17 @@ const UserTable = ({
                       <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-gray-200 to-gray-300 dark:from-blue-600/20 dark:to-indigo-600/20 border border-gray-200 dark:border-blue-500/20 flex justify-center items-center text-xs font-bold text-blue-600 dark:text-blue-400">
                         {avatarCode}
                       </div>
-                      <span className="capitalize">{nameDisplay}</span>
+                      <TruncatedText
+                        text={nameDisplay}
+                        className="capitalize"
+                        maxWClass="max-w-[150px] sm:max-w-[200px]"
+                      />
                     </td>
                     <td className="py-4 px-6 text-gray-500 font-mono text-xs transition-colors">
-                      {user.email}
+                      <TruncatedText
+                        text={user.email}
+                        maxWClass="max-w-[180px] sm:max-w-[240px]"
+                      />
                     </td>
                     {(canRead || canUpdate || canDelete) && (
                       <td
