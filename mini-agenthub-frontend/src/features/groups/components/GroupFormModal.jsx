@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { FiX, FiCpu } from "react-icons/fi";
+import { FiX, FiCpu, FiLoader } from "react-icons/fi";
 import { useToast } from "../../../components/Toast";
 import { createGroupApi, updateGroupApi, searchUsersApi } from "../groupApi";
 import ConfirmModal from "../../../components/ConfirmModal";
@@ -313,7 +313,7 @@ const GroupFormModal = ({
             <label className="text-[10px] font-mono font-bold tracking-widest text-blue-600 dark:text-blue-400/90 uppercase">
               {t("rbac_matrix")}
             </label>
-            <div className="w-full bg-gray-50 dark:bg-[#0b0f19] border border-gray-200 dark:border-[#232d42] rounded-xl overflow-hidden">
+            <div className="w-full bg-gray-50 dark:bg-[#0b0f19] border border-gray-200 dark:border-[#232d42] rounded-xl overflow-y-auto h-[330px] cyber-scrollbar">
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="border-b border-gray-200 dark:border-[#232d42] text-[10px] font-bold text-gray-500 bg-gray-100/50 dark:bg-[#111622]/40">
@@ -326,15 +326,19 @@ const GroupFormModal = ({
                   {currentMatrix.map((row) => (
                     <tr
                       key={row.id}
-                      className="hover:bg-gray-100 dark:hover:bg-[#1e2533]/20"
+                      onClick={() => !isViewMode && handleTogglePermission(row.id)}
+                      className={`transition-colors ${isViewMode ? "" : "cursor-pointer hover:bg-gray-100 dark:hover:bg-[#1e2533]/20"}`}
                     >
                       <td className="py-3.5 px-4 font-bold text-gray-900 dark:text-gray-200">
                         {row.action}
                       </td>
-                      <td className="py-3.5 px-4 text-gray-500 dark:text-gray-400">
+                      <td className="py-3.5 px-4 text-gray-500 dark:text-gray-400 select-none">
                         {row.desc}
                       </td>
-                      <td className="py-3.5 px-4 text-center">
+                      <td
+                        className="py-3.5 px-4 text-center"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <input
                           type="checkbox"
                           disabled={isViewMode}
@@ -362,9 +366,17 @@ const GroupFormModal = ({
             ) : (
               <button
                 type="submit"
-                className="px-6 py-2.5 text-xs font-bold text-white bg-blue-600 rounded-full"
+                disabled={isSubmitting || !name.trim()}
+                className="px-6 py-2.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 active:scale-95 disabled:bg-gray-300 dark:disabled:bg-gray-800 disabled:text-gray-500 disabled:cursor-not-allowed disabled:active:scale-100 rounded-full transition-all shadow-lg shadow-blue-600/10 cursor-pointer flex items-center gap-2 min-w-[110px] justify-center"
               >
-                {isEditMode ? t("update") : t("initialize")}
+                {isSubmitting ? (
+                  <>
+                    <FiLoader size={14} className="animate-spin" />
+                    <span>{t("processing") || "Đang xử lý..."}</span>
+                  </>
+                ) : (
+                  <span>{isEditMode ? t("update") : t("initialize")}</span>
+                )}
               </button>
             )}
           </div>
