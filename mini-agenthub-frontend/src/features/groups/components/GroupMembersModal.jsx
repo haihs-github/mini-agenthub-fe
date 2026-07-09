@@ -29,21 +29,6 @@ const GroupMembersModal = ({
   const hasAddPermission = userPermissions.includes("GROUP_ADD_USER");
   const hasDeletePermission = userPermissions.includes("GROUP_DELETE_USER");
 
-  // Lắng nghe sự kiện phím Esc để đóng modal
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const handleKeyDown = (e) => {
-      if (e.key === "Escape") {
-        onClose();
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, onClose]);
-
-
   const [members, setMembers] = useState([]);
   const [localFilter, setLocalFilter] = useState("");
   const [isLoadingMembers, setIsLoadingMembers] = useState(false);
@@ -59,6 +44,33 @@ const GroupMembersModal = ({
   const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
   const [userToRemove, setUserToRemove] = useState(null);
   const [isProcessingAction, setIsProcessingAction] = useState(false);
+  const [isConfirmCancelOpen, setIsConfirmCancelOpen] = useState(false);
+
+  const handleCloseWithCheck = () => {
+    if (pendingUsers.length > 0) {
+      setIsConfirmCancelOpen(true);
+    } else {
+      onClose();
+    }
+  };
+
+  // Lắng nghe sự kiện phím Esc để đóng modal
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        if (isConfirmCancelOpen) {
+          setIsConfirmCancelOpen(false);
+        } else {
+          handleCloseWithCheck();
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, pendingUsers, isConfirmCancelOpen]);
 
   const searchRef = useRef(null);
   const searchTimeoutRef = useRef(null);
@@ -80,6 +92,7 @@ const GroupMembersModal = ({
     setPendingUsers([]);
     setSearchKeyword("");
     setLocalFilter("");
+    setIsConfirmCancelOpen(false);
   }, [groupId, loadCurrentMembers, isOpen]);
 
   useEffect(() => {
@@ -234,7 +247,7 @@ const GroupMembersModal = ({
       `}</style>
 
       <div
-        onClick={(e) => e.target === e.currentTarget && onClose()}
+        onClick={(e) => e.target === e.currentTarget && handleCloseWithCheck()}
         className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm select-none animate-fade-in"
       >
         <div className="w-full max-w-md bg-white dark:bg-[#161b26] border border-gray-200 dark:border-[#232d42] rounded-2xl shadow-2xl flex flex-col relative overflow-hidden max-h-[90vh] transition-colors duration-300">
@@ -244,7 +257,7 @@ const GroupMembersModal = ({
             </h3>
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleCloseWithCheck}
               className="text-gray-400 hover:text-gray-900 dark:text-gray-500 dark:hover:text-white p-1 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-800 transition-all cursor-pointer"
             >
               <FiX size={18} />
@@ -407,7 +420,7 @@ const GroupMembersModal = ({
             <div className="pt-4 border-t border-gray-200 dark:border-[#232d42] flex justify-end items-center bg-white dark:bg-[#161b26] shrink-0 transition-colors">
               <button
                 type="button"
-                onClick={onClose}
+                onClick={handleCloseWithCheck}
                 className="px-6 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 active:scale-95 rounded-xl transition-all shadow-md cursor-pointer"
               >
                 {t("close")}
@@ -426,6 +439,20 @@ const GroupMembersModal = ({
         confirmText={t("agree_remove")}
         cancelText={t("keep_member")}
         type="danger"
+      />
+
+      <ConfirmModal
+        isOpen={isConfirmCancelOpen}
+        onClose={() => setIsConfirmCancelOpen(false)}
+        onConfirm={() => {
+          setIsConfirmCancelOpen(false);
+          onClose();
+        }}
+        title={t("confirm_cancel")}
+        message={t("confirm_cancel_msg")}
+        confirmText={t("agree_cancel")}
+        cancelText={t("keep_editing")}
+        type="warning"
       />
     </>
   );
