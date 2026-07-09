@@ -48,6 +48,28 @@ const ConversationHistoryList = ({
     return () => observer.disconnect();
   }, [hasMore, isLoadingHistory, page, fetchConversations]);
 
+  // Lắng nghe sự kiện phím Esc và Enter cho modal đổi tên/xóa
+  useEffect(() => {
+    if (!modalType) return;
+
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        setModalType(null);
+      } else if (e.key === "Enter") {
+        e.preventDefault();
+        if (modalType === "rename") {
+          handleRenameSubmit();
+        } else if (modalType === "delete") {
+          handleDeleteSubmit();
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [modalType, newTitle, targetConv, isActionLoading]);
+
+
   // Xử lý Gửi lệnh Đổi tên lên BE
   const handleRenameSubmit = async () => {
     if (!newTitle.trim() || newTitle === targetConv.title) return;
@@ -134,7 +156,10 @@ const ConversationHistoryList = ({
 
       {/* HỆ THỐNG POPUP MODAL XÁC NHẬN SỬA / XÓA DÙNG HOOK THUẦN (AN TOÀN TUYỆT ĐỐI)*/}
       {modalType && createPortal(
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex justify-center items-center p-4 animate-fade-in">
+        <div
+          onClick={(e) => e.target === e.currentTarget && setModalType(null)}
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex justify-center items-center p-4 animate-fade-in"
+        >
           {/* BKAV HaiHS: Sửa đổi màu nền card Modal và đường viền bao quanh theo chuẩn Sáng/Tối */}
           <div className="bg-white dark:bg-[#161b26] border border-gray-200 dark:border-[#232d42] rounded-2xl max-w-sm w-full p-6 shadow-2xl space-y-4 transition-colors duration-300">
             <div className="flex items-center gap-3 text-yellow-500">

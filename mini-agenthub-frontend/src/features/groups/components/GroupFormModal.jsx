@@ -23,6 +23,21 @@ const GroupFormModal = ({
   const [selectedPermissions, setSelectedPermissions] = useState([]);
   const [members, setMembers] = useState([]);
   const [activeTab, setActiveTab] = useState("user");
+
+  // Lắng nghe sự kiện phím Esc để đóng/hủy modal
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        handleCancelWithCheck();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, name, selectedPermissions, members, isViewMode]);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isConfirmCancelOpen, setIsConfirmCancelOpen] = useState(false);
 
@@ -216,7 +231,10 @@ const GroupFormModal = ({
   const currentMatrix = activeTab === "user" ? userMatrix : groupMatrix;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm select-none animate-fade-in">
+    <div
+      onClick={(e) => e.target === e.currentTarget && handleCancelWithCheck()}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm select-none animate-fade-in"
+    >
       <div className="w-full max-w-xl max-h-[90vh] bg-white dark:bg-[#161b26] border border-gray-200 dark:border-[#232d42] rounded-2xl shadow-2xl flex flex-col relative overflow-hidden transition-colors">
         <div className="px-6 py-5 border-b border-gray-200 dark:border-[#232d42] flex justify-between items-start bg-gray-50 dark:bg-[#111622]/30 rounded-t-2xl relative transition-colors">
           <div className="space-y-1">

@@ -29,6 +29,21 @@ const GroupMembersModal = ({
   const hasAddPermission = userPermissions.includes("GROUP_ADD_USER");
   const hasDeletePermission = userPermissions.includes("GROUP_DELETE_USER");
 
+  // Lắng nghe sự kiện phím Esc để đóng modal
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
+
+
   const [members, setMembers] = useState([]);
   const [localFilter, setLocalFilter] = useState("");
   const [isLoadingMembers, setIsLoadingMembers] = useState(false);
@@ -218,7 +233,10 @@ const GroupMembersModal = ({
         .cyber-scrollbar::-webkit-scrollbar-thumb:hover { background: #3b82f6; }
       `}</style>
 
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm select-none animate-fade-in">
+      <div
+        onClick={(e) => e.target === e.currentTarget && onClose()}
+        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm select-none animate-fade-in"
+      >
         <div className="w-full max-w-md bg-white dark:bg-[#161b26] border border-gray-200 dark:border-[#232d42] rounded-2xl shadow-2xl flex flex-col relative overflow-hidden max-h-[90vh] transition-colors duration-300">
           <div className="px-6 py-5 border-b border-gray-200 dark:border-[#232d42] flex justify-between items-center bg-gray-50 dark:bg-[#111622]/30 rounded-t-2xl shrink-0 transition-colors">
             <h3 className="text-md font-bold text-gray-900 dark:text-white tracking-wide truncate pr-4 transition-colors">

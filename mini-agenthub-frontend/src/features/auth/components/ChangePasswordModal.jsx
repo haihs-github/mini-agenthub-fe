@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FiX, FiKey, FiLock, FiEye, FiEyeOff, FiLoader } from "react-icons/fi";
 import { changePasswordApi } from "../authApi";
 import { useToast } from "../../../components/Toast";
@@ -20,6 +20,20 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [subConfirm, setSubConfirm] = useState({ isOpen: false, type: "" });
+
+  // Lắng nghe sự kiện phím Esc để đóng/hủy modal
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        handleCancelClick();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, oldPassword, newPassword, confirmPassword]);
 
   if (!isOpen) return null;
 
@@ -65,7 +79,10 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-40 p-4 animate-fade-in">
+    <div
+      onClick={(e) => e.target === e.currentTarget && handleCancelClick()}
+      className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-40 p-4 animate-fade-in"
+    >
       {/* BKAV HaiHS: Điều chỉnh màu nền và đường viền của Card Modal - Sáng: bg-white / Tối: bg-[#161b26] */}
       <div className="w-full max-w-md bg-white border border-gray-200 dark:bg-[#161b26] dark:border-[#232d42] rounded-2xl p-6 shadow-2xl relative space-y-6 transition-colors duration-300">
         <div className="flex items-center justify-between border-b border-gray-200 dark:border-[#232d42]/60 pb-4 select-none transition-colors duration-300">

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { createPortal } from "react-dom";
 import { FiAlertTriangle, FiX } from "react-icons/fi";
 import { useLanguage } from "../context/LanguageContext";
@@ -16,13 +16,34 @@ const ConfirmModal = ({
 }) => {
   const { t } = useLanguage();
 
+  // Đăng ký sự kiện phím Esc và Enter khi modal được mở
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        onClose();
+      } else if (e.key === "Enter") {
+        e.preventDefault();
+        onConfirm();
+        onClose();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose, onConfirm]);
+
   if (!isOpen) return null;
 
   // Xác định màu sắc chủ đạo theo loại thông báo (danger: đỏ, warning: vàng, info: xanh)
   const isDanger = type === "danger";
 
   return createPortal(
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm select-none animate-fade-in">
+    <div
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+      className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm select-none animate-fade-in"
+    >
       {/* BKAV HaiHS: Cập nhật màu nền và viền của Card Modal - Sáng: bg-white / Tối: bg-[#1a202c] */}
       <div className="w-full max-w-sm bg-white border border-gray-200 dark:bg-[#1a202c] dark:border-[#2d3748] rounded-2xl shadow-2xl overflow-hidden transition-colors duration-300">
         {/* Đầu thông báo */}
