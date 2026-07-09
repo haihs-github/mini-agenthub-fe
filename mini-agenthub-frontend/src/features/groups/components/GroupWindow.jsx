@@ -295,6 +295,22 @@ const GroupWindow = () => {
                       setIsDropdownOpen(true);
                     }
                   }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Escape") {
+                      setIsDropdownOpen(false);
+                      e.target.blur();
+                      return;
+                    }
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      setActiveSearchQuery(searchKeyword);
+                      setSelectedDropdownGroup(null);
+                      setCurrentPage(1);
+                      setIsDropdownOpen(false);
+                      setDropdownResults([]);
+                      setSearchKeyword("");
+                    }
+                  }}
                 />
                 {searchKeyword && (
                   <button
