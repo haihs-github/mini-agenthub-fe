@@ -317,27 +317,35 @@ const GroupMembersModal = ({
                   >
                     {t("add_btn")}
                   </button>
-                  {isDropdownOpen && searchResults.length > 0 && (
-                    <div
-                      onScroll={handleSearchScroll}
-                      className="cyber-scrollbar absolute left-0 right-0 mt-11 max-h-[140px] overflow-y-auto bg-white dark:bg-[#1a202c] border border-gray-200 dark:border-[#232d42] rounded-xl shadow-2xl z-[110] transition-colors"
-                    >
-                      {searchResults.map((user) => (
-                        <div
-                          key={user.id}
-                          onClick={() => handleSelectUserPending(user)}
-                          className="px-4 py-2 text-xs cursor-pointer flex flex-col text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                        >
-                          <span className="font-bold text-gray-900 dark:text-white">
-                            {user.fullname}
-                          </span>
-                          <span className="text-[10px] font-mono">
-                            {user.email}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                  {isDropdownOpen && searchResults.length > 0 && (() => {
+                    const filteredResults = searchResults.filter(
+                      (u) =>
+                        !members.some((m) => m.id === u.id) &&
+                        !pendingUsers.some((p) => p.id === u.id)
+                    );
+                    if (filteredResults.length === 0) return null;
+                    return (
+                      <div
+                        onScroll={handleSearchScroll}
+                        className="cyber-scrollbar absolute left-0 right-0 mt-11 max-h-[140px] overflow-y-auto bg-white dark:bg-[#1a202c] border border-gray-200 dark:border-[#232d42] rounded-xl shadow-2xl z-[110] transition-colors"
+                      >
+                        {filteredResults.map((user) => (
+                          <div
+                            key={user.id}
+                            onClick={() => handleSelectUserPending(user)}
+                            className="px-4 py-2 text-xs cursor-pointer flex flex-col text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                          >
+                            <span className="font-bold text-gray-900 dark:text-white">
+                              {user.fullname}
+                            </span>
+                            <span className="text-[10px] font-mono">
+                              {user.email}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })()}
                 </div>
                 {pendingUsers.length > 0 && (
                   <div className="flex flex-wrap gap-1.5 pt-1 animate-fade-in">
