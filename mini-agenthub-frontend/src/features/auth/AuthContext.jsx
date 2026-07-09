@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import apiClient, { setAccessToken } from "../../services/apiClient";
+import apiClient, { setAccessToken, memoizedRefresh } from "../../services/apiClient";
 
 const AuthContext = createContext(null); // khởi tạo context
 
@@ -29,8 +29,8 @@ export const AuthProvider = ({ children }) => {
       if (savedPermissions) setPermissions(JSON.parse(savedPermissions));
 
       try {
-        // Thực hiện cuộc gọi gia hạn ngầm (Silent Refresh) lên Backend qua Cookie
-        const res = await apiClient.post("/auth/refresh");
+        // Thực hiện cuộc gọi gia hạn ngầm (Silent Refresh) lên Backend qua Cookie bằng hàm memoized chống gọi trùng
+        const res = await memoizedRefresh();
         const { token: newAccessToken, user: userData } = res.data.data;
 
         // Lưu Access Token mới nhận được vào RAM (JS Memory)

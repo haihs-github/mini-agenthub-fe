@@ -13,14 +13,41 @@ export const getAccessToken = () => {
 
 // BKAV HaiHS : Khởi tạo cấu hình cấu trúc Axios Instance dùng chung - start
 const apiClient = axios.create({
-  // Tự động bốc URL Server, nếu không có sẽ lấy mặc định là localhost:3000
-  baseURL: "http://localhost:3000/api",
+  // Tự động bốc URL Server từ biến môi trường, fallback về localhost
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:3000/api",
   headers: {
     "Content-Type": "application/json",
   },
   withCredentials: true, // Cho phép trình duyệt tự gửi kèm Cookie (refreshToken) lên Backend
 });
 // BKAV HaiHS : Khởi tạo cấu hình cấu trúc Axios Instance dùng chung - end
+
+let refreshPromise = null;
+
+// Hàm memoized để gom các cuộc gọi /auth/refresh song song thành một promise duy nhất
+export const memoizedRefresh = () => {
+  if (refreshPromise) {
+    return refreshPromise;
+  }
+
+  const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+  refreshPromise = axios
+    .post(
+      `${baseUrl}/auth/refresh`,
+      {},
+      { withCredentials: true }
+    )
+    .then((res) => {
+      refreshPromise = null;
+      return res;
+    })
+    .catch((err) => {
+      refreshPromise = null;
+      throw err;
+    });
+
+  return refreshPromise;
+};
 
 // BKAV HaiHS : Tự động gài Token từ RAM vào Header - start
 apiClient.interceptors.request.use(
@@ -52,12 +79,8 @@ apiClient.interceptors.response.use(
     ) {
       originalRequest._retry = true;
       try {
-        // Gọi API /auth/refresh để lấy Access Token mới
-        const res = await axios.post(
-          "http://localhost:3000/api/auth/refresh",
-          {},
-          { withCredentials: true }
-        );
+        // Gọi API /auth/refresh để lấy Access Token mới qua cơ chế gom cuộc gọi
+        const res = await memoizedRefresh();
         const newAccessToken = res.data.data.token;
 
         // Lưu lại token mới vào RAM
