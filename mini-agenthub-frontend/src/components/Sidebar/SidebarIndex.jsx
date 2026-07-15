@@ -46,10 +46,7 @@ const SidebarIndex = ({
             page={page}
           />
         ) : (
-          /* BKAV HaiHS: Điều chỉnh độ tương phản chữ trạng thái khi ở nền sáng */
-          <div className="flex-1 p-6 text-xs text-gray-400 dark:text-gray-600 italic text-center select-none pt-16 transition-colors duration-300">
-            Hệ thống quản trị nhân sự...
-          </div>
+          <></>
         )}
       </div>
 
