@@ -31,15 +31,15 @@ const ConversationItem = ({
     <div className="relative group px-2">
       <button
         onClick={() => onSelect(conversation.id)}
-        className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-medium transition-all text-left pr-12 ${
+        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors duration-200 text-left pr-12 border ${
           isActive
-            ? "bg-blue-50 border border-blue-200 text-blue-600 dark:bg-[#1e293b]/80 dark:border-[#3b82f6]/30 dark:text-white font-semibold"
-            : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-[#161b26] dark:hover:text-gray-200"
+            ? "bg-blue-50 border-blue-200 text-blue-600 dark:bg-[#1e293b]/80 dark:border-[#3b82f6]/30 dark:text-white font-semibold"
+            : "bg-transparent border-transparent text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-[#161b26] dark:hover:text-gray-200"
         } ${showMenu ? "bg-gray-100 text-gray-900 dark:bg-[#161b26] dark:text-white" : ""}`} // MẸO: Giữ nguyên màu hover khi đang mở tùy chọn
       >
         <FiMessageSquare
           size={16}
-          className={`shrink-0 ${isActive ? "text-blue-500 dark:text-blue-400" : "text-gray-400 dark:text-gray-500"}`}
+          className={`shrink-0 transition-colors duration-200 ${isActive ? "text-blue-500 dark:text-blue-400" : "text-gray-400 dark:text-gray-500"}`}
         />
         <span className="truncate flex-1">
           {conversation.title || "Đoạn hội thoại không tên"}

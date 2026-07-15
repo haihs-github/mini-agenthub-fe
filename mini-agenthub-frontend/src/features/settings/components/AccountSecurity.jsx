@@ -140,7 +140,7 @@ const AccountSecurity = ({ setConversations }) => {
             className="px-5 py-1.5 bg-red-50 dark:bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-500 hover:text-red-700 dark:hover:text-white text-[11px] font-bold rounded-full transition-all shrink-0 shadow-md cursor-pointer flex items-center gap-1.5 disabled:opacity-40"
           >
             {isDeleting && <FiLoader size={12} className="animate-spin" />}
-            <span>{t("delete button")}</span>
+            <span>{t("deleteBtn")}</span>
           </button>
         </div>
 

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { FiLoader } from "react-icons/fi";
 import UserMessageItem from "./UserMessageItem";
 import AIMessageItem from "./AIMessageItem";
-import { useLanguage } from "../../../../context/LanguageContext"; // BKAV HaiHS: Import hook ngôn ngữ
+import { useLanguage } from "../../../../context/LanguageContext";
 
 // BKAV HaiHS : Component danh sách tin nhắn hỗ trợ phân trang cuộn ngược và đồng bộ ảnh khi refresh trang - start
 const MessageList = ({
@@ -15,7 +15,7 @@ const MessageList = ({
   isLoadingMore,
 }) => {
   const scrollContainerRef = useRef(null);
-  const { t } = useLanguage(); // BKAV HaiHS: Khai báo hàm dịch thuật
+  const { t } = useLanguage();
   const [previousScrollHeight, setPreviousScrollHeight] = useState(0);
   const [isScrollToBottomNeeded, setIsScrollToBottomNeeded] = useState(true);
 
@@ -80,7 +80,36 @@ const MessageList = ({
         </div>
       )}
 
-      {messages.length === 0 && !isWaitingSkeleton ? (
+      {isWaitingSkeleton && messages.length === 0 ? (
+        <div className="space-y-6 animate-pulse max-w-4xl mx-auto w-full py-4 select-none">
+          {/* Skeleton Tin nhắn AI 1 */}
+          <div className="flex gap-4 max-w-[70%] mr-auto">
+            <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-[#1e293b]/60 shrink-0"></div>
+            <div className="flex-1 space-y-2.5 pt-1">
+              <div className="h-3 bg-gray-200 dark:bg-[#1e293b]/60 rounded-md w-[85%]"></div>
+              <div className="h-3 bg-gray-200 dark:bg-[#1e293b]/60 rounded-md w-[95%]"></div>
+              <div className="h-3 bg-gray-200 dark:bg-[#1e293b]/60 rounded-md w-[60%]"></div>
+            </div>
+          </div>
+          {/* Skeleton Tin nhắn User */}
+          <div className="flex gap-4 max-w-[60%] ml-auto justify-end">
+            <div className="flex-1 space-y-2.5 pt-1 flex flex-col items-end">
+              <div className="h-3 bg-blue-100 dark:bg-blue-500/10 rounded-md w-[80%]"></div>
+              <div className="h-3 bg-blue-100 dark:bg-blue-500/10 rounded-md w-[50%]"></div>
+            </div>
+            <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-500/10 shrink-0"></div>
+          </div>
+          {/* Skeleton Tin nhắn AI 2 */}
+          <div className="flex gap-4 max-w-[80%] mr-auto">
+            <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-[#1e293b]/60 shrink-0"></div>
+            <div className="flex-1 space-y-2.5 pt-1">
+              <div className="h-3 bg-gray-200 dark:bg-[#1e293b]/60 rounded-md w-[90%]"></div>
+              <div className="h-3 bg-gray-200 dark:bg-[#1e293b]/60 rounded-md w-[75%]"></div>
+              <div className="h-3 bg-gray-200 dark:bg-[#1e293b]/60 rounded-md w-[40%]"></div>
+            </div>
+          </div>
+        </div>
+      ) : messages.length === 0 && !isWaitingSkeleton ? (
         <div className="h-full flex flex-col justify-center items-center text-center opacity-40 select-none animate-fade-in">
           <span className="text-6xl mb-4">🧠</span>
           <h3 className="text-lg font-bold text-gray-900 dark:text-white tracking-wide transition-colors duration-300">
@@ -126,9 +155,7 @@ const MessageList = ({
               )}
 
               {imageUrls.length > 0 && !isUser && (
-                <div
-                  className="grid grid-cols-1 gap-2 max-w-[70%] mt-2 ml-12"
-                >
+                <div className="grid grid-cols-1 gap-2 max-w-[70%] mt-2 ml-12">
                   {imageUrls.map((url, idx) => (
                     <div
                       key={idx}
@@ -149,7 +176,7 @@ const MessageList = ({
         })
       )}
 
-      {isWaitingSkeleton && (
+      {isWaitingSkeleton && messages.length > 0 && (
         <div className="flex gap-4 max-w-[80%] mr-auto animate-pulse">
           <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-500/10 flex justify-center items-center text-sm shrink-0 transition-colors duration-300"></div>
           <div className="flex flex-col gap-2.5 flex-1 pt-1">

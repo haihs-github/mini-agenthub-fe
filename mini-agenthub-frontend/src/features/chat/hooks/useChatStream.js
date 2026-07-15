@@ -145,9 +145,9 @@ export const useChatStream = (initialActiveId = "new-chat") => {
 
     setActiveId(id);
     setAttachedImages([]);
+    setMessages([]);
 
     if (id === "new-chat") {
-      setMessages([]);
       return;
     }
 
@@ -284,7 +284,8 @@ export const useChatStream = (initialActiveId = "new-chat") => {
         if (response.status === 429) {
           const errData = await response.json().catch(() => ({}));
           const errorCode = errData.code || "RATE_LIMIT_CHAT";
-          const message = t(errorCode) || errData.message || t("RATE_LIMIT_CHAT");
+          const message =
+            t(errorCode) || errData.message || t("RATE_LIMIT_CHAT");
           window.dispatchEvent(
             new CustomEvent("show-toast", {
               detail: { message, type: "error" },

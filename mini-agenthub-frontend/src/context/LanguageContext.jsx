@@ -487,7 +487,7 @@ export const translations = {
     clearBtn: "Xóa",
     deleteAccount: "Xóa tài khoản",
     deleteAccountDesc: "Xóa vĩnh viễn tất cả dữ liệu.",
-    deleteBtn: "Xóa",
+    deleteBtn: "Xóa tài khoản",
     signOut: "Đăng xuất",
     signOutDesc: "Kết thúc phiên hiện tại của bạn.",
     doneBtn: "Hoàn tất",
