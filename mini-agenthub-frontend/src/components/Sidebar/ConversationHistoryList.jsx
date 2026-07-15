@@ -7,6 +7,8 @@ import {
   deleteConversationApi,
 } from "../../features/chat/chatApi";
 import { useToast } from "../Toast";
+import { useLanguage } from "../../context/LanguageContext";
+import ConfirmModal from "../ConfirmModal";
 
 // BKAV HaiHS : Component danh sách lịch sử hội thoại trong sidebar - start
 const ConversationHistoryList = ({
@@ -20,12 +22,22 @@ const ConversationHistoryList = ({
   page,
 }) => {
   const { showToast } = useToast();
+  const { t } = useLanguage();
 
   // Các State phục vụ đóng mở Modal Đổi tên / Xóa
   const [targetConv, setTargetConv] = useState(null);
   const [modalType, setModalType] = useState(null); // 'rename' hoặc 'delete'
   const [newTitle, setNewTitle] = useState("");
   const [isActionLoading, setIsActionLoading] = useState(false);
+  const [isConfirmCancelOpen, setIsConfirmCancelOpen] = useState(false);
+
+  const handleCloseModalWithCheck = () => {
+    if (modalType === "rename" && newTitle.trim() !== targetConv?.title) {
+      setIsConfirmCancelOpen(true);
+    } else {
+      setModalType(null);
+    }
+  };
 
   // Khai báo Ref cắm vào đáy danh sách để bẫy sự kiện cuộn chuột
   const loadMoreRef = useRef(null);
@@ -54,7 +66,11 @@ const ConversationHistoryList = ({
 
     const handleKeyDown = (e) => {
       if (e.key === "Escape") {
-        setModalType(null);
+        if (isConfirmCancelOpen) {
+          setIsConfirmCancelOpen(false);
+        } else {
+          handleCloseModalWithCheck();
+        }
       } else if (e.key === "Enter") {
         e.preventDefault();
         if (modalType === "rename") {
@@ -67,7 +83,7 @@ const ConversationHistoryList = ({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [modalType, newTitle, targetConv, isActionLoading]);
+  }, [modalType, newTitle, targetConv, isActionLoading, isConfirmCancelOpen]);
 
 
   // Xử lý Gửi lệnh Đổi tên lên BE
@@ -157,7 +173,7 @@ const ConversationHistoryList = ({
       {/* HỆ THỐNG POPUP MODAL XÁC NHẬN SỬA / XÓA DÙNG HOOK THUẦN (AN TOÀN TUYỆT ĐỐI)*/}
       {modalType && createPortal(
         <div
-          onClick={(e) => e.target === e.currentTarget && setModalType(null)}
+          onClick={(e) => e.target === e.currentTarget && handleCloseModalWithCheck()}
           className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex justify-center items-center p-4 animate-fade-in"
         >
           {/* BKAV HaiHS: Sửa đổi màu nền card Modal và đường viền bao quanh theo chuẩn Sáng/Tối */}
@@ -193,7 +209,7 @@ const ConversationHistoryList = ({
             <div className="flex justify-end gap-3 pt-2 text-sm font-semibold">
               {/* BKAV HaiHS: Sửa màu nút Hủy bỏ cho tiệp màu nền Sáng */}
               <button
-                onClick={() => setModalType(null)}
+                onClick={handleCloseModalWithCheck}
                 disabled={isActionLoading}
                 className="px-4 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors cursor-pointer"
               >
@@ -222,6 +238,22 @@ const ConversationHistoryList = ({
           </div>
         </div>,
         document.body
+      )}
+
+      {isConfirmCancelOpen && (
+        <ConfirmModal
+          isOpen={isConfirmCancelOpen}
+          onClose={() => setIsConfirmCancelOpen(false)}
+          onConfirm={() => {
+            setIsConfirmCancelOpen(false);
+            setModalType(null);
+          }}
+          title={t("confirm_cancel") || "Xác nhận hủy"}
+          message={t("confirm_cancel_msg") || "Bạn có chắc chắn muốn hủy?"}
+          confirmText={t("agree_cancel") || "Có, hủy"}
+          cancelText={t("keep_editing") || "Tiếp tục chỉnh sửa"}
+          type="warning"
+        />
       )}
     </div>
   );
