@@ -191,7 +191,7 @@ export const translations = {
     deleteBtn: "Delete",
     signOut: "Sign Out",
     signOutDesc: "End your current session.",
-    doneBtn: "Done",
+    doneBtn: "Hủy",
     clear_button: "Delete all conversation",
 
     // --- PERSONAL INFO ---
@@ -490,7 +490,7 @@ export const translations = {
     deleteBtn: "Xóa tài khoản",
     signOut: "Đăng xuất",
     signOutDesc: "Kết thúc phiên hiện tại của bạn.",
-    doneBtn: "Hoàn tất",
+    doneBtn: "Hủy",
     clear_button: "Xóa lich sử chat",
 
     // --- PERSONAL INFO ---

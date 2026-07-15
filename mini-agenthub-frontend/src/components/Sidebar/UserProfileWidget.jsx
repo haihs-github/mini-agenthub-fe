@@ -25,7 +25,10 @@ const UserProfileWidget = () => {
 
   return (
     <div className="mt-auto p-4 border-t border-gray-200 dark:border-[#1e293b]/60 flex items-center justify-between bg-gray-50 dark:bg-[#0a0e18] select-none shrink-0 transition-colors duration-300">
-      <div className="flex items-center gap-3 overflow-hidden">
+      <div
+        onClick={() => navigate("/settings")}
+        className="flex items-center gap-3 overflow-hidden cursor-pointer hover:opacity-80 active:scale-[0.98] transition-all duration-200"
+      >
         {/* AVATAR TRÍCH XUẤT 2 KÝ TỰ ĐẦU THEO TÊN ĐẦY ĐỦ CỦA USER */}
         <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 flex justify-center items-center font-bold text-white uppercase shrink-0 shadow-lg">
           {user?.fullname ? user.fullname.substring(0, 2).toUpperCase() : "US"}
@@ -60,10 +63,10 @@ const UserProfileWidget = () => {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onConfirm={handleSignOut}
-        title={t("confirm_signout_title")}
-        message={t("confirm_signout_msg")}
-        confirmText={t("agree_signout_btn")}
-        cancelText={t("go_back_btn")}
+        title={t("signOut")}
+        message={t("signOutDesc")}
+        confirmText={t("signOut")}
+        cancelText={t("doneBtn")}
         type="warning"
       />
       {/* BKAV HaiHS : Hộp thoại xác nhận đăng xuất dịch thuật - end */}
