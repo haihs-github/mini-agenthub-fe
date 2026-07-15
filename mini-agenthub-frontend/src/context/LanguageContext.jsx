@@ -33,6 +33,8 @@ export const translations = {
     toast_bulk_delete_success: "Successfully deleted",
     toast_bulk_delete_fail: "Bulk delete failed",
     toast_no_add_group_perm: "No permission to add to group",
+    toast_change_password:
+      "The password for this account was recently changed. For security reasons, you will need to log back into the system.",
 
     // --- SIDEBAR NAV ---
     nav_chat: "Chat",
@@ -179,7 +181,7 @@ export const translations = {
     // --- ACCOUNT SECURITY ---
     accountSecurity: "Account & Security",
     passwordSecurity: "Password & Security",
-    twoFactor: "Enable 2FA for better security.",
+    changePassword: "Change your password.",
     updateBtn: "Update",
     clearChat: "Clear Chat History",
     clearChatDesc: "Permanently delete all conversation data.",
@@ -330,6 +332,8 @@ export const translations = {
     toast_bulk_delete_success: "Đã xóa thành công",
     toast_bulk_delete_fail: "Xóa hàng loạt thất bại",
     toast_no_add_group_perm: "Không có quyền thêm vào nhóm",
+    toast_change_password:
+      "Mật khẩu của tài khoản này vừa được thay đổi, vì lý do bảo mật bạn sẽ cần đăng nhập lại hệ thống",
 
     // --- SIDEBAR NAV ---
     nav_chat: "Trò chuyện",
@@ -476,7 +480,7 @@ export const translations = {
     // --- ACCOUNT SECURITY ---
     accountSecurity: "Tài khoản & Bảo mật",
     passwordSecurity: "Mật khẩu & Bảo mật",
-    twoFactor: "Bật 2FA để bảo mật tốt hơn.",
+    changePassword: "Thay đổi mật khẩu.",
     updateBtn: "Cập nhật",
     clearChat: "Xóa lịch sử trò chuyện",
     clearChatDesc: "Xóa vĩnh viễn tất cả dữ liệu hội thoại.",

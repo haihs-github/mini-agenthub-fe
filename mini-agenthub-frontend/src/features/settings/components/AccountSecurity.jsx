@@ -79,7 +79,7 @@ const AccountSecurity = ({ setConversations }) => {
                 {t("passwordSecurity")}
               </h5>
               <p className="text-[11px] text-gray-500 font-medium truncate">
-                {t("two Factor")}
+                {t("changePassword")}
               </p>
             </div>
           </div>

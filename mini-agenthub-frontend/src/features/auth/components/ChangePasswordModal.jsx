@@ -3,12 +3,14 @@ import { FiX, FiKey, FiLock, FiEye, FiEyeOff, FiLoader } from "react-icons/fi";
 import { changePasswordApi } from "../authApi";
 import { useToast } from "../../../components/Toast";
 import ConfirmModal from "../../../components/ConfirmModal";
-import { useLanguage } from "../../../context/LanguageContext"; // BKAV HaiHS: Import hook ngôn ngữ
+import { useLanguage } from "../../../context/LanguageContext"; // Import hook ngôn ngữ
+import { useAuth } from "../AuthContext";
 
 // BKAV HaiHS: Component đổi mật khẩu - start
 const ChangePasswordModal = ({ isOpen, onClose }) => {
   const { showToast } = useToast();
-  const { t, tError } = useLanguage(); // BKAV HaiHS: Khai báo hook dịch thuật
+  const { t, tError } = useLanguage(); // Khai báo hook dịch thuật
+  const { logout } = useAuth();
 
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -20,22 +22,6 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [subConfirm, setSubConfirm] = useState({ isOpen: false, type: "" });
-
-  // Lắng nghe sự kiện phím Esc để đóng/hủy modal
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const handleKeyDown = (e) => {
-      if (e.key === "Escape") {
-        handleCancelClick();
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, oldPassword, newPassword, confirmPassword]);
-
-  if (!isOpen) return null;
 
   const isFormFilled = oldPassword && newPassword && confirmPassword;
   const isPasswordMatched = newPassword === confirmPassword;
@@ -61,8 +47,12 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
 
     try {
       await changePasswordApi({ oldPassword, newPassword });
-      showToast("Thay đổi mật khẩu tài khoản thành công!", "success");
+      showToast("changePasswordToastMessage", "success");
       onClose();
+      // Delay 3 giây trước khi thực hiện logout để người dùng kịp đọc thông báo
+      setTimeout(() => {
+        logout();
+      }, 3000);
     } catch (err) {
       showToast(tError(err, "AUTH_WRONG_OLD_PASSWORD"), "error");
     } finally {
@@ -78,15 +68,46 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
     }
   };
 
+  // Reset các ô nhập liệu khi đóng/mở modal
+  useEffect(() => {
+    if (!isOpen) {
+      setOldPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      setShowOld(false);
+      setShowNew(false);
+      setShowConfirm(false);
+      setSubConfirm({ isOpen: false, type: "" });
+    }
+  }, [isOpen]);
+
+  // Lắng nghe sự kiện phím Esc để đóng/hủy modal
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        if (subConfirm.isOpen) {
+          setSubConfirm({ isOpen: false, type: "" });
+        } else {
+          handleCancelClick();
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, oldPassword, newPassword, confirmPassword, subConfirm.isOpen]);
+
+  if (!isOpen) return null;
+
   return (
     <div
       onClick={(e) => e.target === e.currentTarget && handleCancelClick()}
       className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-40 p-4 animate-fade-in"
     >
-      {/* BKAV HaiHS: Điều chỉnh màu nền và đường viền của Card Modal - Sáng: bg-white / Tối: bg-[#161b26] */}
       <div className="w-full max-w-md bg-white border border-gray-200 dark:bg-[#161b26] dark:border-[#232d42] rounded-2xl p-6 shadow-2xl relative space-y-6 transition-colors duration-300">
         <div className="flex items-center justify-between border-b border-gray-200 dark:border-[#232d42]/60 pb-4 select-none transition-colors duration-300">
-          {/* BKAV HaiHS: Đổi màu chữ tiêu đề theo theme */}
           <h3 className="text-sm font-bold text-gray-900 dark:text-white tracking-wide transition-colors duration-300">
             {t("updatePassword_title") || "Update Password"}
           </h3>
@@ -102,7 +123,10 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
         <form onSubmit={handleUpdateClick} className="space-y-4">
           {/* TRƯỜNG 1: CURRENT PASSWORD */}
           <div className="space-y-1.5">
-            <div className="relative bg-gray-50 border border-gray-200 dark:bg-[#0b0f19] dark:border-[#232d42] rounded-xl flex items-center px-4 py-2.5 focus-within:border-blue-500/40 transition-all">
+            <label className="text-[11px] font-bold text-gray-700 dark:text-gray-400 block pl-1 select-none">
+              {t("curr_pwd") || "Mật khẩu hiện tại"}
+            </label>
+            <div className="relative bg-gray-50 border border-gray-200 dark:bg-[#0b0f19] dark:border-[#232d42] rounded-xl flex items-center px-4 py-2.5 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/10 transition-all duration-200">
               <FiKey
                 className="text-gray-400 dark:text-gray-500 shrink-0"
                 size={14}
@@ -127,7 +151,10 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
 
           {/* TRƯỜNG 2: NEW PASSWORD */}
           <div className="space-y-1.5">
-            <div className="relative bg-gray-50 border border-gray-200 dark:bg-[#0b0f19] dark:border-[#232d42] rounded-xl flex items-center px-4 py-2.5 focus-within:border-blue-500/40 transition-all">
+            <label className="text-[11px] font-bold text-gray-700 dark:text-gray-400 block pl-1 select-none">
+              {t("new_pwd") || "Mật khẩu mới"}
+            </label>
+            <div className="relative bg-gray-50 border border-gray-200 dark:bg-[#0b0f19] dark:border-[#232d42] rounded-xl flex items-center px-4 py-2.5 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/10 transition-all duration-200">
               <FiLock
                 className="text-gray-400 dark:text-gray-500 shrink-0"
                 size={14}
@@ -152,8 +179,11 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
 
           {/* TRƯỜNG 3: CONFIRM NEW PASSWORD */}
           <div className="space-y-1.5">
+            <label className="text-[11px] font-bold text-gray-700 dark:text-gray-400 block pl-1 select-none">
+              {t("confirm_pwd") || "Xác nhận mật khẩu mới"}
+            </label>
             <div
-              className={`relative bg-gray-50 border dark:bg-[#0b0f19] rounded-xl flex items-center px-4 py-2.5 focus-within:border-blue-500/40 transition-all ${confirmPassword && !isPasswordMatched ? "border-red-500/50" : "border-gray-200 dark:border-[#232d42]"}`}
+              className={`relative bg-gray-50 border dark:bg-[#0b0f19] rounded-xl flex items-center px-4 py-2.5 focus-within:ring-2 focus-within:ring-blue-500/10 transition-all duration-200 ${confirmPassword && !isPasswordMatched ? "border-red-500/50 focus-within:border-red-500 focus-within:ring-red-500/10" : "border-gray-200 dark:border-[#232d42] focus-within:border-blue-500"}`}
             >
               <FiLock
                 className="text-gray-400 dark:text-gray-500 shrink-0"
@@ -222,7 +252,9 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
             : t("confirm_cancel_msg")
         }
         confirmText={
-          subConfirm.type === "save" ? t("agree_change_btn") : t("agree_cancel_btn")
+          subConfirm.type === "save"
+            ? t("agree_change_btn")
+            : t("agree_cancel_btn")
         }
         cancelText={t("go_back_btn")}
         type={subConfirm.type === "save" ? "info" : "warning"}
