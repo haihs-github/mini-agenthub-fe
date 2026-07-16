@@ -56,6 +56,7 @@ export const translations = {
     user_image_alt: "User attachment",
     show_more: "Read more",
     show_less: "Show less",
+    stopped_by_user: "stopped",
 
     // --- USER MANAGEMENT ---
     user_title: "User Management",
@@ -274,7 +275,6 @@ export const translations = {
     confirm_signout_msg:
       "Are you sure you want to end your current session and sign out of the Agent Hub administration system?",
     agree_signout_btn: "Sign Out",
-    // BKAV HaiHS : Bổ sung bản dịch tiếng Anh cho chức năng đổi mật khẩu và đăng xuất - end
     login_success: "Successfully logged in to the system!",
     login_failed_msg: "Login failed",
     login_failed_text: "Incorrect email or password",
@@ -355,6 +355,7 @@ export const translations = {
     user_image_alt: "Hình ảnh người dùng đính kèm",
     show_more: "Xem thêm",
     show_less: "Thu nhỏ",
+    stopped_by_user: "Đã dừng",
 
     // --- USER MANAGEMENT ---
     user_title: "Quản lý người dùng",
