@@ -22,7 +22,7 @@ const cleanSSEContent = (content) => {
     if (!cleanedLine || !cleanedLine.startsWith("data: ")) continue;
 
     const dataStr = cleanedLine.replace("data: ", "").trim();
-    if (dataStr === "[DONE]") continue;
+    if (dataStr.startsWith("[DONE]")) continue;
 
     try {
       const parsed = JSON.parse(dataStr);
@@ -84,6 +84,7 @@ export const useChatStream = (initialActiveId = "new-chat") => {
   const [hasMore, setHasMore] = useState(true);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false); // Trạng thái AI đang nhả chữ
+  const [isStopping, setIsStopping] = useState(false); // Trạng thái đang dừng luồng
   const [isWaitingSkeleton, setIsWaitingSkeleton] = useState(false); // Trạng thái AI đang suy nghĩ
   const [attachedImages, setAttachedImages] = useState([]); // Lưu ảnh preview tạm thời
 
@@ -185,11 +186,8 @@ export const useChatStream = (initialActiveId = "new-chat") => {
 
   // BKAV HaiHS : Dung luong AI va bao cho backend biet de ngat ket noi cheo may chu - start
   const handleStopStream = async () => {
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort(); // Phát tín hiệu ngắt kết nối HTTP
-      setIsStreaming(false);
-      setIsWaitingSkeleton(false);
-    }
+    setIsStopping(true);
+    setIsWaitingSkeleton(false);
 
     try {
       const token = getAccessToken();
@@ -205,6 +203,12 @@ export const useChatStream = (initialActiveId = "new-chat") => {
       // BKAV HaiHS : Goi endpoint /abort de phat tin hieu ABORT cheo may chu qua Redis Pub/Sub - end
     } catch (err) {
       console.error("Lỗi khi dừng stream ở backend:", err);
+      // Fallback: Nếu lỗi API /abort thì hủy ngay lập tức để tránh đơ UI
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+      setIsStreaming(false);
+      setIsStopping(false);
     }
   };
   // BKAV HaiHS : Dung luong AI va bao cho backend biet de ngat ket noi cheo may chu - end
@@ -326,7 +330,24 @@ export const useChatStream = (initialActiveId = "new-chat") => {
           if (!cleanedLine || !cleanedLine.startsWith("data: ")) continue;
 
           const dataStr = cleanedLine.replace("data: ", "").trim();
-          if (dataStr === "[DONE]") {
+          if (dataStr.startsWith("[DONE]")) {
+            try {
+              const jsonPart = dataStr.replace("[DONE]", "").trim();
+              if (jsonPart) {
+                const parsedDone = JSON.parse(jsonPart);
+                if (parsedDone.usage) {
+                  setMessages((prev) =>
+                    prev.map((msg) =>
+                      msg.id === aiMsgId
+                        ? { ...msg, usage: parsedDone.usage }
+                        : msg
+                    )
+                  );
+                }
+              }
+            } catch (e) {
+              console.error("Lỗi phân tích token từ DONE:", e);
+            }
             isDone = true;
             break;
           }
@@ -408,10 +429,14 @@ export const useChatStream = (initialActiveId = "new-chat") => {
       // BKAV HaiHS : Chi reset trang thai neu room hien tai van dang active - start
       if (activeIdRef.current === currentId) {
         setIsStreaming(false);
+        setIsStopping(false);
         setIsWaitingSkeleton(false);
       }
       // BKAV HaiHS : Chi reset trang thai neu room hien tai van dang active - end
-      abortControllerRef.current = null;
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+        abortControllerRef.current = null;
+      }
     }
   };
 
@@ -494,7 +519,24 @@ export const useChatStream = (initialActiveId = "new-chat") => {
           if (!cleanedLine || !cleanedLine.startsWith("data: ")) continue;
 
           const dataStr = cleanedLine.replace("data: ", "").trim();
-          if (dataStr === "[DONE]") {
+          if (dataStr.startsWith("[DONE]")) {
+            try {
+              const jsonPart = dataStr.replace("[DONE]", "").trim();
+              if (jsonPart) {
+                const parsedDone = JSON.parse(jsonPart);
+                if (parsedDone.usage) {
+                  setMessages((prev) =>
+                    prev.map((msg) =>
+                      msg.id === aiMsgId
+                        ? { ...msg, usage: parsedDone.usage }
+                        : msg
+                    )
+                  );
+                }
+              }
+            } catch (e) {
+              console.error("Lỗi phân tích token từ DONE:", e);
+            }
             isDone = true;
             break;
           }
@@ -562,10 +604,14 @@ export const useChatStream = (initialActiveId = "new-chat") => {
       // BKAV HaiHS : Chi reset trang thai neu room hien tai van dang active - start
       if (activeIdRef.current === currentId) {
         setIsStreaming(false);
+        setIsStopping(false);
         setIsWaitingSkeleton(false);
       }
       // BKAV HaiHS : Chi reset trang thai neu room hien tai van dang active - end
-      abortControllerRef.current = null;
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+        abortControllerRef.current = null;
+      }
     }
   };
   // BKAV HaiHS : Thuc hien dang ky lai luong stream theo quy trinh 3 buoc Subscribe-Query-Flush - end
@@ -579,6 +625,7 @@ export const useChatStream = (initialActiveId = "new-chat") => {
     hasMore,
     isLoadingHistory,
     isStreaming,
+    isStopping,
     isWaitingSkeleton,
     attachedImages,
     setAttachedImages,

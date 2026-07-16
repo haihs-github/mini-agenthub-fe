@@ -8,6 +8,7 @@ const ChatWindow = ({
   activeConversationId,
   messages,
   isStreaming,
+  isStopping,
   isWaitingSkeleton,
   sendMessage,
   handleStopStream,
@@ -47,6 +48,7 @@ const ChatWindow = ({
           sendMessage(prompt, selectedModel, images)
         }
         isStreaming={isStreaming}
+        isStopping={isStopping}
         onStopStream={handleStopStream}
         attachedImages={attachedImages}
         setAttachedImages={setAttachedImages}

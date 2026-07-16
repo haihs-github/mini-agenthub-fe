@@ -47,7 +47,7 @@ const AIMessageItem = ({ message }) => {
         {!message.isStreaming && message.content && (
           <div className="flex flex-col gap-2 mt-1 pt-2 border-t border-gray-200 dark:border-[#1e293b]/30 animate-fade-in transition-colors duration-300">
             {/* Tên Model và Thời gian phản hồi */}
-            <div className="flex items-center gap-2 text-[11px] text-gray-500 font-medium">
+            <div className="flex items-center gap-2 text-[11px] text-gray-500 font-medium flex-wrap">
               <span className="uppercase tracking-wider font-bold text-gray-500 dark:text-gray-400 transition-colors duration-300">
                 {message.modelName || "GROQ-AI"}
               </span>
@@ -56,6 +56,17 @@ const AIMessageItem = ({ message }) => {
                 {t("response_time") || "Thời gian phản hồi"}:{" "}
                 {message.responseTime || "1.2s"}
               </span>
+              {/* Hiển thị số lượng Token nếu có */}
+              {(message.usage || (message.totalTokens !== undefined && message.totalTokens !== null)) && (
+                <>
+                  <span>•</span>
+                  <span className="text-blue-500 dark:text-blue-400 font-semibold bg-blue-50 dark:bg-blue-950/30 px-1.5 py-0.5 rounded transition-colors duration-300">
+                    Tokens: {message.usage?.total_tokens ?? message.totalTokens ?? 0} (
+                    {message.usage?.prompt_tokens ?? message.promptTokens ?? 0} prompt,{" "}
+                    {message.usage?.completion_tokens ?? message.completionTokens ?? 0} completion)
+                  </span>
+                </>
+              )}
             </div>
 
             {/* Bộ đôi nút Tương tác */}
