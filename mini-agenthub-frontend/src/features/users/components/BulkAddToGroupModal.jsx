@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { FiX, FiChevronDown, FiLoader } from "react-icons/fi";
 import { useToast } from "../../../components/Toast";
-import { getGroupsApi, bulkAddUsersToGroupApi } from "../userApi";
+import { bulkAddUsersToGroupApi } from "../userApi";
+import { searchGroupsApi } from "../../groups/groupApi";
 import { useLanguage } from "../../../context/LanguageContext"; // BKAV HaiHS: Import hook ngôn ngữ
 
 // BKAV HaiHS: Component cua so dung chung de gop nhanh hang loat nhan su vao nhom quyen chi dinh - start
@@ -19,12 +20,28 @@ const BulkAddToGroupModal = ({ isOpen, onClose, selectedUsers, onSuccess }) => {
   const [groupHasMore, setGroupHasMore] = useState(true);
   const [isLoadingGroups, setIsLoadingGroups] = useState(false);
 
+  const [groupSearchKeyword, setGroupSearchKeyword] = useState("");
+  const groupSearchTimeoutRef = useRef(null);
   const dropdownRef = useRef(null);
 
   useEffect(() => {
     setSelectedGroup(null);
+    setGroupSearchKeyword("");
     setIsDropdownOpen(false);
   }, [isOpen]);
+
+  // Bộ lọc chống rung cho Dropdown tìm kiếm nhóm
+  useEffect(() => {
+    if (!isOpen) return;
+    if (groupSearchTimeoutRef.current) clearTimeout(groupSearchTimeoutRef.current);
+
+    groupSearchTimeoutRef.current = setTimeout(() => {
+      setGroupHasMore(true);
+      fetchGroups(1, false);
+    }, 500);
+
+    return () => clearTimeout(groupSearchTimeoutRef.current);
+  }, [groupSearchKeyword, isOpen]);
 
   // Lắng nghe sự kiện phím Esc để đóng modal
   useEffect(() => {
@@ -55,7 +72,7 @@ const BulkAddToGroupModal = ({ isOpen, onClose, selectedUsers, onSuccess }) => {
     if (isLoadingGroups || (!groupHasMore && isLoadMore)) return;
     setIsLoadingGroups(true);
     try {
-      const res = await getGroupsApi(page, 10);
+      const res = await searchGroupsApi(groupSearchKeyword, page, 10);
       const fetchedList = res?.data || (Array.isArray(res) ? res : []);
 
       if (isLoadMore) {
@@ -67,7 +84,7 @@ const BulkAddToGroupModal = ({ isOpen, onClose, selectedUsers, onSuccess }) => {
       if (fetchedList.length < 10) setGroupHasMore(false);
       setGroupPage(page);
     } catch (err) {
-      console.error("Lỗi:", err);
+      console.error("Lỗi fetchGroups:", err);
     } finally {
       setIsLoadingGroups(false);
     }
@@ -197,38 +214,54 @@ const BulkAddToGroupModal = ({ isOpen, onClose, selectedUsers, onSuccess }) => {
 
               {isDropdownOpen && (
                 <div
-                  onScroll={handleDropdownScroll}
-                  className="cyber-scrollbar absolute left-0 right-0 mt-1.5 max-h-[210px] overflow-y-auto bg-white dark:bg-[#1a202c] border border-gray-200 dark:border-[#232d42] rounded-xl shadow-2xl z-[100] animate-fade-in transition-colors"
+                  className="absolute left-0 right-0 mt-1.5 bg-white dark:bg-[#1a202c] border border-gray-200 dark:border-[#232d42] rounded-xl shadow-2xl z-[100] animate-fade-in transition-colors overflow-hidden flex flex-col max-h-[280px]"
                 >
-                  {groups.length === 0 && !isLoadingGroups ? (
-                    <div className="p-4 text-xs text-gray-500 italic text-center">
-                      {t("no_group_found")}
-                    </div>
-                  ) : (
-                    groups.map((group) => {
-                      const isSelected = selectedGroup?.id === group.id;
-                      return (
-                        <div
-                          key={group.id}
-                          onClick={() => {
-                            setSelectedGroup(group);
-                            setIsDropdownOpen(false);
-                          }}
-                          className={`px-4 py-2.5 text-sm cursor-pointer flex items-center justify-between transition-colors ${isSelected ? "bg-blue-50 dark:bg-blue-600/10 text-blue-600 dark:text-blue-400 font-bold" : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"}`}
-                        >
-                          <span>{group.name}</span>
-                          {isSelected && (
-                            <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-                          )}
-                        </div>
-                      );
-                    })
-                  )}
-                  {isLoadingGroups && (
-                    <div className="py-2.5 flex justify-center items-center text-blue-500 bg-gray-50/50 dark:bg-[#0b0f19]/20">
-                      <FiLoader size={14} className="animate-spin" />
-                    </div>
-                  )}
+                  {/* Ô SEARCH TRONG DROPDOWN NHÓM HÀNG LOẠT */}
+                  <div className="p-2 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-[#111622]/50">
+                    <input
+                      type="text"
+                      value={groupSearchKeyword}
+                      onChange={(e) => setGroupSearchKeyword(e.target.value)}
+                      placeholder={t("group_search_placeholder") || "Tìm kiếm nhóm..."}
+                      className="w-full px-3 py-1.5 text-xs bg-white dark:bg-[#161b26] border border-gray-200 dark:border-[#232d42] rounded-lg outline-none focus:border-blue-500 text-gray-800 dark:text-gray-200 transition-colors"
+                      onClick={(e) => e.stopPropagation()} // Tránh đóng dropdown khi nhấp vào input
+                    />
+                  </div>
+
+                  <div
+                    onScroll={handleDropdownScroll}
+                    className="cyber-scrollbar flex-1 overflow-y-auto max-h-[210px]"
+                  >
+                    {groups.length === 0 && !isLoadingGroups ? (
+                      <div className="p-4 text-xs text-gray-500 italic text-center">
+                        {t("no_group_found")}
+                      </div>
+                    ) : (
+                      groups.map((group) => {
+                        const isSelected = selectedGroup?.id === group.id;
+                        return (
+                          <div
+                            key={group.id}
+                            onClick={() => {
+                              setSelectedGroup(group);
+                              setIsDropdownOpen(false);
+                            }}
+                            className={`px-4 py-2.5 text-sm cursor-pointer flex items-center justify-between transition-colors ${isSelected ? "bg-blue-50 dark:bg-blue-600/10 text-blue-600 dark:text-blue-400 font-bold" : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"}`}
+                          >
+                            <span>{group.name}</span>
+                            {isSelected && (
+                              <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                            )}
+                          </div>
+                        );
+                      })
+                    )}
+                    {isLoadingGroups && (
+                      <div className="py-2.5 flex justify-center items-center text-blue-500 bg-gray-50/50 dark:bg-[#0b0f19]/20">
+                        <FiLoader size={14} className="animate-spin" />
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
