@@ -214,7 +214,6 @@ const GroupWindow = () => {
 
   const handleExecuteDelete = async () => {
     if (!groupToDelete) return;
-    setIsLoading(true);
     try {
       await deleteGroupApi(groupToDelete.id);
       showToast(
@@ -226,7 +225,6 @@ const GroupWindow = () => {
     } catch (err) {
       showToast(tError(err), "error");
     } finally {
-      setIsLoading(false);
       setGroupToDelete(null);
     }
   };
