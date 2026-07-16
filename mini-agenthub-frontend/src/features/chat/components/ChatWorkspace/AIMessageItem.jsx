@@ -56,6 +56,15 @@ const AIMessageItem = ({ message }) => {
                 {t("response_time") || "Thời gian phản hồi"}:{" "}
                 {message.responseTime || "1.2s"}
               </span>
+              {/* Hiển thị trạng thái Dừng bởi người dùng nếu có */}
+              {message.isStopped && (
+                <>
+                  <span>•</span>
+                  <span className="text-red-500 dark:text-red-400 font-semibold bg-red-50 dark:bg-red-950/30 px-1.5 py-0.5 rounded transition-colors duration-300">
+                    {t("stopped_by_user") || "Đã dừng"}
+                  </span>
+                </>
+              )}
               {/* Hiển thị số lượng Token nếu có */}
               {(message.usage || (message.totalTokens !== undefined && message.totalTokens !== null)) && (
                 <>

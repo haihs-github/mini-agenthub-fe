@@ -267,6 +267,7 @@ export const useChatStream = (initialActiveId = "new-chat") => {
 
     abortControllerRef.current = new AbortController();
     const token = getAccessToken();
+    const startTime = Date.now();
     let aiMsgId = null;
 
     try {
@@ -335,18 +336,21 @@ export const useChatStream = (initialActiveId = "new-chat") => {
               const jsonPart = dataStr.replace("[DONE]", "").trim();
               if (jsonPart) {
                 const parsedDone = JSON.parse(jsonPart);
-                if (parsedDone.usage) {
-                  setMessages((prev) =>
-                    prev.map((msg) =>
-                      msg.id === aiMsgId
-                        ? { ...msg, usage: parsedDone.usage }
-                        : msg
-                    )
-                  );
-                }
+                setMessages((prev) =>
+                  prev.map((msg) => {
+                    if (msg.id === aiMsgId) {
+                      const updated = { ...msg };
+                      if (parsedDone.usage) updated.usage = parsedDone.usage;
+                      if (parsedDone.responseTime) updated.responseTime = parsedDone.responseTime;
+                      if (parsedDone.isStopped !== undefined) updated.isStopped = parsedDone.isStopped;
+                      return updated;
+                    }
+                    return msg;
+                  })
+                );
               }
             } catch (e) {
-              console.error("Lỗi phân tích token từ DONE:", e);
+              console.error("Lỗi phân tích dữ liệu kết thúc từ DONE:", e);
             }
             isDone = true;
             break;
@@ -393,10 +397,17 @@ export const useChatStream = (initialActiveId = "new-chat") => {
       }
 
       // STREAM KẾT THÚC THÀNH CÔNG
+      const elapsed = ((Date.now() - startTime) / 1000).toFixed(1) + "s";
       setMessages((prev) =>
         prev.map((msg) =>
           msg.id === aiMsgId
-            ? { ...msg, isStreaming: false, modelName, responseTime: "1.2s" }
+            ? { 
+                ...msg, 
+                isStreaming: false, 
+                modelName, 
+                responseTime: msg.responseTime || elapsed,
+                isStopped: msg.isStopped !== undefined ? msg.isStopped : false
+              }
             : msg,
         ),
       );
@@ -444,6 +455,7 @@ export const useChatStream = (initialActiveId = "new-chat") => {
   const reconnectStream = async (currentId, existingMsgId = null) => {
     setIsStreaming(true);
     const aiMsgId = existingMsgId || Date.now() + 1;
+    const startTime = Date.now();
 
     if (existingMsgId) {
       // BKAV HaiHS : Neu da co tin nhan trong DB, gan no ve isStreaming = true - start
@@ -524,18 +536,21 @@ export const useChatStream = (initialActiveId = "new-chat") => {
               const jsonPart = dataStr.replace("[DONE]", "").trim();
               if (jsonPart) {
                 const parsedDone = JSON.parse(jsonPart);
-                if (parsedDone.usage) {
-                  setMessages((prev) =>
-                    prev.map((msg) =>
-                      msg.id === aiMsgId
-                        ? { ...msg, usage: parsedDone.usage }
-                        : msg
-                    )
-                  );
-                }
+                setMessages((prev) =>
+                  prev.map((msg) => {
+                    if (msg.id === aiMsgId) {
+                      const updated = { ...msg };
+                      if (parsedDone.usage) updated.usage = parsedDone.usage;
+                      if (parsedDone.responseTime) updated.responseTime = parsedDone.responseTime;
+                      if (parsedDone.isStopped !== undefined) updated.isStopped = parsedDone.isStopped;
+                      return updated;
+                    }
+                    return msg;
+                  })
+                );
               }
             } catch (e) {
-              console.error("Lỗi phân tích token từ DONE:", e);
+              console.error("Lỗi phân tích dữ liệu kết thúc từ DONE:", e);
             }
             isDone = true;
             break;
@@ -580,10 +595,16 @@ export const useChatStream = (initialActiveId = "new-chat") => {
         if (isDone) break; // BKAV HaiHS : Thoat ngay while loop de khong bi chan tai reader.read() sau khi nhan DONE
       }
 
+      const elapsed = ((Date.now() - startTime) / 1000).toFixed(1) + "s";
       setMessages((prev) =>
         prev.map((msg) =>
           msg.id === aiMsgId
-            ? { ...msg, isStreaming: false, responseTime: "1.2s" }
+            ? { 
+                ...msg, 
+                isStreaming: false, 
+                responseTime: msg.responseTime || elapsed,
+                isStopped: msg.isStopped !== undefined ? msg.isStopped : false
+              }
             : msg,
         ),
       );
