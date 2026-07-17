@@ -138,9 +138,9 @@ const GroupTable = ({
                               <FiInfo size={15} />
                             </button>
                           )}
-                          {canUpdate && (
+                          {(canUpdate || canRead) && (
                             <button
-                              title={t("manage_members")}
+                              title={canUpdate ? t("manage_members") : t("view_members") || "Xem thành viên"}
                               onClick={() => onMembersClick(group)}
                               className="p-2 rounded-xl text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200 dark:hover:bg-gray-800 transition-all cursor-pointer"
                             >

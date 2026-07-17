@@ -195,8 +195,8 @@ const GroupWindow = () => {
   };
 
   const handleOpenMembersModal = (group) => {
-    if (!canUpdate) {
-      showToast(t("toast_no_update_perm"), "warning");
+    if (!canRead && !canUpdate) {
+      showToast(t("toast_no_read_perm"), "warning");
       return;
     }
     setSelectedGroupForMembers(group);
