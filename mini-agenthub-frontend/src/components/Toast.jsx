@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import {
   FiAlertCircle,
   FiCheckCircle,
@@ -14,15 +14,15 @@ export const ToastProvider = ({ children }) => {
   const { t } = useLanguage(); // BKAV HaiHS: Sử dụng hàm t() để dịch thuật tiêu đề
   const [toasts, setToasts] = useState([]);
 
-  // Hàm kích hoạt hiển thị Toast dùng chung cho toàn bộ ứng dụng
-  const showToast = (message, type = "info") => {
+  // Hàm kích hoạt hiển thị Toast dùng chung cho toàn bộ ứng dụng - bọc useCallback để tránh re-create tham chiếu gây vòng lặp vô hạn
+  const showToast = useCallback((message, type = "info") => {
     if (!message) return;
     const id = Date.now() + Math.random().toString();
     setToasts((prev) => [{ id, message, type }, ...prev]);
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));
     }, 2500); // 2.5 giây để người dùng kịp đọc khi có nhiều thông báo
-  };
+  }, []);
 
   // BKAV HaiHS : Đăng ký sự kiện lắng nghe để kích hoạt toast từ các file JS thuần - start
   useEffect(() => {
