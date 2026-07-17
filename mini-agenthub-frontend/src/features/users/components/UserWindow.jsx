@@ -196,6 +196,7 @@ const UserWindow = () => {
       return await getUsersApi(currentPage, 10);
     },
     placeholderData: keepPreviousData,
+    staleTime: activeSearchQuery ? 10000 : undefined,
   });
 
   const users = data?.data || [];

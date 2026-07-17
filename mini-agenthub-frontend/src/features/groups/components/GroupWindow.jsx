@@ -160,6 +160,7 @@ const GroupWindow = () => {
       return await getGroupsListApi(currentPage, 10);
     },
     placeholderData: keepPreviousData,
+    staleTime: activeSearchQuery ? 10000 : undefined,
   });
 
   const groups = data?.data || [];
