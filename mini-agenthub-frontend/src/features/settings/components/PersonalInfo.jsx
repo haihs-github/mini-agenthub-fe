@@ -171,7 +171,7 @@ const PersonalInfo = () => {
                   ) : (
                     <FiCheck size={12} />
                   )}
-                  {t("doneBtn")}
+                  {t("confirmPhone")}
                 </button>
               </>
             ) : (
@@ -238,7 +238,7 @@ const PersonalInfo = () => {
                   ) : (
                     <FiCheck size={12} />
                   )}
-                  {t("doneBtn")}
+                  {t("confirmPhone")}
                 </button>
               </>
             ) : (

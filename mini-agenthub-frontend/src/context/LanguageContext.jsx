@@ -33,7 +33,7 @@ export const translations = {
     toast_bulk_delete_success: "Successfully deleted",
     toast_bulk_delete_fail: "Bulk delete failed",
     toast_no_add_group_perm: "No permission to add to group",
-    toast_change_password:
+    changePasswordToastMessage:
       "The password for this account was recently changed. For security reasons, you will need to log back into the system.",
 
     // --- SIDEBAR NAV ---
@@ -193,6 +193,7 @@ export const translations = {
     signOut: "Sign Out",
     signOutDesc: "End your current session.",
     doneBtn: "Hủy",
+    confirmPhone: "Xong",
     clear_button: "Delete all conversation",
 
     // --- PERSONAL INFO ---
@@ -332,7 +333,7 @@ export const translations = {
     toast_bulk_delete_success: "Đã xóa thành công",
     toast_bulk_delete_fail: "Xóa hàng loạt thất bại",
     toast_no_add_group_perm: "Không có quyền thêm vào nhóm",
-    toast_change_password:
+    changePasswordToastMessage:
       "Mật khẩu của tài khoản này vừa được thay đổi, vì lý do bảo mật bạn sẽ cần đăng nhập lại hệ thống",
 
     // --- SIDEBAR NAV ---
@@ -492,6 +493,7 @@ export const translations = {
     signOut: "Đăng xuất",
     signOutDesc: "Kết thúc phiên hiện tại của bạn.",
     doneBtn: "Hủy",
+    confirmPhone: "Done",
     clear_button: "Xóa lich sử chat",
 
     // --- PERSONAL INFO ---
