@@ -18,9 +18,7 @@ const ChatWindow = ({
   hasMoreMessages,
   isLoadingMore,
 }) => {
-  const [selectedModel, setSelectedModel] = useState(
-    "meta-llama/llama-4-scout-17b-16e-instruct",
-  );
+  const [selectedModel, setSelectedModel] = useState("qwen/qwen3.6-27b");
 
   return (
     /* BKAV HaiHS: Đồng bộ màu nền của toàn bộ vùng ChatWindow theo theme */

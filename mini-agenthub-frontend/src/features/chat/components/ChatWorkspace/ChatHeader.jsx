@@ -12,8 +12,8 @@ const ChatHeader = ({ selectedModel, setSelectedModel }) => {
   // Các model ai
   const models = [
     {
-      id: "meta-llama/llama-4-scout-17b-16e-instruct",
-      name: "meta-llama/llama-4-scout-17b-16e-instruct",
+      id: "qwen/qwen3.6-27b",
+      name: "qwen/qwen3.6-27b",
       desc: t("model_desc_llama") || "Siêu tốc độ, tối ưu hội thoại",
     },
     {
