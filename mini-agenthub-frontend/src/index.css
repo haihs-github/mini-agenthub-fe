@@ -1,9 +1,0 @@
-@import "tailwindcss";
-
-@variant dark (&:where(.dark, .dark *));
-
-/* BKAV: Ẩn icon con mắt mặc định của các trình duyệt (Edge/IE) trong trường password */
-input::-ms-reveal,
-input::-ms-clear {
-  display: none;
-}
