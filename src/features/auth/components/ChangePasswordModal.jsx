@@ -1,87 +1,131 @@
 import React, { useState, useEffect } from "react";
-import { FiX, FiKey, FiLock, FiEye, FiEyeOff, FiLoader } from "react-icons/fi";
+import { FiX, FiKey, FiLock, FiLoader } from "react-icons/fi";
 import { changePasswordApi } from "@/features/auth/authApi";
 import { useToast } from "@/components/Toast";
 import ConfirmModal from "@/components/ConfirmModal";
-import { useLanguage } from "@/context/LanguageContext"; // Import hook ngôn ngữ
+import { useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/features/auth/AuthContext";
+import { SUB_CONFIRM_TYPE } from "@/features/auth/constants/authConstants";
+import PasswordInputField from "@/features/auth/components/PasswordInputField"; // BKAV HaiHS: Import component ô nhập mật khẩu con
 
 // BKAV HaiHS: Component đổi mật khẩu - start
 const ChangePasswordModal = ({ isOpen, onClose }) => {
   const { showToast } = useToast();
-  const { t, tError } = useLanguage(); // Khai báo hook dịch thuật
+  const { t, tError } = useLanguage();
   const { logout } = useAuth();
 
-  const [oldPassword, setOldPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  // BKAV HaiHS : Khởi tạo State dạng Object tập trung để tránh State Bloat - start
+  const [formData, setFormData] = useState({
+    oldPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
 
-  const [showOld, setShowOld] = useState(false);
-  const [showNew, setShowNew] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
+  const [showPasswords, setShowPasswords] = useState({
+    old: false,
+    new: false,
+    confirm: false,
+  });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [subConfirm, setSubConfirm] = useState({ isOpen: false, type: "" });
+  // BKAV HaiHS : Khởi tạo State dạng Object tập trung để tránh State Bloat - end
 
-  const isFormFilled = oldPassword && newPassword && confirmPassword;
-  const isPasswordMatched = newPassword === confirmPassword;
-  const isButtonDisabled = !isFormFilled || !isPasswordMatched || isSubmitting;
+  // BKAV HaiHS : Các biến tính toán kiểm tra điều kiện dữ liệu Form - start
+  const isFormFilled =
+    formData.oldPassword && formData.newPassword && formData.confirmPassword;
+  const isPasswordMatched = formData.newPassword === formData.confirmPassword;
+  const isNewPasswordValid = formData.newPassword.length >= 6;
+  const isButtonDisabled =
+    !isFormFilled || !isPasswordMatched || !isNewPasswordValid || isSubmitting;
+  // BKAV HaiHS : Các biến tính toán kiểm tra điều kiện dữ liệu Form - end
 
+  // BKAV HaiHS : Hàm xử lý khi người dùng nhấn nút Hủy - start
   const handleCancelClick = () => {
-    if (oldPassword || newPassword || confirmPassword) {
-      setSubConfirm({ isOpen: true, type: "cancel" });
+    if (
+      formData.oldPassword ||
+      formData.newPassword ||
+      formData.confirmPassword
+    ) {
+      setSubConfirm({ isOpen: true, type: SUB_CONFIRM_TYPE.CANCEL });
     } else {
       onClose();
     }
   };
+  // BKAV HaiHS : Hàm xử lý khi người dùng nhấn nút Hủy - end
 
+  // BKAV HaiHS : Handler xử lý khi người dùng nhấn Cập nhật - start
   const handleUpdateClick = (e) => {
     e.preventDefault();
     if (isButtonDisabled) return;
-    setSubConfirm({ isOpen: true, type: "save" });
+    setSubConfirm({ isOpen: true, type: SUB_CONFIRM_TYPE.SAVE });
   };
+  // BKAV HaiHS : Handler xử lý khi người dùng nhấn Cập nhật - end
 
+  // BKAV HaiHS : Lệnh gọi API thực hiện đổi mật khẩu - start
   const executeChangePassword = async () => {
     setIsSubmitting(true);
     setSubConfirm({ isOpen: false, type: "" });
 
     try {
-      await changePasswordApi({ oldPassword, newPassword });
-      showToast("changePasswordToastMessage", "success");
-      onClose();
-      // Delay 3 giây trước khi thực hiện logout để người dùng kịp đọc thông báo
-      setTimeout(() => {
-        logout();
-      }, 3000);
+      await changePasswordApi({
+        oldPassword: formData.oldPassword,
+        newPassword: formData.newPassword,
+      });
+      setSubConfirm({ isOpen: true, type: SUB_CONFIRM_TYPE.SUCCESS });
     } catch (err) {
       showToast(tError(err, "AUTH_WRONG_OLD_PASSWORD"), "error");
     } finally {
       setIsSubmitting(false);
     }
   };
+  // BKAV HaiHS : Lệnh gọi API thực hiện đổi mật khẩu - end
 
+  // BKAV HaiHS : Handler điều phối hành động xác nhận từ ConfirmModal - start
   const handleConfirmAction = () => {
-    if (subConfirm.type === "save") executeChangePassword();
-    if (subConfirm.type === "cancel") {
+    if (subConfirm.type === SUB_CONFIRM_TYPE.SAVE) executeChangePassword();
+    if (subConfirm.type === SUB_CONFIRM_TYPE.CANCEL) {
       setSubConfirm({ isOpen: false, type: "" });
       onClose();
     }
+    if (subConfirm.type === SUB_CONFIRM_TYPE.SUCCESS) {
+      setSubConfirm({ isOpen: false, type: "" });
+      onClose();
+      logout();
+    }
   };
+  // BKAV HaiHS : Handler điều phối hành động xác nhận từ ConfirmModal - end
 
-  // Reset các ô nhập liệu khi đóng/mở modal
+  // BKAV HaiHS : Handler xử lý đóng ConfirmModal an toàn - start
+  const handleCloseConfirmModal = () => {
+    if (subConfirm.type === SUB_CONFIRM_TYPE.SUCCESS) {
+      setSubConfirm({ isOpen: false, type: "" });
+      onClose();
+      logout();
+    } else {
+      setSubConfirm({ isOpen: false, type: "" });
+    }
+  };
+  // BKAV HaiHS : Handler xử lý đóng ConfirmModal an toàn - end
+
+  // BKAV HaiHS : Reset dữ liệu khi đóng/mở modal - start
   useEffect(() => {
     if (!isOpen) {
-      setOldPassword("");
-      setNewPassword("");
-      setConfirmPassword("");
-      setShowOld(false);
-      setShowNew(false);
-      setShowConfirm(false);
+      setFormData({
+        oldPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
+      setShowPasswords({
+        old: false,
+        new: false,
+        confirm: false,
+      });
+      setIsSubmitting(false);
       setSubConfirm({ isOpen: false, type: "" });
     }
   }, [isOpen]);
-
-
+  // BKAV HaiHS : Reset dữ liệu khi đóng/mở modal - end
 
   if (!isOpen) return null;
 
@@ -93,7 +137,7 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
       <div className="w-full max-w-md bg-white border border-gray-200 dark:bg-[#161b26] dark:border-[#232d42] rounded-2xl p-6 shadow-2xl relative space-y-6 transition-colors duration-300">
         <div className="flex items-center justify-between border-b border-gray-200 dark:border-[#232d42]/60 pb-4 select-none transition-colors duration-300">
           <h3 className="text-sm font-bold text-gray-900 dark:text-white tracking-wide transition-colors duration-300">
-            {t("updatePassword_title") || "Update Password"}
+            {t("updatePassword_title") || "updatePassword_title"}
           </h3>
           <button
             type="button"
@@ -105,98 +149,80 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
         </div>
 
         <form onSubmit={handleUpdateClick} className="space-y-4">
-          {/* TRƯỜNG 1: CURRENT PASSWORD */}
-          <div className="space-y-1.5">
-            <label className="text-[11px] font-bold text-gray-700 dark:text-gray-400 block pl-1 select-none">
-              {t("curr_pwd") || "Mật khẩu hiện tại"}
-            </label>
-            <div className="relative bg-gray-50 border border-gray-200 dark:bg-[#0b0f19] dark:border-[#232d42] rounded-xl flex items-center px-4 py-2.5 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/10 transition-all duration-200">
-              <FiKey
-                className="text-gray-400 dark:text-gray-500 shrink-0"
-                size={14}
-              />
-              <input
-                type={showOld ? "text" : "password"}
-                value={oldPassword}
-                onChange={(e) => setOldPassword(e.target.value)}
-                placeholder={t("curr_pwd") || "Current Password"}
-                className="flex-1 bg-transparent border-0 focus:outline-none text-xs text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-600 pl-3 pr-2 transition-colors duration-300"
-                disabled={isSubmitting}
-              />
-              <button
-                type="button"
-                onClick={() => setShowOld(!showOld)}
-                className="text-gray-400 hover:text-gray-900 dark:text-gray-500 dark:hover:text-gray-300 transition-colors cursor-pointer shrink-0"
-              >
-                {showOld ? <FiEyeOff size={14} /> : <FiEye size={14} />}
-              </button>
-            </div>
-          </div>
+          {/* Trường mật khẩu hiện tại */}
+          <PasswordInputField
+            label={t("curr_pwd") || "curr_pwd"}
+            value={formData.oldPassword}
+            onChange={(e) =>
+              setFormData({ ...formData, oldPassword: e.target.value })
+            }
+            placeholder={t("curr_pwd") || "curr_pwd"}
+            showPassword={showPasswords.old}
+            onToggleShow={() =>
+              setShowPasswords({
+                ...showPasswords,
+                old: !showPasswords.old,
+              })
+            }
+            disabled={isSubmitting}
+            Icon={FiKey}
+            autoComplete="current-password"
+          />
 
-          {/* TRƯỜNG 2: NEW PASSWORD */}
-          <div className="space-y-1.5">
-            <label className="text-[11px] font-bold text-gray-700 dark:text-gray-400 block pl-1 select-none">
-              {t("new_pwd") || "Mật khẩu mới"}
-            </label>
-            <div className="relative bg-gray-50 border border-gray-200 dark:bg-[#0b0f19] dark:border-[#232d42] rounded-xl flex items-center px-4 py-2.5 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/10 transition-all duration-200">
-              <FiLock
-                className="text-gray-400 dark:text-gray-500 shrink-0"
-                size={14}
-              />
-              <input
-                type={showNew ? "text" : "password"}
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                placeholder={t("new_pwd") || "New Password"}
-                className="flex-1 bg-transparent border-0 focus:outline-none text-xs text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-600 pl-3 pr-2 transition-colors duration-300"
-                disabled={isSubmitting}
-              />
-              <button
-                type="button"
-                onClick={() => setShowNew(!showNew)}
-                className="text-gray-400 hover:text-gray-900 dark:text-gray-500 dark:hover:text-gray-300 transition-colors cursor-pointer shrink-0"
-              >
-                {showNew ? <FiEyeOff size={14} /> : <FiEye size={14} />}
-              </button>
-            </div>
-          </div>
+          {/* Trường mật khẩu mới */}
+          <PasswordInputField
+            label={t("new_pwd") || "new_pwd"}
+            value={formData.newPassword}
+            onChange={(e) =>
+              setFormData({ ...formData, newPassword: e.target.value })
+            }
+            placeholder={t("new_pwd") || "new_pwd"}
+            showPassword={showPasswords.new}
+            onToggleShow={() =>
+              setShowPasswords({
+                ...showPasswords,
+                new: !showPasswords.new,
+              })
+            }
+            disabled={isSubmitting}
+            Icon={FiLock}
+            autoComplete="new-password"
+            error={
+              formData.newPassword && !isNewPasswordValid
+                ? t("pwd_too_short") || "pwd_too_short"
+                : ""
+            }
+          />
 
-          {/* TRƯỜNG 3: CONFIRM NEW PASSWORD */}
-          <div className="space-y-1.5">
-            <label className="text-[11px] font-bold text-gray-700 dark:text-gray-400 block pl-1 select-none">
-              {t("confirm_pwd") || "Xác nhận mật khẩu mới"}
-            </label>
-            <div
-              className={`relative bg-gray-50 border dark:bg-[#0b0f19] rounded-xl flex items-center px-4 py-2.5 focus-within:ring-2 focus-within:ring-blue-500/10 transition-all duration-200 ${confirmPassword && !isPasswordMatched ? "border-red-500/50 focus-within:border-red-500 focus-within:ring-red-500/10" : "border-gray-200 dark:border-[#232d42] focus-within:border-blue-500"}`}
-            >
-              <FiLock
-                className="text-gray-400 dark:text-gray-500 shrink-0"
-                size={14}
-              />
-              <input
-                type={showConfirm ? "text" : "password"}
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder={t("confirm_pwd") || "Confirm New Password"}
-                className="flex-1 bg-transparent border-0 focus:outline-none text-xs text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-600 pl-3 pr-2 transition-colors duration-300"
-                disabled={isSubmitting}
-              />
-              <button
-                type="button"
-                onClick={() => setShowConfirm(!showConfirm)}
-                className="text-gray-400 hover:text-gray-900 dark:text-gray-500 dark:hover:text-gray-300 transition-colors cursor-pointer shrink-0"
-              >
-                {showConfirm ? <FiEyeOff size={14} /> : <FiEye size={14} />}
-              </button>
-            </div>
-            {confirmPassword && !isPasswordMatched && (
-              <p className="text-[10px] text-red-500 dark:text-red-400 font-medium pl-1 animate-fade-in">
-                {t("pwd_mismatch") || "Mật khẩu xác nhận không trùng khớp"}
-              </p>
-            )}
-          </div>
+          {/* Trường xác nhận mật khẩu mới */}
+          <PasswordInputField
+            label={t("confirm_pwd") || "confirm_pwd"}
+            value={formData.confirmPassword}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                confirmPassword: e.target.value,
+              })
+            }
+            placeholder={t("confirm_pwd") || "confirm_pwd"}
+            showPassword={showPasswords.confirm}
+            onToggleShow={() =>
+              setShowPasswords({
+                ...showPasswords,
+                confirm: !showPasswords.confirm,
+              })
+            }
+            disabled={isSubmitting}
+            Icon={FiLock}
+            autoComplete="new-password"
+            error={
+              formData.confirmPassword && !isPasswordMatched
+                ? t("pwd_mismatch") || "pwd_mismatch"
+                : ""
+            }
+          />
 
-          {/* KHU VỰC CỤM NÚT ĐIỀU KHIỂN CHÂN TRANG */}
+          {/* Cụm nút điều khiển chân trang */}
           <div className="flex items-center justify-end gap-3 pt-3 border-t border-gray-200 dark:border-[#232d42]/40 select-none transition-colors duration-300">
             <button
               type="button"
@@ -204,7 +230,7 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
               disabled={isSubmitting}
               className="text-xs font-bold text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white px-4 py-2 rounded-xl dark:hover:bg-gray-800 transition-all cursor-pointer disabled:opacity-40"
             >
-              {t("cancel_btn") || "Cancel"}
+              {t("cancel_btn") || "cancel_btn"}
             </button>
             <button
               type="submit"
@@ -214,36 +240,50 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
               {isSubmitting && (
                 <FiLoader size={12} className="animate-spin text-blue-400" />
               )}
-              <span>{t("update_pwd_btn") || "Update Password"}</span>
+              <span>{t("update_pwd_btn") || "update_pwd_btn"}</span>
             </button>
           </div>
         </form>
       </div>
 
-      {/* BKAV HaiHS : Hộp thoại xác nhận đổi mật khẩu dịch thuật - start */}
+      {/* Hộp thoại xác nhận hành động đổi mật khẩu hoặc hủy bỏ */}
       <ConfirmModal
         isOpen={subConfirm.isOpen}
-        onClose={() => setSubConfirm({ isOpen: false, type: "" })}
+        onClose={handleCloseConfirmModal}
         onConfirm={handleConfirmAction}
         title={
-          subConfirm.type === "save"
-            ? t("confirm_change_title")
-            : t("confirm_cancel_title")
+          subConfirm.type === SUB_CONFIRM_TYPE.SAVE
+            ? t("confirm_change_title") || "confirm_change_title"
+            : subConfirm.type === SUB_CONFIRM_TYPE.CANCEL
+              ? t("confirm_cancel_title") || "confirm_cancel_title"
+              : t("updatePassword_title") || "updatePassword_title"
         }
         message={
-          subConfirm.type === "save"
-            ? t("confirm_change_msg")
-            : t("confirm_cancel_msg")
+          subConfirm.type === SUB_CONFIRM_TYPE.SAVE
+            ? t("confirm_change_msg") || "confirm_change_msg"
+            : subConfirm.type === SUB_CONFIRM_TYPE.CANCEL
+              ? t("confirm_cancel_msg") || "confirm_cancel_msg"
+              : t("changePasswordToastMessage") || "changePasswordToastMessage"
         }
         confirmText={
-          subConfirm.type === "save"
-            ? t("agree_change_btn")
-            : t("agree_cancel_btn")
+          subConfirm.type === SUB_CONFIRM_TYPE.SAVE
+            ? t("agree_change_btn") || "agree_change_btn"
+            : subConfirm.type === SUB_CONFIRM_TYPE.CANCEL
+              ? t("agree_cancel_btn") || "agree_cancel_btn"
+              : t("confirm") || "confirm"
         }
-        cancelText={t("go_back_btn")}
-        type={subConfirm.type === "save" ? "info" : "warning"}
+        cancelText={
+          subConfirm.type === SUB_CONFIRM_TYPE.SUCCESS
+            ? t("confirm") || "confirm"
+            : t("go_back_btn") || "go_back_btn"
+        }
+        type={
+          subConfirm.type === SUB_CONFIRM_TYPE.SAVE ||
+          subConfirm.type === SUB_CONFIRM_TYPE.SUCCESS
+            ? "info"
+            : "warning"
+        }
       />
-      {/* BKAV HaiHS : Hộp thoại xác nhận đổi mật khẩu dịch thuật - end */}
     </div>
   );
 };
