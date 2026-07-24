@@ -8,7 +8,7 @@ import { useLanguage } from "@/context/LanguageContext"; // BKAV HaiHS: Import h
 
 // BKAV HaiHS: component chỉnh sửa thông tin liên lạc - start
 const PersonalInfo = () => {
-  const { user, login } = useAuth();
+  const { user, updateUser } = useAuth();
   const { showToast } = useToast();
   const { t, tError } = useLanguage(); // BKAV HaiHS: Khai báo hàm dịch thuật
 
@@ -79,8 +79,8 @@ const PersonalInfo = () => {
         "success",
       );
 
-      if (login && res?.data) {
-        login(res.data.user, res.data.token);
+      if (updateUser && res?.data) {
+        updateUser(res.data.user, res.data.token);
       }
 
       targetType === "phone"

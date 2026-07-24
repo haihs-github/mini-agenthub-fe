@@ -56,7 +56,7 @@ export const AuthProvider = ({ children }) => {
     initAuth();
   }, []);
 
-  // Hàm cập nhật trạng thái khi đăng xuất nhưng chỉ ở phía Client (dùng làm callback)
+  // BKAV HaiHS : Hàm cập nhật trạng thái khi đăng xuất nhưng chỉ ở phía Client (dùng làm callback) - start
   const logoutStateOnly = () => {
     setUser(null);
     setTokenState(null);
@@ -66,8 +66,9 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("permissions");
     localStorage.removeItem("token"); // Dọn dẹp tàn dư cũ nếu có
   };
+  // BKAV HaiHS : Hàm cập nhật trạng thái khi đăng xuất nhưng chỉ ở phía Client (dùng làm callback) - end
 
-  // Hàm loginSuccess cập nhật trạng thái đăng nhập thành công
+  // BKAV HaiHS : Hàm loginSuccess cập nhật trạng thái đăng nhập thành công - start
   const loginSuccess = (userData, tokenData, permissionData) => {
     setUser(userData);
     setTokenState(tokenData); // Lưu vào RAM
@@ -78,8 +79,10 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem("user", JSON.stringify(userData));
     localStorage.setItem("permissions", JSON.stringify(permissionData));
   };
+  // BKAV HaiHS : Hàm loginSuccess cập nhật trạng thái đăng nhập thành công - end
 
-  const login = (userData, tokenData) => {
+  // BKAV HaiHS : Hàm updateUser cập nhật thông tin hồ sơ cá nhân của người dùng - start
+  const updateUser = (userData, tokenData) => {
     setUser(userData);
     if (userData) {
       localStorage.setItem("user", JSON.stringify(userData));
@@ -91,20 +94,23 @@ export const AuthProvider = ({ children }) => {
       setAccessToken(tokenData);
     }
   };
+  // BKAV HaiHS : Hàm updateUser cập nhật thông tin hồ sơ cá nhân của người dùng - end
 
-  // Hàm logout xóa sạch thông tin người dùng khỏi cả Client và Backend
+  // BKAV HaiHS : Hàm logout xóa sạch thông tin người dùng khỏi cả Client và Backend - start
   const logout = async () => {
-    logoutStateOnly();
     try {
       await apiClient.post("/auth/logout");
     } catch (e) {
       console.error("Lỗi gửi yêu cầu đăng xuất tới Backend", e);
+    } finally {
+      logoutStateOnly();
     }
   };
+  // BKAV HaiHS : Hàm logout xóa sạch thông tin người dùng khỏi cả Client và Backend - end
 
   return (
     <AuthContext.Provider
-      value={{ user, token, permissions, loginSuccess, logout, login, loading }}
+      value={{ user, token, permissions, loginSuccess, logout, updateUser, loading }}
     >
       {!loading && children}
     </AuthContext.Provider>
